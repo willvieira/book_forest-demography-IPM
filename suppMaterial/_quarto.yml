@@ -1,0 +1,50 @@
+project:
+  type: book
+
+book:
+  title: "Competition and climate effect on the dynamics of North American forest trees - from individuals to population"
+  subtitle: "Supplementary material"
+  author:
+    - name: Willian Vieira
+      orcid: 0000-0003-0283-4570
+
+  search: true
+  repo-url: "https://github.com/willvieira/ms_forest-demography-IPM/"
+  repo-actions: [issue]
+  # cover-image: cover.png
+  chapters:
+    - index.qmd
+    - db.qmd
+    - part: Demographic models
+      chapters:
+      - descript_demoModels.qmd
+    - references.qmd
+
+bibliography: references.bib
+
+format:
+  html:
+    theme: cosmo
+    keep-md: true
+  pdf:
+    documentclass: scrreprt
+  docx:
+    toc: false
+
+number-depth: 1
+  chapters:
+    - index.qmd
+    - intro.qmd
+    - summary.qmd
+    - references.qmd
+
+bibliography: references.bib
+
+format:
+  html:
+    theme: cosmo
+  pdf:
+    documentclass: scrreprt
+
+
+
