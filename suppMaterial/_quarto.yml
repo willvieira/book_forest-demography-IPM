@@ -2,8 +2,8 @@ project:
   type: book
 
 book:
-  title: "Competition and climate effect on the dynamics of North American forest trees - from individuals to population"
-  subtitle: "Supplementary material"
+  title: "Supplementary material"
+  subtitle: "Competition and climate effect on the dynamics of North American forest trees - from individuals to population"
   author:
     - name: Willian Vieira
       orcid: 0000-0003-0283-4570
@@ -17,7 +17,10 @@ book:
     - db.qmd
     - part: Demographic models
       chapters:
-      - descript_demoModels.qmd
+      - pars_intercept.qmd
+      # - pars_competition.qmd
+      - pars_climate.qmd
+      # - descript_demoModels.qmd
     - references.qmd
 
 bibliography: references.bib
@@ -32,19 +35,3 @@ format:
     toc: false
 
 number-depth: 1
-  chapters:
-    - index.qmd
-    - intro.qmd
-    - summary.qmd
-    - references.qmd
-
-bibliography: references.bib
-
-format:
-  html:
-    theme: cosmo
-  pdf:
-    documentclass: scrreprt
-
-
-

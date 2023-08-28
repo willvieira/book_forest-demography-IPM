@@ -1,0 +1,764 @@
+# Climate effect
+
+In this section I discuss the climate effect on both growth and survival vital rates.
+We employ the bioclimatic variables of mean annual temperature (MAT) and annual precipitation (MAP), averaging these variables over specific time intervals spanning two measurement periods.
+The effect of these two variables on growth and survival is modeled using a unimodal function characterized by two key parameters: the optimal climate, representing the climatic conditions where growth and survival reach their peak, and the climate breadth, which quantifies the rate of change in the climate's impact as one moves away from this optimal point.
+
+```{r,include=FALSE,echo=FALSE}
+Echo=FALSE
+Eval=TRUE
+Cache=TRUE
+Warng=FALSE
+Msg=FALSE
+library(tidyverse)
+library(cmdstanr)
+library(posterior)
+library(ggdist)
+library(ggpubr)
+library(ggrepel)
+```
+
+```{r intercept_loadPars,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+
+## Species if info
+spIds <- read_csv(
+  file.path(
+    '..', 'data', 'species_id.csv'
+  )
+) |>
+mutate(
+  shade = factor(shade, levels = c('tolerant', 'intermediate', 'intolerant')),
+  shade_sylvics = factor(shade_sylvics, levels = c('very-tolerant',
+                                            'tolerant',
+                                            'intermediate',
+                                            'intolerant',
+                                            'very-intolerant'
+                                            )),
+  succession = factor(succession, levels = c('pioneer',
+                                              'intermediate',
+                                              'climax'))
+) |>
+filter(sp_to_analyze)
+
+
+# load data to unscale climate variables and function to scale climate back to original range
+clim_scaleRange <- readRDS(file.path('..', 'data', 'climate_scaleRange.RDS')) |>
+  bind_cols()
+
+unscaleClim <- function(
+  value,
+  # if value is temp or prec
+  clim,
+  # temp and prec range are vectors of format [min, max]
+  temp_rg = clim_scaleRange$bio_01_mean,
+  prec_rg = clim_scaleRange$bio_12_mean
+) {
+  if(clim == 'temp') {
+    return( value * (temp_rg[2] - temp_rg[1]) + temp_rg[1] )
+  }else if(clim == 'prec') {
+    return( value * (prec_rg[2] - prec_rg[1]) + prec_rg[1] )
+  } else{
+    stop('Clim must be either `temp` or `prec` character.')
+  }
+}
+
+
+# Load parameters
+map_dfr(
+    spIds$species_id_old,
+    ~ read_csv(
+      paste0(
+        '../data/parameters/growth_', .x, '.csv'
+      ),
+      show_col_types = FALSE
+    ) |>
+    select(c(contains('optimal'), contains('tau'))) |>
+    bind_cols(species_id = .x)
+  ) ->
+pars_growth
+
+map_dfr(
+    spIds$species_id_old,
+    ~ read_csv(
+      paste0(
+        '../data/parameters/mort_', .x, '.csv'
+      ),
+      show_col_types = FALSE
+    ) |>
+    select(c(contains('optimal'), contains('tau'))) |>
+    bind_cols(species_id = .x)
+  ) ->
+  pars_survival
+
+treeData <- readRDS(file.path('..', 'data', 'treeData.RDS')) |>
+  filter(species_id %in% spIds$species_id_old)
+```
+
+
+## Optimal climate
+
+@fig-matDist and @fig-mapDist show the distribution of the optimal climate parameter, meaning the climate location where growth and survival are at its maximum, across the 32 tree species.
+The parameters mean and their uncertunity are displayed with the dot interval for growth (green) and survival (yellow).
+The density plot in gray is the distribution of the climate variable among all observed trees across space and time.
+
+#### Annual mean temperature
+
+```{r climate_optClim,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-matDist
+#| fig-width: 8.5
+#| fig-height: 6
+#| fig-cap: "Distribution for the optimal annual mean temperature for growth (green) and survival (yellow). The density plot in gray is the distribution of the annual mean temperature among all observed trees across space and time."
+
+treeData |>
+  left_join(
+    spIds,
+    by = c('species_id' = 'species_id_old')
+  ) |>
+  filter(!is.na(bio_01_mean_scl)) |>
+  ggplot() +
+  aes(unscaleClim(bio_01_mean_scl, 'temp'), fct_reorder(species_name, bio_01_mean_scl)) +
+  ggridges::geom_density_ridges2(color = NA, alpha = 0.5) +
+  stat_pointinterval(
+    data = pars_growth |>
+      group_by(species_id) |>
+      mutate(growth = optimal_temp, iter = 1:n()) |>
+      select(species_id, iter, growth) |>
+      ungroup() |>
+      left_join(
+        pars_survival |>
+        group_by(species_id) |>
+        mutate(survival = optimal_temp, iter = 1:n()) |>
+        select(species_id, iter, survival) |>
+        ungroup()
+      ) |>
+      pivot_longer(
+        cols = c(growth, survival)
+      ) |>
+      left_join(
+        spIds,
+        by = c('species_id' = 'species_id_old')
+      ),
+    aes(unscaleClim(value, 'temp'), species_name, color = name),
+    alpha = 0.95,
+    position = position_dodge(width = 0.2) # dodge to avoid overlap
+  ) +
+  theme_classic() +
+  scale_color_manual(
+    values = c('#5ab4ac', '#d8b365')
+  ) +
+  theme(axis.text.y = element_text(face = "italic")) +
+  labs(
+    color = 'Optimal climate',
+    x = expression(paste("Annual mean temperature (", degree, "C)")),
+    y = ''
+  )
+```
+
+#### Annual precipitation
+
+```{r climate_optPrec,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-mapDist
+#| fig-width: 8.5
+#| fig-height: 6
+#| fig-cap: "Distribution for the optimal annual precipitation for growth (green) and survival (yellow). The density plot in gray is the distribution of annual precipitation variable among all observed trees across space and time."
+#| 
+treeData |>
+  left_join(
+    spIds,
+    by = c('species_id' = 'species_id_old')
+  ) |>
+  ggplot() +
+  aes(unscaleClim(bio_12_mean_scl, 'prec'), fct_reorder(species_name, bio_12_mean_scl)) +
+  ggridges::geom_density_ridges2(color = NA, alpha = 0.5) +
+  stat_pointinterval(
+    data = pars_growth |>
+      group_by(species_id) |>
+      mutate(growth = optimal_prec, iter = 1:n()) |>
+      select(species_id, iter, growth) |>
+      ungroup() |>
+      left_join(
+        pars_survival |>
+        group_by(species_id) |>
+        mutate(survival = optimal_prec, iter = 1:n()) |>
+        select(species_id, iter, survival) |>
+        ungroup()
+      ) |>
+      pivot_longer(
+        cols = c(growth, survival)
+      ) |>
+      left_join(
+        spIds,
+        by = c('species_id' = 'species_id_old')
+      ),
+    aes(unscaleClim(value, 'prec'), species_name, color = name),
+    alpha = 0.95,
+    position = position_dodge(width = 0.2) # dodge to avoid overlap
+  ) +
+  theme_classic() +
+  scale_color_manual(
+    values = c('#5ab4ac', '#d8b365')
+  ) +
+  xlab('Annual Precipitation (mm)') +
+  ylab('') +
+  theme(axis.text.y = element_text(face = "italic")) +
+  labs(color = 'Optimal climate')
+```
+
+
+## Climate breadth
+
+The climate breadth is the second parameter to account for the climate effect on the growth and survival functions.
+The closer this value is to zero, the lower the growth rate that increases the climate effect as we move from the optimal value (parameter above).
+In other words, when climate breadth is zero, the bell-shaped unimodal function becomes an almost flat line.
+
+#### Climate breadth 
+
+```{r climate_tauSp,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-climBreadth
+#| fig-width: 8.5
+#| fig-height: 6
+#| fig-cap: "Annual mean temperature and annual precipitation effect size across growth (green) and survival (yellow) vital rates. The higher the value the stronger is the negative effect of climate when moving from the optimal climate."
+
+pars_growth |>
+  mutate(temp_growth = tau_temp,
+          prec_growth = tau_prec) |>
+  group_by(species_id) |>
+  mutate(iter = 1:n()) |>
+  select(species_id, iter, contains('growth')) |>
+  ungroup() |>
+  left_join(
+    pars_survival |>
+      mutate(temp_survival = tau_temp,
+            prec_survival = tau_prec) |>
+      group_by(species_id) |>
+      mutate(iter = 1:n()) |>
+      select(species_id, iter, contains('survival')) |>
+      ungroup()
+  ) |>
+  pivot_longer(
+    cols = c(contains('temp_'), contains('prec_')),
+    names_to = c('clim', 'vr'),
+    names_sep = '_'
+  ) |>
+  left_join(
+    spIds,
+    by = c('species_id' = 'species_id_old')
+  ) |>
+  mutate(
+    clim = case_match(
+      clim,
+      "temp" ~ "Annual mean temperature",
+      "prec" ~ "Annual precipitation"
+    )
+  ) |>
+  ggplot() +
+  aes(value, fct_reorder(species_name, value)) +
+  aes(color = vr) +
+  facet_wrap(~clim) +
+  stat_pointinterval() +
+  theme_classic() +
+  scale_color_manual(
+    values = c('#5ab4ac', '#d8b365')
+  ) +
+  xlab(expression(tau^-1)) +
+  ylab('') +
+  theme(axis.text.y = element_text(face = "italic")) +
+  labs(color = 'Vital rate')
+```
+
+
+```{r climate_tauSumm,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-climBreadthSumm
+#| fig-width: 6.5
+#| fig-height: 5
+#| fig-cap: "Annual mean temperature and annual precipitation effect size across growth (green) and survival (yellow) vital rates. The higher the value the stronger is the negative effect of climate when moving from the optimal climate."
+
+pars_growth |>
+  mutate(temp_growth = tau_temp,
+          prec_growth = tau_prec) |>
+  group_by(species_id) |>
+  mutate(iter = 1:n()) |>
+  select(species_id, iter, contains('growth')) |>
+  ungroup() |>
+  left_join(
+    pars_survival |>
+      mutate(temp_survival = tau_temp,
+            prec_survival = tau_prec) |>
+      group_by(species_id) |>
+      mutate(iter = 1:n()) |>
+      select(species_id, iter, contains('survival')) |>
+      ungroup()
+  ) |>
+  pivot_longer(
+    cols = c(contains('temp_'), contains('prec_')),
+    names_to = c('clim', 'vr'),
+    names_sep = '_'
+  ) |>
+  left_join(
+    spIds,
+    by = c('species_id' = 'species_id_old')
+  ) |>
+  mutate(
+    clim = case_match(
+      clim,
+      "temp" ~ "Annual mean temperature",
+      "prec" ~ "Annual precipitation"
+    )
+  ) |>
+  ggplot() +
+  aes(vr, value) +
+  aes(fill = clim) +
+  geom_boxplot(alpha = 0.8) +
+  theme_classic() +
+  # scale_color_manual(
+  #   values = c('#5ab4ac', '#d8b365')
+  # ) +
+  ylab(expression(tau^-1)) +
+  xlab('') +
+  theme(axis.text.y = element_text(face = "italic")) +
+  labs(color = 'Climate')
+```
+
+
+#### Climate breadth vs optimal climate
+
+We have seen with @fig-matDist and @fig-mapDist that the optimal temperature and precipitation are usually at the border of the distribution. 
+In @fig-optClimVsTau we plot the correlation between the optimal climate's position in relation to its distribution (0 representing the lower limit and 1 indicating the upper limit) and the climate breadth parameter.
+
+```{r climate_tauvsRangeSize,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-optClimVsTau
+#| fig-width: 6.5
+#| fig-height: 5
+#| fig-cap: "Climate breadth in function of mean optimal climate relative to the species climate range in which 0 means lower climate limit and 1 means upper climate limit."
+
+treeData |>
+  # mutate(
+  #   bio_01_mean_nat = unscaleClim(bio_01_mean_scl, 'temp'),
+  #   bio_12_mean_nat = unscaleClim(bio_12_mean_scl, 'prec')
+  # ) |>
+  group_by(species_id) |>
+  reframe(
+    max_temp = quantile(bio_01_mean_scl, 1, na.rm = TRUE),
+    min_temp = quantile(bio_01_mean_scl, 0, na.rm = TRUE),
+    max_prec = quantile(bio_12_mean_scl, 1, na.rm = TRUE),
+    min_prec = quantile(bio_12_mean_scl, 0, na.rm = TRUE)
+  ) ->
+sp_range
+
+pars_growth |>
+  bind_cols(vr = 'growth') |>
+  bind_rows(
+    pars_survival |>
+      bind_cols(vr = 'survival')
+  ) |>
+  left_join(sp_range) |>
+  mutate(
+    optimal_temp_scl = (optimal_temp - min_temp)/(max_temp - min_temp),
+    optimal_prec_scl = (optimal_prec - min_prec)/(max_prec - min_prec)
+  ) |>
+  group_by(species_id, vr) |>
+  reframe(
+    temp = mean(optimal_temp_scl),
+    prec = mean(optimal_prec_scl)
+  ) |>
+  pivot_longer(
+    cols = !c(species_id, vr),
+    names_to = 'clim',
+    values_to = 'clim_value'
+  ) ->
+meanOptimalClim_scl
+
+
+pars_growth |>
+  group_by(species_id) |>
+  mutate(
+    iter = 1:n(),
+    temp_growth = tau_temp,
+    prec_growth = tau_prec
+  ) |>
+  ungroup() |>
+  select(species_id, iter, temp_growth, prec_growth) |>
+  left_join(
+    pars_survival |>
+      group_by(species_id) |>
+      mutate(
+        iter = 1:n(),
+        temp_survival = tau_temp,
+        prec_survival = tau_prec
+      ) |>
+      ungroup() |>
+      select(species_id, iter, temp_survival, prec_survival)
+  ) |> 
+  pivot_longer(
+    cols = c(contains('temp'), contains('prec')),
+    names_to = c('clim', 'vr'),
+    names_sep = '_'
+  ) |>
+  left_join(meanOptimalClim_scl) |>
+  left_join(
+    spIds,
+    by = c('species_id' = 'species_id_old')
+  ) |>
+  mutate(
+    clim = case_match(clim, 'temp' ~ 'Annual mean temperature',
+                            'prec' ~ 'Annual precipitation')
+  ) |>
+  ggplot() +
+  aes(x = clim_value, y = value) +
+  aes(color = vr) +
+  facet_wrap(~clim) +
+  stat_pointinterval() +
+  scale_color_manual(
+    values = c('#5ab4ac', '#d8b365')
+  ) +
+  geom_smooth(method = 'lm') +
+  theme_classic() +
+  xlab('Mean pptimal climate relative to species range') +
+  ylab(expression( tau^-1)) +
+  labs(color = 'Vital rate') +
+  theme(legend.position = 'top')
+```
+
+
+#### Climate breadth vs observed climate range size
+
+In @fig-climRangeVsTau we plot the climate range size of a species with its climate breadth.
+
+```{r climate_tauvsRangeSize,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-climRangeVsTau
+#| fig-width: 6.5
+#| fig-height: 5
+#| fig-cap: "Climate breadth in function of climate range size. The higher the climate range size, the more climate conditions the species experienced."
+
+# function to get range distribution from quantile extremes
+get_climateRange <- function(
+  var,
+  prob_min = 0.01,
+  prob_max = 0.99,
+  narm = TRUE
+){
+  min_max = quantile(var, probs = c(prob_min, prob_max), na.rm = narm)
+  return( min_max[2] - min_max[1] )
+}
+
+treeData |>
+  # mutate(
+  #   bio_01_mean_nat = unscaleClim(bio_01_mean_scl, 'temp'),
+  #   bio_12_mean_nat = unscaleClim(bio_12_mean_scl, 'prec')
+  # ) |>
+  group_by(species_id) |>
+  summarise(
+    across(contains('_scl'), get_climateRange)
+  ) |>
+  rename(
+    temp = bio_01_mean_scl,
+    prec = bio_12_mean_scl
+  ) |>
+  pivot_longer(
+    cols = c(temp, prec),
+    names_to = 'clim',
+    values_to = 'clim_val'
+  ) ->
+sp_range
+
+pars_growth |>
+  group_by(species_id) |>
+  mutate(
+    iter = 1:n(),
+    temp_growth = tau_temp,
+    prec_growth = tau_prec
+  ) |>
+  ungroup() |>
+  select(species_id, iter, temp_growth, prec_growth) |>
+  left_join(
+    pars_survival |>
+      group_by(species_id) |>
+      mutate(
+        iter = 1:n(),
+        temp_survival = tau_temp,
+        prec_survival = tau_prec
+      ) |>
+      ungroup() |>
+      select(species_id, iter, temp_survival, prec_survival)
+  ) |> 
+  pivot_longer(
+    cols = c(contains('temp'), contains('prec')),
+    names_to = c('clim', 'vr'),
+    names_sep = '_'
+  ) |>
+  left_join(sp_range)  |>
+  left_join(
+    spIds,
+    by = c('species_id' = 'species_id_old')
+  ) |>
+  mutate(
+    clim = case_match(clim, 'temp' ~ 'Annual mean temperature',
+                            'prec' ~ 'Annual precipitation')
+  ) |>
+  ggplot() +
+  aes(clim_val, value) +
+  aes(color = vr) +
+  facet_wrap(~clim) +
+  # aes(tau_temp, fct_reorder(species_name, tau_temp)) +
+  stat_pointinterval(
+    # position = position_dodge(width = 0.2)
+  ) +
+  scale_color_manual(
+    values = c('#5ab4ac', '#d8b365')
+  ) +
+  geom_smooth(method = 'lm') +
+  theme_classic() +
+  xlab('Climate range') +
+  ylab(expression(tau^-1)) +
+  labs(color = 'Vital rate') +
+  theme(legend.position = 'top')
+```
+
+
+## Climate effect between the lower and upper climate range
+To have an integral understanding of the climate effect across the range of the species, we computed the effect size of each climate variable on each vital rate for both the minimum and maximum observed climate conditions.
+Effect size ranges from zero (no effect) to 1 (maximum negative effect).
+We defined the minimum and maximum climate conditions for each species separately using the 0.1 and 99% quantile probability distributions.
+In @fig-climEffectSize, we changed the signal of the lower minimum condition to negative to better visualize both lower and upper ranges, but consider the absolute value.
+
+```{r climate_prepareRangePerform,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+
+treeData |>
+  group_by(species_id) |>
+  summarise(
+    temp_max = quantile(bio_01_mean_scl, prob = 0.99, na.rm = TRUE),
+    temp_min = quantile(bio_01_mean_scl, prob = 0.01, na.rm = TRUE),
+    prec_max = quantile(bio_12_mean_scl, prob = 0.99, na.rm = TRUE),
+    prec_min = quantile(bio_12_mean_scl, prob = 0.01, na.rm = TRUE)
+  ) ->
+sp_range
+
+# climate effect:
+# 0 means no effect of climate
+# 1 means that vital rate was reduced to zero at this climate
+clim_effect <- function(x_pos, optimal, tau)
+  return( 1 - exp(-tau * (x_pos - optimal)^2) )
+
+pars_growth |>
+  group_by(species_id) |>
+  mutate(iter = row_number()) |>
+  ungroup() |>
+  left_join(sp_range) |>
+  mutate(
+    across(contains('temp_'), ~ clim_effect(.x, optimal_temp, tau_temp)),
+    across(contains('prec_'), ~ clim_effect(.x, optimal_prec, tau_prec))
+  ) |>
+  select(species_id, contains('temp_'), contains('prec_')) ->
+growth_borderEffect
+
+pars_survival |>
+  group_by(species_id) |>
+  mutate(iter = row_number()) |>
+  ungroup() |>
+  left_join(sp_range) |>
+  mutate(
+    across(contains('temp_'), ~ clim_effect(.x, optimal_temp, tau_temp)),
+    across(contains('prec_'), ~ clim_effect(.x, optimal_prec, tau_prec))
+  ) |>
+  select(species_id, contains('temp_'), contains('prec_')) ->
+survival_borderEffect
+
+```
+
+```{r climate_figBorderGrowthMortality,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-climEffectSize
+#| fig-width: 9
+#| fig-height: 10
+#| fig-cap: "Annual mean temperature and annual precipitation effect size on growth and survival vital rates between the minimum and maximum observed climate condition. Note that the effect size ranges from 0 (no effect) to 1 (maximum negative effect), and the effect at the lower climate condition were converted to negative for visual clarity."
+
+# fig overall performance across climate and vital rates
+growth_borderEffect |>
+  pivot_longer(
+    cols = !species_id,
+    names_to = c('clim', 'range'),
+    names_sep = '_'
+  ) |> 
+  bind_cols(vr = 'growth') |>
+  bind_rows(
+    survival_borderEffect |>
+      pivot_longer(
+        cols = !species_id,
+        names_to = c('clim', 'range'),
+        names_sep = '_'
+      ) |> 
+      bind_cols(vr = 'survival')
+  ) |>
+  left_join(
+    spIds,
+    by = c('species_id' = 'species_id_old')
+  ) |>
+  mutate(
+    value = ifelse(range == 'min', -value, value),
+    range = case_match(
+      range,
+      'max' ~ 'Upper',
+      'min' ~ 'Lower'
+    ),
+    clim = case_match(
+      clim,
+      'temp' ~ 'Temperature',
+      'prec' ~ 'Precipitation'
+    )
+  ) |>
+  ggplot() +
+  aes(value, species_name) +
+  aes(color = as.factor(range)) +
+  facet_wrap(~vr+clim) +
+  stat_pointinterval() +
+  theme_classic() +
+  scale_color_manual(
+    values = c('#fc8d59', '#91bfdb')
+  ) +
+  geom_vline(xintercept = 0, alpha = 0.8) +
+  theme(
+    axis.text.y = element_text(face = "italic"),
+  ) +
+  xlab('Effect size between lower (left) and upper (rigth) climate range') +
+  ylab('') +
+  labs(color = 'Climate\nrange position')
+```
+
+```{r climate_figBorderGrowthMortalitySumm,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-climEffectSizeSunn
+#| fig-width: 6.5
+#| fig-height: 5
+#| fig-cap: "Summary between the species of the climate effect size on growth and survival between the minimum and maximum observed climate condition."
+
+growth_borderEffect |>
+  pivot_longer(
+    cols = !species_id,
+    names_to = c('clim', 'range'),
+    names_sep = '_'
+  ) |> 
+  bind_cols(vr = 'growth') |>
+  bind_rows(
+    survival_borderEffect |>
+      pivot_longer(
+        cols = !species_id,
+        names_to = c('clim', 'range'),
+        names_sep = '_'
+      ) |> 
+      bind_cols(vr = 'survival')
+  ) |>
+  mutate(
+    clim = case_match(clim, 'temp' ~ 'Annual mean temperature', 'prec' ~ 'Annual precipitation'),
+    range = case_match(range, 'max' ~ 'Upper limit', 'min' ~ 'Lower limit')
+  ) |>
+  ggplot() +
+  aes(range, -value) +
+  aes(fill = vr) +
+  facet_wrap(~clim) +
+  geom_boxplot() +
+  scale_fill_manual(
+    values = c('#5ab4ac', '#d8b365')
+  ) +
+  theme_classic() +
+  geom_hline(yintercept = 0, alpha = 0.8) +
+  xlab('') +
+  ylab('Effect size at climate ranges') +
+  labs(fill = 'Vital rate')
+```
+
+In @fig-latVsEffect we compare the climate effect at the lower observed range with the average latitude distribution among all observations of the species.
+We have tested multiple combinations of lower/upper and temperature/precipitation and this was the one there was a clear pattern: species that are more distributed towards the poles are the ones in which its growth rate is more affected by temperature at the lower border.
+
+```{r climate_effctSizeRangeSize2,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-latVsEffect
+#| fig-width: 8
+#| fig-height: 5
+#| fig-cap: "Effect size of annual mean temperature at lower observed range in function of the median latitudinal position of species."
+
+survival_borderEffect |>
+  pivot_longer(
+    cols = !species_id,
+    names_to = c('clim', 'range'),
+    names_sep = '_'
+  ) |>
+  filter(clim == 'temp' & range == 'min') |>
+  group_by(species_id) |>
+  reframe(value = mean(value)) |>
+  left_join(
+    treeData |>
+      filter(!is.na(latitude)) |>
+      group_by(species_id) |>
+      reframe(
+        temp = median(latitude)
+      )
+  ) |>
+  bind_cols(vr = 'survival') |>
+  bind_rows(
+    growth_borderEffect |>
+      pivot_longer(
+        cols = !species_id,
+        names_to = c('clim', 'range'),
+        names_sep = '_'
+      ) |>
+      filter(clim == 'temp' & range == 'min') |>
+      group_by(species_id) |>
+      reframe(value = mean(value)) |>
+      left_join(
+        treeData |>
+          filter(!is.na(latitude)) |>
+          group_by(species_id) |>
+          reframe(
+            temp = median(latitude)
+          )
+      ) |>
+      bind_cols(vr = 'growth')
+  ) |>
+  left_join(
+    spIds,
+    by = c('species_id' = 'species_id_old')
+  ) ->
+parsGrowthSurv_mean
+
+survival_borderEffect |>
+  pivot_longer(
+    cols = !species_id,
+    names_to = c('clim', 'range'),
+    names_sep = '_'
+  ) |>
+  bind_cols(vr = 'survival') |>
+  bind_rows(
+    growth_borderEffect |>
+      pivot_longer(
+        cols = !species_id,
+        names_to = c('clim', 'range'),
+        names_sep = '_'
+      ) |>
+      bind_cols(vr = 'growth')
+  ) |>
+  filter(clim == 'temp' & range == 'min') |>
+  left_join(
+    treeData |>
+      filter(!is.na(latitude)) |>
+      group_by(species_id) |>
+      reframe(
+        temp = median(latitude)
+      )
+  ) |>
+  left_join(
+    spIds,
+    by = c('species_id' = 'species_id_old')
+  ) |>
+  ggplot() +
+  aes(temp, value) +
+  facet_wrap(~vr) +
+  stat_pointinterval(alpha = 0.6) +
+  geom_text_repel(
+    data = parsGrowthSurv_mean,
+    aes(x = temp, y = value, label = species_name),
+    alpha = 0.8,
+    size = 2,
+    fontface = 'italic'
+  ) +
+  geom_smooth(method = 'lm') +
+  theme_classic() +
+  xlab('Median latitude position') +
+  ylab('Effect of annual mean temperature at lower range')
+```

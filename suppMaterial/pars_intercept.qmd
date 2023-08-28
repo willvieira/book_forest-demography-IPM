@@ -1,0 +1,397 @@
+# Intercept
+
+Distribution of intercept for the growth, survival, and recruitment models.
+
+```{r,include=FALSE,echo=FALSE}
+Echo=FALSE
+Eval=TRUE
+Cache=TRUE
+Warng=FALSE
+Msg=FALSE
+library(tidyverse)
+library(cmdstanr)
+library(posterior)
+library(ggdist)
+library(ggpubr)
+library(ggrepel)
+```
+
+
+```{r intercept_loadPars,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+
+# Using parameters from the `forest-IPM` repo
+spIds <- read_csv(
+  file.path(
+    '..', 'data', 'species_id.csv'
+  )
+) |>
+mutate(
+  shade = factor(shade, levels = c('tolerant', 'intermediate', 'intolerant')),
+  shade_sylvics = factor(shade_sylvics, levels = c('very-tolerant',
+                                            'tolerant',
+                                            'intermediate',
+                                            'intolerant',
+                                            'very-intolerant'
+                                            )),
+  succession = factor(succession, levels = c('pioneer',
+                                              'intermediate',
+                                              'climax'))
+) |>
+filter(sp_to_analyze)
+
+map_dfr(
+  spIds$species_id_old,
+  ~ read_csv(
+    paste0(
+      '../data/parameters/growth_', .x, '.csv'
+    ),
+    show_col_types = FALSE
+  ) |>
+  select(c(r, Lmax)) |>
+  bind_cols(species_id = .x)
+) ->
+pars_growth
+
+map_dfr(
+  spIds$species_id_old,
+  ~ read_csv(
+    paste0(
+      '../data/parameters/mort_', .x, '.csv'
+    ),
+    show_col_types = FALSE
+  ) |>
+  select('psi') |>
+  bind_cols(species_id = .x)
+) ->
+pars_mort
+
+map_dfr(
+  spIds$species_id_old,
+  ~ read_csv(
+    paste0(
+      '../data/parameters/rec_', .x, '.csv'
+    ),
+    show_col_types = FALSE
+  ) |>
+  select(c(mPop_log, p_log)) |>
+  bind_cols(species_id = .x)
+) ->
+pars_rec
+
+treeData <- readRDS(file.path('..', 'data', 'treeData.RDS')) |>
+  filter(species_id %in% spIds$species_id_old)
+
+```
+
+
+## Growth rate
+
+Because the growth rate intercepet decreases non-linearly with size and time derived from both the intrinsic growth rate $r$ and the maximum size $S_{max}$ parameters, we computed the average growth rate over a 10 years interval.
+Also, because the size of the individual is integrated in the Von Bertalanffy growth model, we computed the 10 years growth starting from the lower size boundery of 12.7 cm.
+
+```{r intcerpt_growth,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| fig-width: 8.5
+#| fig-height: 5.5
+#| fig-cap: "Intercept of the growth model using the 10 years average growth rate. Species are classified by their general growth trait following @burns1990silvics"
+
+pars_growth |>
+  mutate(
+    size_t0 = 127,
+    deltaTime = 10,
+    rPlotTime = exp(-exp(r) * deltaTime),
+    size_t1 = size_t0 * rPlotTime + Lmax * (1 - rPlotTime),
+    growth = (size_t1 - size_t0)/deltaTime
+  ) |>
+  left_join(
+    spIds,
+    by = c('species_id' = 'species_id_old')
+  ) |>
+  ggplot() +
+  aes(growth, fct_reorder(species_name, growth)) +
+  aes(color = growth_rate) +
+  stat_pointinterval() +
+  ylab('') +
+  xlab('10 years average growth rate (mm/year)') +
+  scale_color_manual(
+    values = c("#87bc45", "#edbf33", "#ea5545")
+  ) +
+  theme_classic() +
+  theme(
+    axis.text.y = element_text(face = "italic"),
+    legend.position = 'none'
+  ) ->
+p1
+
+pars_growth |>
+  mutate(
+    size_t0 = 127,
+    deltaTime = 10,
+    rPlotTime = exp(-exp(r) * deltaTime),
+    size_t1 = size_t0 * rPlotTime + Lmax * (1 - rPlotTime),
+    growth = (size_t1 - size_t0)/deltaTime
+  ) |>
+  left_join(
+    spIds,
+    by = c('species_id' = 'species_id_old')
+  ) |>
+  ggplot() +
+  aes(growth_rate, growth) +
+  aes(fill = growth_rate) +
+  geom_boxplot() +
+  scale_fill_manual(
+    values = c("#87bc45", "#edbf33", "#ea5545")
+    # values = c("#20bc45", "#87bc45", "#edbf33", "#ea5545", "#ba0000")
+  ) +
+  xlab('') +
+  ylab('10 years average growth rate (mm/year)') +
+  theme_classic() +
+  theme(legend.position = 'none') +
+  labs(fill = '') ->
+p2
+
+print(ggarrange(p1, p2, ncol = 2))
+```
+
+In the following figure we compare the maximum observed size in the literature with the maximum possible size parameter ($S_{max}$) where growth rate reaches zero.
+
+```{r intcerpt_maxObsLmax,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| fig-width: 6.5
+#| fig-height: 5
+#| fig-cap: "Correlation between maximum observed size in literature following @burns1990silvics and estimated parameter maximum size $S_{max}$"
+
+parsGrowth_mean <- pars_growth |>
+  group_by(species_id) |>
+  reframe(
+    Lmax = mean(Lmax),
+    r = mean(r)
+  ) |>
+  left_join(
+    spIds,
+    by = c('species_id' = 'species_id_old')
+  ) 
+
+pars_growth |>
+  left_join(
+    spIds,
+    by = c('species_id' = 'species_id_old')
+  ) |>
+  ggplot() +
+  aes(max_size/10, Lmax/10, group = species_id) +
+  # aes(color = shade_sylvics) +
+  stat_pointinterval(alpha = 0.4) +
+  geom_abline(slope = 1, intercept = 0, alpha = 0.3) +
+  geom_text_repel(
+    data = parsGrowth_mean,
+    aes(x = max_size/10, y = Lmax/10, label = species_name),
+    alpha = 0.8,
+    size = 2.6,
+    fontface = 'italic'
+  ) +
+  theme_classic() +
+  xlab('Maximum observed dbh (cm)') +
+  ylab('Maximum predicted dbh (cm)')
+```
+
+
+## Mortality probability
+
+Similar to the growth rate, the surival model has a temporal component in which survival probability decreases exponently with time.
+So we computed the 10 years average mortality probability as the intercept for the survival model.
+
+```{r intcerpt_survival,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| fig-width: 8.5
+#| fig-height: 5.5
+#| fig-cap: "Intercept of the survival model using a 10 years mortality probability. Species are classified by their shade tolerance trait following @burns1990silvics"
+
+pars_mort |>
+  mutate(psi = 1 - 1/(1+exp(-psi))^10) |>
+  left_join(
+    spIds,
+    by = c('species_id' = 'species_id_old')
+  ) |>
+  ggplot() +
+  aes(psi, fct_reorder(species_name, psi)) +
+  aes(color = shade_sylvics) +
+  stat_pointinterval() +
+  ylab('') +
+  xlab('10 years mortality probability') +
+  scale_color_manual(
+    # values = c("#87bc45", "#edbf33", "#ea5545")
+    values = c("#20bc45", "#87bc45", "#edbf33", "#ea5545", "#ba0000")
+  ) +
+  theme_classic() +
+  theme(
+    axis.text.y = element_text(face = "italic"),
+    legend.position = 'none'
+  ) ->
+p1
+
+pars_mort |>
+  mutate(psi = 1 - (1/(1+exp(-psi))^10)) |>
+  left_join(
+    spIds,
+    by = c('species_id' = 'species_id_old')
+  ) |>
+  ggplot() +
+  aes(shade_sylvics, psi, fill = shade_sylvics) +
+  geom_boxplot() +
+  scale_fill_manual(
+    # values = c("#87bc45", "#edbf33", "#ea5545")
+    values = c("#20bc45", "#87bc45", "#edbf33", "#ea5545", "#ba0000")
+  ) +
+  xlab('Shade tolerance') +
+  ylab('10 years mortality probability') +
+  theme_classic() +
+  theme(legend.position = 'none') +
+  labs(fill = '') ->
+p2
+
+ggarrange(p1, p2, ncol = 2)
+```
+
+
+```{r intcerpt_maxAgevsPsi,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| fig-width: 7.5
+#| fig-height: 5
+#| fig-cap: "Intercept of the survival model using a 10 years mortality probability. Species are classified by their shade tolerance trait following @burns1990silvics"
+
+parsMort_mean <- pars_mort |>
+  group_by(species_id) |>
+  reframe(psi = mean(psi)) |>
+  left_join(
+    spIds,
+    by = c('species_id' = 'species_id_old')
+  ) 
+
+pars_mort |>
+  left_join(
+    spIds,
+    by = c('species_id' = 'species_id_old')
+  ) |>
+  ggplot() +
+  aes(max_age, exp(psi), group = species_id) +
+  # aes(color = shade_sylvics) +
+  stat_pointinterval(alpha = 0.4) +
+  geom_abline(slope = 1, intercept = 0, alpha = 0.3) +
+  geom_text_repel(
+    data = parsMort_mean,
+    aes(x = max_age, y = exp(psi), label = species_name),
+    alpha = 0.8,
+    size = 2.6,
+    fontface = 'italic'
+  ) +
+  theme_classic() +
+  xlab('Maximum observed age') +
+  ylab('Maximum predicted age')
+```
+
+
+## Ingrowth rate
+
+The ingrowth model has two intercepet components: the annual ingrowth rate per m$^2$ $m$ and the annual survival probability $p$.
+For the second survival submodel we computed the 10 years survival probability of ingrowth individuals between measurement intervals.
+
+```{r intcerpt_ingrowth,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| fig-width: 8.5
+#| fig-height: 5.5
+#| fig-cap: "Intercept of the ingrwoth model for the number of individuals that ingress the population per year per m$^2$. Species are classified by their shade tolerance trait following @burns1990silvics"
+
+# Fig 3: m ingrowth in function of species and shade tolerance
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  pars_rec |>
+    filter(mPop_log < quantile(mPop_log, 0.975)) |>
+    left_join(
+      spIds,
+      by = c('species_id' = 'species_id_old')
+    ) |>
+    ggplot() +
+    aes(exp(mPop_log), fct_reorder(species_name, exp(mPop_log))) +
+    aes(color = succession) +
+    stat_pointinterval() +
+    ylab('') +
+    xlab('Annual ingrowth rate per m²') +
+    scale_color_manual(
+      values = c('#f7fcb9', '#addd8e', '#31a354')
+      # values = c("#87bc45", "#edbf33", "#ea5545")
+      # values = c("#20bc45", "#87bc45", "#edbf33", "#ea5545", "#ba0000")
+    ) +
+    theme_classic() +
+    theme(
+      axis.text.y = element_text(face = "italic"),
+      legend.position = 'none'
+    ) ->
+  p1
+
+  pars_rec |>
+    filter(mPop_log < quantile(mPop_log, 0.975)) |>
+    left_join(
+      spIds,
+      by = c('species_id' = 'species_id_old')
+    ) |>
+    ggplot() +
+    aes(succession, exp(mPop_log), fill = succession) +
+    geom_boxplot() +
+    scale_fill_manual(
+      values = c('#f7fcb9', '#addd8e', '#31a354')
+      # values = c("#87bc45", "#edbf33", "#ea5545")
+      # values = c("#20bc45", "#87bc45", "#edbf33", "#ea5545", "#ba0000")
+    ) +
+    xlab('') +
+    ylab('Annual ingrowth rate per m²') +
+    theme_classic() +
+    theme(legend.position = 'none') ->
+  p2
+
+  ggarrange(p1, p2, ncol = 2)
+```
+
+
+```{r intcerpt_ingP,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| fig-width: 8.5
+#| fig-height: 5.5
+#| fig-cap: "Intercept of the annual survival probability for the ingrwoth model. Species are classified by their shade tolerance trait following @burns1990silvics"
+
+pars_rec |>
+  mutate(p = exp(-exp(p_log))^10) |>
+  left_join(
+    spIds,
+    by = c('species_id' = 'species_id_old')
+  ) |>
+  ggplot() +
+  aes(p, fct_reorder(species_name, p)) +
+  aes(color = shade_sylvics) +
+  stat_pointinterval() +
+  ylab('') +
+  xlab('10 years survival probability') +
+  scale_color_manual(
+    # values = c("#87bc45", "#edbf33", "#ea5545")
+    values = c("#20bc45", "#87bc45", "#edbf33", "#ea5545", "#ba0000")
+  ) +
+  theme_classic() +
+  theme(
+    axis.text.y = element_text(face = "italic"),
+    legend.position = 'none'
+  ) ->
+p1
+
+pars_rec |>
+  left_join(
+    spIds,
+    by = c('species_id' = 'species_id_old')
+  ) |>
+  ggplot() +
+  aes(shade_sylvics, exp(-exp(p_log))^10) +
+  aes(fill = shade_sylvics) +
+  geom_boxplot() +
+  scale_fill_manual(
+    # values = c("#87bc45", "#edbf33", "#ea5545")
+    values = c("#20bc45", "#87bc45", "#edbf33", "#ea5545", "#ba0000")
+  ) +
+  ylab('10 years survival probability') +
+  xlab('') +
+  theme_classic() +
+  theme(legend.position = 'none') ->
+p2
+
+ggarrange(p1, p2, ncol = 2)
+```
