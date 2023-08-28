@@ -102,6 +102,10 @@ pars_growth |>
     size_t1 = size_t0 * rPlotTime + Lmax * (1 - rPlotTime),
     growth = (size_t1 - size_t0)/deltaTime
   ) |>
+  # # This is the formula for the intercept (growth at zero close to zero)
+  # mutate(
+  #   Int = Lmax * exp(-exp(r))
+  # ) |>
   left_join(
     spIds,
     by = c('species_id' = 'species_id_old')
