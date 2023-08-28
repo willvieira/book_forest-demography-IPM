@@ -1,7 +1,7 @@
 # Competition effect {#sec-parsComp}
 
 In this section I discuss the competition effect on the growth, survival, and recruitment vital rates.
-For all vital rates, competition for ligth increases linearly with density at the plot level following a general $\beta$ parameter meaning the density dependence effect.
+For all vital rates, competition for light increases linearly with density at the plot level following a general $\beta$ parameter meaning the density dependence effect.
 As we have the size measurement of each adult individual for the growth and survival models, we used the total basal area of individuals larger than the focal individual as a competition index.
 Furthermore, we split the total basal area effect between conspecific and heterospecific individuals larger than the focal individual.
 As the recruitment model does not have individual information, we simply used the total basal area of all alive adults.
