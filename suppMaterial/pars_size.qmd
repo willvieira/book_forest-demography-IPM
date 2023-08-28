@@ -1,0 +1,173 @@
+# Size effect {#sec-parsSize}
+
+In this section I discuss the size effect on both growth and survival vital rates.
+In the growth von Bertalanffy growth function, size is implicit in the model where the growth rate exponently decreases with size accroding to the parameter $r$, reaching zero when size reach $L_{\infty}$.
+So the size effect is the growth rate itself (Figure 1 in @sec-parsIntercept).
+In the survival, we used a log-normal function to capture the lower survival at small individuals and at very large individuals.
+This function is composed of an optimal size parameter where survival reach its peak, and a variance parameter defined how survival reduces when moving from the optimal to the extreme sizes.
+
+```{r,include=FALSE,echo=FALSE}
+Echo=FALSE
+Eval=TRUE
+Cache=TRUE
+Warng=FALSE
+Msg=FALSE
+library(tidyverse)
+library(cmdstanr)
+library(posterior)
+library(ggdist)
+library(ggpubr)
+library(ggrepel)
+```
+
+```{r size_loadPars,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+
+## Species if info
+spIds <- read_csv(
+  file.path(
+    '..', 'data', 'species_id.csv'
+  )
+) |>
+mutate(
+  shade = factor(shade, levels = c('tolerant', 'intermediate', 'intolerant')),
+  shade_sylvics = factor(shade_sylvics, levels = c('very-tolerant',
+                                            'tolerant',
+                                            'intermediate',
+                                            'intolerant',
+                                            'very-intolerant'
+                                            )),
+  succession = factor(succession, levels = c('pioneer',
+                                              'intermediate',
+                                              'climax'))
+) |>
+filter(sp_to_analyze)
+
+
+# Load parameters
+map_dfr(
+    spIds$species_id_old,
+    ~ read_csv(
+      paste0(
+        '../data/parameters/growth_', .x, '.csv'
+      ),
+      show_col_types = FALSE
+    ) |>
+    select(r, Lmax) |>
+    bind_cols(species_id = .x)
+  ) ->
+pars_growth
+
+map_dfr(
+    spIds$species_id_old,
+    ~ read_csv(
+      paste0(
+        '../data/parameters/mort_', .x, '.csv'
+      ),
+      show_col_types = FALSE
+    ) |>
+    select(size_opt, size_var) |>
+    bind_cols(species_id = .x)
+  ) ->
+pars_survival
+
+treeData <- readRDS(file.path('..', 'data', 'treeData.RDS')) |>
+  filter(species_id %in% spIds$species_id_old)
+```
+
+## Survival
+
+#### Optimal size
+
+The optimal size parameter for the survival vital rate represents the size in which survival reach its peak.
+In @fig-survOpt we show the posterior distribution of optimal size for survival across the 32 forest species along with the density distribution of observed size in the dataset.
+Species are ordered by the average observed size in dataset.
+The second panel shows how the optimal size for survival relates to the shade tolerance of the species, where the optimal survival size increases when species are more intolerant.
+
+```{r size_r,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-survOpt
+#| fig-width: 8.5
+#| fig-height: 5.5
+#| fig-cap: "Posterior distribution of the optimal size for the survival model is represented by the point interval. Gray density is the size distribution of all observations across space and time. Species are classified by their shade tolerance trait following @burns1990silvics"
+
+
+treeData |>
+  left_join(
+    spIds,
+    by = c('species_id' = 'species_id_old')
+  ) |>
+  filter(!is.na(dbh)) |>
+  group_by(species_id) |>
+  filter(dbh < quantile(dbh, .999)) |>
+  ungroup() |>
+  ggplot() +
+  aes(dbh/10, fct_reorder(species_name, dbh)) +
+  ggridges::geom_density_ridges2(color = NA, alpha = 0.5) +
+  stat_pointinterval(
+    data = pars_survival |>
+      left_join(
+        spIds,
+        by = c('species_id' = 'species_id_old')
+      ),
+      aes(size_opt/10, fct_reorder(species_name, size_opt))
+  ) +
+  theme_classic() +
+  xlab('Optimal size for survival (cm)') +
+  ylab('') +
+  theme(
+    axis.text.y = element_text(face = "italic")
+  ) ->
+p1
+
+
+pars_survival |>
+  left_join(
+    spIds,
+    by = c('species_id' = 'species_id_old')
+  ) |>
+  ggplot() +
+  aes(shade_sylvics, size_opt/10) +
+  aes(fill = shade_sylvics) +
+  geom_boxplot() +
+  scale_fill_manual(
+    # values = c("#87bc45", "#edbf33", "#ea5545")
+    values = c("#20bc45", "#87bc45", "#edbf33", "#ea5545", "#ba0000")
+  ) +
+  xlab('Shade tolerance') +
+  ylab('Optimal size for survival (cm)') +
+  theme_classic() +
+  theme(legend.position = 'none') +
+  labs(fill = '') ->
+p2
+
+ggarrange(p1, p2, ncol = 2)
+```
+
+
+#### Size variance
+
+The size variance parameter defines the shape of the log-normal function around the optimal size parameter.
+The larger the size variance, the closer to a flat line shape the log-normal becomes, meaning that survival is independent of size.
+
+
+```{r size_r,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-survSizeVar
+#| fig-width: 6.5
+#| fig-height: 5.5
+#| fig-cap: "Posterior distribution of the size variance parameter for the survival model."
+
+pars_survival |>
+  left_join(
+    spIds,
+    by = c('species_id' = 'species_id_old')
+  ) |>
+  ggplot() +
+  aes(size_var, fct_reorder(species_name, size_var)) +
+  stat_pointinterval() +
+  theme_classic() +
+  xlab('Size variance') +
+  ylab('') +
+  theme(
+    axis.text.y = element_text(face = "italic")
+  )
+```
+
