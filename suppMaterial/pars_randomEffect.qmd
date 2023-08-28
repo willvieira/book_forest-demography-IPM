@@ -1,0 +1,264 @@
+# Random effects {#sec-parsRandomEffects}
+
+In this section I discuss the plot random effects that affect the growth, survival, and recruitment intercepts.
+Random effects were used to control for unknown variances that are grouped within the plot level.
+For each vital rate and species, the variance among plots was defined by the parameter $\sigma^2_{plot}$ where random effects were generated with $N(0, \sigma^2_{plot})$.
+
+```{r,include=FALSE,echo=FALSE}
+Echo=FALSE
+Eval=TRUE
+Cache=TRUE
+Warng=FALSE
+Msg=FALSE
+library(tidyverse)
+library(cmdstanr)
+library(posterior)
+library(ggdist)
+library(ggpubr)
+library(ggrepel)
+```
+
+```{r re_loadPars,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+
+## Species if info
+spIds <- read_csv(
+  file.path(
+    '..', 'data', 'species_id.csv'
+  )
+) |>
+mutate(
+  shade = factor(shade, levels = c('tolerant', 'intermediate', 'intolerant')),
+  shade_sylvics = factor(shade_sylvics, levels = c('very-tolerant',
+                                            'tolerant',
+                                            'intermediate',
+                                            'intolerant',
+                                            'very-intolerant'
+                                            )),
+  succession = factor(succession, levels = c('pioneer',
+                                              'intermediate',
+                                              'climax'))
+) |>
+filter(sp_to_analyze)
+
+
+# Load parameters
+map_dfr(
+  spIds$species_id_old,
+  ~ read_csv(
+    paste0(
+      '../data/parameters/growth_', .x, '.csv'
+    ),
+    show_col_types = FALSE
+  ) |>
+  select(c(r, sigma_plot)) |>
+  bind_cols(species_id = .x)
+) ->
+pars_growth
+
+map_dfr(
+  spIds$species_id_old,
+  ~ read_csv(
+    paste0(
+      '../data/parameters/mort_', .x, '.csv'
+    ),
+    show_col_types = FALSE
+  ) |>
+  select(psi, sigma_plot) |>
+  bind_cols(species_id = .x)
+) ->
+pars_survival
+
+map_dfr(
+  spIds$species_id_old,
+  ~ read_csv(
+    paste0(
+      '../data/parameters/rec_', .x, '.csv'
+    ),
+    show_col_types = FALSE
+  ) |>
+  select(mPop_log, sigma_plot) |>
+  bind_cols(species_id = .x)
+) ->
+pars_rec
+
+pars_growth |>
+  select(species_id, sigma_plot) |>
+  bind_cols(vr = 'growth') |>
+  bind_rows(
+    pars_survival |>
+      select(species_id, sigma_plot) |>
+      bind_cols(vr = 'survival')
+  ) |>
+  bind_rows(
+    pars_rec |>
+      select(species_id, sigma_plot) |>
+      bind_cols(vr = 'recruitment')
+  ) ->
+pars_all
+
+treeData <- readRDS(file.path('..', 'data', 'treeData.RDS')) |>
+  filter(species_id %in% spIds$species_id_old)
+```
+
+## Variance among plots
+
+```{r re_sigma,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-reSigma
+#| fig-width: 8.5
+#| fig-height: 6
+#| fig-cap: "Posterior distribution of variance in plot random effects across species and vital rates."
+
+pars_all |>
+  left_join(
+    spIds,
+    by = c('species_id' = 'species_id_old')
+  ) |>
+  ggplot() +
+  aes(sigma_plot, fct_reorder(species_name, sigma_plot)) +
+  aes(fill = vr) +
+  ggridges::geom_density_ridges2(color = NA, alpha = 0.7) +
+  theme_classic() +
+  xlab(expression(sigma[plot]^2)) +
+  scale_fill_manual(
+    values = c('#5ab4ac', '#8856a7', '#d8b365')
+  ) +
+  ylab('') +
+  theme(axis.text.y = element_text(face = "italic")) +
+  labs(fill = 'Vital rate') +
+  theme(legend.position = 'none') ->
+p1
+
+pars_all |>
+  left_join(
+    spIds,
+    by = c('species_id' = 'species_id_old')
+  ) |>
+  ggplot() +
+  aes(vr, sigma_plot) +
+  aes(fill = vr) +
+  geom_boxplot() +
+  theme_classic() +
+  scale_fill_manual(
+    values = c('#5ab4ac', '#8856a7', '#d8b365')
+  ) +
+  theme(legend.position = 'none') +
+  xlab('') +
+  ylab(expression(sigma[plot]^2)) ->
+p2
+
+ggarrange(p1, p2, ncol = 2)
+
+```
+
+
+## Intercept + random effects
+
+To better understand how plots variation affect growth, survival, and recruitment, the following figures show the distribution of the intercept for each vital rate along with the distribution of a randomly generated offset for plots based on their $\sigma^2_{plot}$ parameters.
+
+
+#### Growth
+
+```{r re_intGrowth,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-intGrowth
+#| fig-width: 7
+#| fig-height: 6
+#| fig-cap: "Posterior distribution of the growth rate intercept (red) and intercept with plot random effects (blue). Plot random effects were randomly generated using a normal distribution with zero mean and the posterior distribution of the among plot variance."
+
+pars_growth |>
+  mutate(
+    re = rnorm(n(), mean = 0, sd = sigma_plot),
+    `Intercept +\nrandom effects` = r + re,
+    Intercept = r
+  ) |>
+  pivot_longer(cols = c(Intercept, `Intercept +\nrandom effects`)) |>
+  left_join(
+    spIds,
+    by = c('species_id' = 'species_id_old')
+  ) |>
+  ggplot() +
+  aes(value, fct_reorder(species_name, value)) + 
+  aes(color = name) +
+  stat_pointinterval(position = position_dodge(width = 0.75)) +
+  theme_classic() +
+  scale_color_manual(
+    values = c('#fc8d59', '#91bfdb')
+  ) +
+  theme(axis.text.y = element_text(face = "italic")) +
+  labs(
+    x = 'Growth rate (r)',
+    y = '',
+    color = ''
+  )
+```
+
+
+#### Survival
+
+```{r re_intSurv,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-intSurv
+#| fig-width: 7
+#| fig-height: 6
+#| fig-cap: "Posterior distribution of the survival intercept (red) and the intercept with plot random effects (blue). Plot random effects were randomly generated using a normal distribution with zero mean and the posterior distribution of the among plot variance."
+
+pars_survival |>
+  mutate(
+    re = rnorm(n(), mean = 0, sd = sigma_plot),
+    `Intercept +\nrandom effects` = psi + re,
+    Intercept = psi
+  ) |>
+  pivot_longer(cols = c(Intercept, `Intercept +\nrandom effects`)) |>
+  left_join(
+    spIds,
+    by = c('species_id' = 'species_id_old')
+  ) |>
+  ggplot() +
+  aes(value, fct_reorder(species_name, value)) + 
+  aes(color = name) +
+  stat_pointinterval(position = position_dodge(width = 0.75)) +
+  theme_classic() +
+  scale_color_manual(
+    values = c('#fc8d59', '#91bfdb')
+  ) +
+  theme(axis.text.y = element_text(face = "italic")) +
+  labs(
+    x = 'Longevity',
+    y = '',
+    color = ''
+  )
+```
+
+
+#### Recruitment
+
+```{r re_intRec,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-intRec
+#| fig-width: 7
+#| fig-height: 6
+#| fig-cap: "Posterior distribution of the survival intercept (red) and the intercept with plot random effects (blue). Plot random effects were randomly generated using a normal distribution with zero mean and the posterior distribution of the among plot variance."
+
+pars_rec |>
+  mutate(
+    re = rnorm(n(), mean = 0, sd = sigma_plot),
+    `Intercept +\nrandom effects` = mPop_log + re,
+    Intercept = mPop_log
+  ) |>
+  pivot_longer(cols = c(Intercept, `Intercept +\nrandom effects`)) |>
+  left_join(
+    spIds,
+    by = c('species_id' = 'species_id_old')
+  ) |>
+  ggplot() +
+  aes(value, fct_reorder(species_name, value)) + 
+  aes(color = name) +
+  stat_pointinterval(position = position_dodge(width = 0.75)) +
+  theme_classic() +
+  scale_color_manual(
+    values = c('#fc8d59', '#91bfdb')
+  ) +
+  theme(axis.text.y = element_text(face = "italic")) +
+  labs(
+    x = 'Ingrowth rate',
+    y = '',
+    color = ''
+  )
+```
