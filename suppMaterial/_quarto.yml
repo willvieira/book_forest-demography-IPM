@@ -19,7 +19,7 @@ book:
       chapters:
       - pars_intercept.qmd
       - pars_size.qmd
-      # - pars_competition.qmd
+      - pars_competition.qmd
       - pars_climate.qmd
       # - descript_demoModels.qmd
     - references.qmd

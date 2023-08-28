@@ -1,0 +1,358 @@
+# Competition effect {#sec-parsComp}
+
+In this section I discuss the competition effect on the growth, survival, and recruitment vital rates.
+For all vital rates, competition for ligth increases linearly with density at the plot level following a general $\beta$ parameter meaning the density dependence effect.
+As we have the size measurement of each adult individual for the growth and survival models, we used the total basal area of individuals larger than the focal individual as a competition index.
+Furthermore, we split the total basal area effect between conspecific and heterospecific individuals larger than the focal individual.
+As the recruitment model does not have individual information, we simply used the total basal area of all alive adults.
+
+```{r,include=FALSE,echo=FALSE}
+Echo=FALSE
+Eval=TRUE
+Cache=TRUE
+Warng=FALSE
+Msg=FALSE
+library(tidyverse)
+library(cmdstanr)
+library(posterior)
+library(ggdist)
+library(ggpubr)
+library(ggrepel)
+```
+
+```{r comp_loadPars,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+
+## Species if info
+spIds <- read_csv(
+  file.path(
+    '..', 'data', 'species_id.csv'
+  )
+) |>
+mutate(
+  shade = factor(shade, levels = c('tolerant', 'intermediate', 'intolerant')),
+  shade_sylvics = factor(shade_sylvics, levels = c('very-tolerant',
+                                            'tolerant',
+                                            'intermediate',
+                                            'intolerant',
+                                            'very-intolerant'
+                                            )),
+  succession = factor(succession, levels = c('pioneer',
+                                              'intermediate',
+                                              'climax'))
+) |>
+filter(sp_to_analyze)
+
+
+# Load parameters
+map_dfr(
+  spIds$species_id_old,
+  ~ read_csv(
+    paste0(
+      '../data/parameters/growth_', .x, '.csv'
+    ),
+    show_col_types = FALSE
+  ) |>
+  select(c(Beta, theta)) |>
+  bind_cols(species_id = .x)
+) ->
+pars_growth
+
+map_dfr(
+  spIds$species_id_old,
+  ~ read_csv(
+    paste0(
+      '../data/parameters/mort_', .x, '.csv'
+    ),
+    show_col_types = FALSE
+  ) |>
+  select(Beta, theta) |>
+  bind_cols(species_id = .x)
+) ->
+pars_survival
+
+map_dfr(
+  spIds$species_id_old,
+  ~ read_csv(
+    paste0(
+      '../data/parameters/rec_', .x, '.csv'
+    ),
+    show_col_types = FALSE
+  ) |>
+  select(beta_p, optimal_BA, sigma_BA) |>
+  bind_cols(species_id = .x)
+) ->
+pars_rec
+
+treeData <- readRDS(file.path('..', 'data', 'treeData.RDS')) |>
+  filter(species_id %in% spIds$species_id_old)
+```
+
+
+## Conspecific and heterospecific effect
+
+Using the basal area of conspecific and heterospecific larger individuals than the focal individual.
+
+#### Growth
+
+```{r comp_compGrowth,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-compGrowth
+#| fig-width: 8.5
+#| fig-height: 6
+#| fig-cap: "Posterior distribution of conspecific and heterospecific density dependence across species (left panel) and species shade tolerance (right panel). Species are classified by their general growth trait following @burns1990silvics"
+
+pars_growth |>
+  mutate(
+    Con = Beta,
+    Het = Beta * theta
+  ) |>
+  pivot_longer(cols = c(Con, Het)) |>
+  left_join(
+    spIds,
+    by = c('species_id' = 'species_id_old')
+  ) |>
+  ggplot() +
+  aes(value, fct_reorder(species_name, value)) +
+  aes(color = name) +
+  stat_pointinterval() +
+  geom_vline(xintercept = 0, alpha = 0.7) +
+  ylab('') +
+  xlab('Density dependence effect') +
+  # scale_color_manual(
+  #   values = c('#5ab4ac', '#d8b365')
+  # ) +
+  theme_classic() +
+  theme(
+    axis.text.y = element_text(face = "italic"),
+    legend.position = 'none'
+  ) +
+  labs(color = '') ->
+p1
+
+pars_growth |>
+  mutate(
+    Con = Beta,
+    Het = Beta * theta
+  ) |>
+  pivot_longer(cols = c(Con, Het)) |>
+  left_join(
+    spIds,
+    by = c('species_id' = 'species_id_old')
+  ) |>
+  mutate(
+    name = case_match(
+      name,
+      'Con' ~ 'Conspecific',
+      'Het' ~ 'Heterospecific'
+    )
+  ) |>
+  ggplot() +
+  aes(shade_sylvics, value) +
+  aes(fill = name) +
+  geom_boxplot() +
+  scale_color_manual(
+    values = c('#5ab4ac', '#d8b365')
+  ) +
+  xlab('') +
+  ylab('Density dependence effect') +
+  theme_classic() +
+  theme(legend.position = 'top') +
+  labs(fill = '') ->
+p2
+
+ggarrange(p1, p2, ncol = 2)
+```
+
+
+#### Survival
+
+```{r comp_compSurv,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-compSurvival
+#| fig-width: 8.5
+#| fig-height: 6
+#| fig-cap: "Posterior distribution of conspecific and heterospecific density dependence across species (left panel) and species shade tolerance (right panel). Species are classified by their general growth trait following @burns1990silvics"
+
+pars_survival |>
+  mutate(
+    Con = Beta,
+    Het = Beta * theta
+  ) |>
+  pivot_longer(cols = c(Con, Het)) |>
+  left_join(
+    spIds,
+    by = c('species_id' = 'species_id_old')
+  ) |>
+  ggplot() +
+  aes(value, fct_reorder(species_name, value)) +
+  aes(color = name) +
+  stat_pointinterval() +
+  geom_vline(xintercept = 0, alpha = 0.7) +
+  ylab('') +
+  xlab('Density dependence effect') +
+  # scale_color_manual(
+  #   values = c("#87bc45", "#edbf33", "#ea5545")
+  # ) +
+  theme_classic() +
+  theme(
+    axis.text.y = element_text(face = "italic"),
+    legend.position = 'none'
+  ) +
+  labs(color = '') ->
+p1
+
+
+pars_survival |>
+  mutate(
+    Con = Beta,
+    Het = Beta * theta
+  ) |>
+  pivot_longer(cols = c(Con, Het)) |>
+  left_join(
+    spIds,
+    by = c('species_id' = 'species_id_old')
+  ) |>
+  mutate(
+    name = case_match(
+      name,
+      'Con' ~ 'Conspecific',
+      'Het' ~ 'Heterospecific'
+    )
+  ) |>
+  ggplot() +
+  aes(shade_sylvics, value) +
+  aes(fill = name) +
+  geom_boxplot() +
+  # scale_fill_manual(
+  #   values = c("#87bc45", "#edbf33", "#ea5545")
+  #   # values = c("#20bc45", "#87bc45", "#edbf33", "#ea5545", "#ba0000")
+  # ) +
+  xlab('') +
+  ylab('Density dependence effect') +
+  theme_classic() +
+  theme(legend.position = 'top') +
+  labs(fill = '') ->
+p2
+
+ggarrange(p1, p2, ncol = 2)
+```
+
+
+#### Growth vs survival
+
+```{r comp_compGrowthVsSurv,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-compGrowthVsSurv
+#| fig-width: 8.5
+#| fig-height: 5
+#| fig-cap: "Conspecific and heterospecific density dependence between growth and survival."
+
+pars_growth |>
+  mutate(
+    Con_growth = Beta,
+    Het_growth = Beta * theta
+  ) |>
+  select(!c(Beta, theta)) |>
+  group_by(species_id) |>
+  mutate(iter = 1:n()) |>
+  left_join(
+    pars_survival |>
+      mutate(
+        Con_mort = Beta,
+        Het_mort = Beta * theta
+      ) |>
+      select(!c(Beta, theta)) |>
+      group_by(species_id) |>
+      mutate(iter = 1:n())
+  ) |>
+  pivot_longer(
+    cols = c(contains('Het_'), contains('Con_')),
+    names_to = c('comp', 'vr'),
+    names_sep = '_'
+  ) |>
+  mutate(
+    comp = case_match(
+      comp,
+      'Con' ~ 'Conspecific',
+      'Het' ~ 'Heterospecific'
+    )
+  ) |>
+  pivot_wider(
+    names_from = vr,
+    values_from = value
+  ) |>
+  left_join(
+    spIds,
+    by = c('species_id' = 'species_id_old')
+  ) |>
+  group_by(species_id, comp) |>
+  slice_sample(n = 1000) |>
+  ggplot() +
+  aes(growth, mort) +
+  # aes(color = shade_sylvics) +
+  facet_wrap(~comp, scales = 'free') +
+  geom_point(alpha = 0.1, size = 0.1) +
+  geom_abline(intercept = 0, slope = 1, alpha = 0.5) +
+  xlab('Growth density dependence') +
+  ylab('Survival density dependence') +
+  scale_color_manual(
+    # values = c("#87bc45", "#edbf33", "#ea5545")
+    values = c("#20bc45", "#87bc45", "#edbf33", "#ea5545", "#ba0000")
+  ) +
+  theme_classic() +
+  labs(color = '')
+```
+
+
+## Total basal area effect on recruitment survival
+
+```{r comp_compGrowthVsSurv,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-compRec
+#| fig-width: 8.5
+#| fig-height: 6
+#| fig-cap: "Posterior distribution of the density depndence parameter affecting annual survival rate of recruitment individuals."
+
+pars_rec |>
+  left_join(
+    spIds,
+    by = c('species_id' = 'species_id_old')
+  ) |>
+  ggplot() +
+  aes(-beta_p, fct_reorder(species_name, -beta_p)) +
+  # aes(color = ) +
+  stat_pointinterval() +
+  geom_vline(xintercept = 0, alpha = 0.7) +
+  ylab('') +
+  xlab('Density dependence effect') +
+  # scale_color_manual(
+  #   values = c("#87bc45", "#edbf33", "#ea5545")
+  # ) +
+  theme_classic() +
+  theme(
+    axis.text.y = element_text(face = "italic"),
+    legend.position = 'none'
+  ) +
+  labs(color = '') ->
+p1
+
+
+pars_rec |>
+  left_join(
+    spIds,
+    by = c('species_id' = 'species_id_old')
+  ) |>
+  ggplot() +
+  aes(shade_sylvics, -beta_p) +
+  aes(fill = shade_sylvics) +
+  geom_boxplot() +
+  scale_fill_manual(
+    # values = c("#87bc45", "#edbf33", "#ea5545")
+    values = c("#20bc45", "#87bc45", "#edbf33", "#ea5545", "#ba0000")
+  ) +
+  xlab('') +
+  ylab('Density dependence effect') +
+  theme_classic() +
+  theme(legend.position = 'none') +
+  labs(fill = '') ->
+p2
+
+ggarrange(p1, p2, ncol = 2)
+```
+s
