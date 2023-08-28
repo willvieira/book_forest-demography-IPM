@@ -1,4 +1,4 @@
-# Intercept
+# Intercept {#sec-parsIntercept}
 
 Distribution of intercept for the growth, survival, and recruitment models.
 

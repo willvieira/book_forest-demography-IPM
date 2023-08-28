@@ -1,4 +1,4 @@
-# Climate effect
+# Climate effect {#sec-parsClimate}
 
 In this section I discuss the climate effect on both growth and survival vital rates.
 We employ the bioclimatic variables of mean annual temperature (MAT) and annual precipitation (MAP), averaging these variables over specific time intervals spanning two measurement periods.
