@@ -332,18 +332,22 @@ For the second survival submodel we computed the 10 years survival probability o
       spIds,
       by = c('species_id' = 'species_id_old')
     ) |>
+    filter(!is.na(succession)) |>
     ggplot() +
-    aes(succession, exp(mPop_log), fill = succession) +
-    geom_boxplot() +
-    scale_fill_manual(
+    aes(log(sm), exp(mPop_log), color = succession) +
+    stat_pointinterval() +
+    scale_color_manual(
       values = c('#f7fcb9', '#addd8e', '#31a354')
       # values = c("#87bc45", "#edbf33", "#ea5545")
       # values = c("#20bc45", "#87bc45", "#edbf33", "#ea5545", "#ba0000")
     ) +
-    xlab('') +
-    ylab('Annual ingrowth rate per m²') +
     theme_classic() +
-    theme(legend.position = 'none') ->
+    labs(
+      x = 'Seed mass (ln g)',
+      y = 'Annual ingrowth rate per m²',
+      color = ''
+    ) +
+    theme(legend.position = 'top') ->
   p2
 
   ggarrange(p1, p2, ncol = 2)
