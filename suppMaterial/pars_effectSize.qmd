@@ -1,0 +1,713 @@
+# Effect size of covariates {#sec-effectSize}
+
+In this section, we quantify the relative effect size of each covariate (size, competition conspecific, competition heterospecific, temperature, and precipitation) on the vital rate intercepts.
+We concentrate on the maximum and minimum range (what we refer to below as 1% and 99% quantile) for each covariate-species combination.
+This is a kind of conditional effect at the extreme covariate ranges.
+We discuss the average condition effect across all observations in the following chapter (@sec-averageCondEffect).
+Specifically, we first compute the effect size at extreme range conditions for each covariate-species combination.
+Second, visualize the effect size at harsh conditions by selecting the strongest effect size between the maximum and minimum range condition for each covariate-species combination.
+Finally, we split each species-specific population into the lower, center, or upper range position following the latitude distribution of each plot ID, where the range is defined as plots having their latitude lower or upper than the 10% or 90% latitude quantile distribution, respectively.
+
+```{r,include=FALSE,echo=FALSE}
+Echo=FALSE
+Eval=TRUE
+Cache=TRUE
+Warng=FALSE
+Msg=FALSE
+library(tidyverse)
+library(cmdstanr)
+library(posterior)
+library(ggdist)
+library(ggpubr)
+library(ggrepel)
+```
+
+```{r re_loadPars,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+
+## Species if info
+spIds <- read_csv(
+  file.path(
+    '..', 'data', 'species_id.csv'
+  )
+) |>
+mutate(
+  shade = factor(shade, levels = c('tolerant', 'intermediate', 'intolerant')),
+  shade_sylvics = factor(shade_sylvics, levels = c('very-tolerant',
+                                            'tolerant',
+                                            'intermediate',
+                                            'intolerant',
+                                            'very-intolerant'
+                                            )),
+  succession = factor(succession, levels = c('pioneer',
+                                              'intermediate',
+                                              'climax'))
+) |>
+filter(sp_to_analyze)
+
+
+# Load parameters
+map_dfr(
+  spIds$species_id_old,
+  ~ read_csv(
+    paste0(
+      '../data/parameters/growth_', .x, '.csv'
+    ),
+    show_col_types = FALSE
+  ) |>
+  select(r, Lmax, c(contains('optimal'), contains('tau'), 'Beta', 'theta')) |>
+  bind_cols(species_id = .x)
+) ->
+pars_growth
+
+map_dfr(
+  spIds$species_id_old,
+  ~ read_csv(
+    paste0(
+      '../data/parameters/mort_', .x, '.csv'
+    ),
+    show_col_types = FALSE
+  ) |>
+  select(size_opt, size_var, c(contains('optimal'), contains('tau'), 'Beta', 'theta')) |>
+  bind_cols(species_id = .x)
+) ->
+pars_survival
+
+map_dfr(
+  spIds$species_id_old,
+  ~ read_csv(
+    paste0(
+      '../data/parameters/rec_', .x, '.csv'
+    ),
+    show_col_types = FALSE
+  ) |>
+  select(c(contains('_BA'), beta_p)) |>
+  bind_cols(species_id = .x)
+) ->
+pars_rec
+
+treeData <- readRDS(file.path('..', 'data', 'treeData.RDS')) |>
+  filter(species_id %in% spIds$species_id_old)
+```
+
+
+## Effect size at lower and upper covariate range
+
+#### Growth
+
+```{r effSz_growth,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-efszGrowth
+#| fig-width: 8.5
+#| fig-height: 6
+#| fig-cap: "Effect size of each covariate affecting growth at the lower (1% quantile) and upper (99% quantile) observed range of the covariate. Values close to zero mean that the covariate had no effect on the intercept of the species."
+
+myQuantile_f <- function(var, varName, probs, naRm = TRUE) {
+  qout_l = as.list(
+    quantile(var, probs = probs, na.rm = naRm)
+  )
+  # change names that will become col names
+  names(qout_l) <- paste0(varName, '_', gsub('%', '', names(qout_l)))
+  
+  return( qout_l )
+}
+
+probs_cov <- c(0.01, 0.99)
+treeData |>
+  group_by(species_id) |>
+  summarise(
+    bind_cols(myQuantile_f(dbh, 'size', probs_cov)),
+    bind_cols(myQuantile_f(bio_01_mean_scl, 'temp', probs_cov)),
+    bind_cols(myQuantile_f(bio_12_mean_scl, 'prec', probs_cov)),
+    bind_cols(myQuantile_f(BA_comp_sp, 'BAcon', probs_cov)),
+    bind_cols(myQuantile_f(BA_comp_intra, 'BAhet', probs_cov)),
+    bind_cols(myQuantile_f(BA_sp, 'tBAsp', probs_cov)),
+    bind_cols(myQuantile_f(BA_plot, 'tBA', probs_cov))
+  ) ->
+sp_range
+
+# Covariates effect
+# 0 means no effect of covariate
+# 1 means that vital rate was reduced to zero at the covariate value
+clim_effect <- function(x_pos, optimal, tau)
+  return( 1 - exp(-tau * (x_pos - optimal)^2) )
+
+BA_effect <- function(x_pos, bet, thet = 1)
+  return( 1 - exp(x_pos * bet * thet) )
+
+sizeGrowth_effect <- function(x_pos, r, Lmax) {
+  Intercept = Lmax * (1 - exp(-exp(r)))
+  return( 1 - ((Intercept + exp(-exp(r)) * x_pos - x_pos)/Intercept) )
+}
+
+pars_growth |>
+  group_by(species_id) |>
+  mutate(iter = row_number()) |>
+  ungroup() |>
+  left_join(sp_range) |>
+  mutate(
+    across(contains('size_'), ~ sizeGrowth_effect(.x, r, Lmax)),
+    across(contains('temp_'), ~ clim_effect(.x, optimal_temp, tau_temp)),
+    across(contains('prec_'), ~ clim_effect(.x, optimal_prec, tau_prec)),
+    across(contains('BAcon_'), ~ BA_effect(.x, Beta)),
+    across(contains('BAhet_'), ~ BA_effect(.x, Beta, theta))
+  ) |>
+  select(
+    species_id, iter,
+    contains('size_'),
+    contains('temp_'), contains('prec_'),
+    contains('BAcon_'), contains('BAhet_')
+  ) ->
+growht_borderEffect
+
+# fig effects on growth
+growht_borderEffect |> 
+  pivot_longer(
+      cols = !c(species_id, iter),
+      names_to = c('var', 'range'),
+      names_sep = '_'
+    ) |>
+    left_join(
+      spIds,
+      by = c('species_id' = 'species_id_old')
+    ) |>
+    mutate(range = paste0(range, '% quantile')) |>
+    # group_by(species_id, var) |>
+    # # between max and min variable extremes, keep only the strongest side
+    # filter(range == range[which.max(value)]) |>
+    ggplot() +
+    aes(value, species_name) +
+    aes(color = var) +
+    facet_wrap(~range) +
+    stat_pointinterval() +
+    theme_classic() +
+    geom_vline(xintercept = 0, alpha = 0.8) +
+    theme(axis.text.y = element_text(face = "italic")) +
+    labs(
+      x = 'Effect size',
+      y = '',
+      color = ''
+    )
+```
+
+```{r effSz_growth,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-efszGrowthSumm
+#| fig-width: 7.5
+#| fig-height: 5
+#| fig-cap: "Effect size of each covariate affecting growth at the lower (1% quantile) and upper (99% quantile) observed range of the covariate. Values close to zero mean that the covariate had no effect on the intercept of the species."
+
+growht_borderEffect |> 
+  pivot_longer(
+      cols = !c(species_id, iter),
+      names_to = c('var', 'range'),
+      names_sep = '_'
+    ) |>
+    mutate(
+      range = paste0(range, '% quantile'),
+      var = case_match(
+        var,
+        'size' ~ 'd.b.h.',
+        'temp' ~ 'temperature',
+        'prec' ~ 'precipitation',
+        'BAcon' ~ 'Basal area\nconspecific',
+        'BAhet' ~ 'Basal area\nheterospecific'
+      )
+    ) |>
+    ggplot() +
+    aes(var, value) +
+    aes(fill = range) +
+    geom_boxplot(alpha = 0.9) +
+    # stat_pointinterval(position = 'dodge') +
+    theme_classic() +
+    geom_vline(xintercept = 0, alpha = 0.8) +
+    xlab('')
+```
+
+#### Survival
+
+```{r effSz_growthSumm,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-efszSurvSumm
+#| fig-width: 7.5
+#| fig-height: 5
+#| fig-cap: "Effect size of each covariate affecting growth at the lower (1% quantile) and upper (99% quantile) observed range of the covariate. Values close to zero mean that the covariate had no effect on the intercept of the species."
+
+sizeSurv_effect <- function(x_pos, size_opt, size_var) {
+  return( 1 - (exp(-(log(x_pos/size_opt)/size_var)^2)) )
+}
+
+pars_survival |>
+  group_by(species_id) |>
+  mutate(iter = row_number()) |>
+  ungroup() |>
+  left_join(sp_range) |>
+  mutate(
+    across(contains('size_'), ~ sizeSurv_effect(.x, size_opt, size_var)),
+    across(contains('temp_'), ~ clim_effect(.x, optimal_temp, tau_temp)),
+    across(contains('prec_'), ~ clim_effect(.x, optimal_prec, tau_prec)),
+    across(contains('BAcon_'), ~ BA_effect(.x, Beta)),
+    across(contains('BAhet_'), ~ BA_effect(.x, Beta, theta))
+  ) |>
+  select(
+    species_id, iter,
+    matches('size_[0-9]'),
+    contains('temp_'), contains('prec_'),
+    contains('BAcon_'), contains('BAhet_')
+  ) ->
+survival_borderEffect
+
+# ig effects on survival
+survival_borderEffect |>
+  pivot_longer(
+      cols = !c(species_id, iter),
+      names_to = c('var', 'range'),
+      names_sep = '_'
+    ) |>
+    mutate(
+      range = paste0(range, '% quantile'),
+      var = case_match(
+        var,
+        'size' ~ 'd.b.h.',
+        'temp' ~ 'temperature',
+        'prec' ~ 'precipitation',
+        'BAcon' ~ 'Basal area\nconspecific',
+        'BAhet' ~ 'Basal area\nheterospecific'
+      )
+    ) |>
+    filter(value >= 0) |>
+    ggplot() +
+    aes(var, value) +
+    aes(fill = range) +
+    geom_boxplot(alpha = 0.9) +
+    # stat_pointinterval(position = 'dodge') +
+    theme_classic() +
+    geom_vline(xintercept = 0, alpha = 0.8) +
+    xlab('')
+```
+
+
+#### Recruitment
+
+```{r effSz_recSumm,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-efszRecSumm
+#| fig-width: 7.5
+#| fig-height: 5
+#| fig-cap: "Effect size of each covariate affecting growth at the lower (1% quantile) and upper (99% quantile) observed range of the covariate. Values close to zero mean that the covariate had no effect on the intercept of the species."
+
+BAsp_effect <- function(x_pos, optimal, sigma)
+  return( 1 - exp((-1/sigma^2) * (x_pos - optimal)^2) )
+
+pars_rec |>
+  group_by(species_id) |>
+  mutate(iter = row_number()) |>
+  ungroup() |>
+  left_join(sp_range) |>
+  mutate(
+    across(contains('BAsp_'), ~ BAsp_effect(.x, optimal_BA, sigma_BA)),
+    across(contains('tBA_'), ~ BA_effect(.x, -beta_p))
+  ) |>
+  select(
+    species_id, iter,
+    contains('BAsp_'), contains('tBA_')
+  ) ->
+rec_borderEffect
+
+rec_borderEffect |> 
+  pivot_longer(
+    cols = !c(species_id, iter),
+    names_to = c('var', 'range'),
+    names_sep = '_'
+  ) |>
+  mutate(
+    range = paste0(range, '% quantile'),
+    var = case_match(
+      var,
+      'tBAsp' ~ 'Total conspecific\nbasal area',
+      'tBA' ~ 'Total adult\nbasal area'
+    )
+  ) |>
+  ggplot() +
+  aes(var, value) +
+  aes(fill = range) +
+  geom_boxplot(alpha = 0.9) +
+  theme_classic() +
+  geom_vline(xintercept = 0, alpha = 0.8)
+```
+
+
+## Effect size at harsh condition
+
+
+```{r effSz_harshCond,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-efszHarshCond
+#| fig-width: 7.5
+#| fig-height: 5
+#| fig-cap: "Effect size of each covariate affecting growth at the lower (1% quantile) and upper (99% quantile) observed range of the covariate. Values close to zero mean that the covariate had no effect on the intercept of the species."
+
+growht_borderEffect |>
+  pivot_longer(
+    cols = !c(species_id, iter),
+    names_to = c('var', 'range'),
+    names_sep = '_'
+  ) |>
+  group_by(species_id, iter, var) |>
+  mutate(
+    harsh_cond = max(value)
+  ) |>
+  filter(value == harsh_cond) |>
+  ungroup() |>
+  select(!value) |>
+  bind_cols(vr = 'growth') |>
+  bind_rows(
+    survival_borderEffect |>
+      pivot_longer(
+        cols = !c(species_id, iter),
+        names_to = c('var', 'range'),
+        names_sep = '_'
+      ) |>
+      group_by(species_id, iter, var) |>
+      mutate(
+        harsh_cond = max(value)
+      ) |>
+      filter(value == harsh_cond) |>
+      ungroup() |>
+      select(!value) |>
+      bind_cols(vr = 'survival')
+  ) |>
+  bind_rows(
+    rec_borderEffect |>
+      pivot_longer(
+        cols = !c(species_id, iter),
+        names_to = c('var', 'range'),
+        names_sep = '_'
+      ) |>
+      group_by(species_id, iter, var) |>
+      mutate(
+        harsh_cond = max(value)
+      ) |>
+      filter(value == harsh_cond) |>
+      ungroup() |>
+      select(!value) |>
+      bind_cols(vr = 'recruitment')
+  ) |>
+  mutate(
+    var = case_match(
+      var,
+      'size' ~ 'd.b.h.',
+      'temp' ~ 'temperature',
+      'prec' ~ 'precipitation',
+      'BAcon' ~ 'Basal area\nconspecific',
+      'BAhet' ~ 'Basal area\nheterospecific',
+      'tBAsp' ~ 'Total conspecific\nbasal area',
+      'tBA' ~ 'Total adult\nbasal area'
+    )
+  ) |>
+  ggplot() +
+  aes(vr, harsh_cond) +
+  aes(fill = var) +
+  geom_boxplot() +
+  # stat_pointinterval(position = 'dodge') +
+  theme_classic() +
+  geom_hline(yintercept = 0, alpha = 0.8) +
+  xlab('') +
+  ylab('Effect size') +
+  labs(fill = '')
+```
+
+
+## Effect size at harsh condition grouped by range position
+
+```{r effSz_harshCondRangeData,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+
+# function to determine if a plot is at lower, center, or upper border
+# given how much of the tail we consider border (prob arg) [0-0.5]
+which_border <- function(lat, prob = 0.1, naRm = TRUE) {
+  lat_range = quantile(lat, probs = c(prob, 1 - prob), na.rm = naRm)
+  # output vector with 'center' class
+  out_pos = rep('c', length(lat))
+  # lower border
+  out_pos[lat < lat_range[1]] = 'l'
+  out_pos[lat > lat_range[2]] = 'u'
+  
+  return(out_pos)
+}
+
+# define border using the quantile distribution of plot only
+# It means that no abundance of indvidious within each plot is considered
+# For instance, when abundance is taken into account in quantile, lots of
+# defined "center" plots become "lower border" because of the lower abundance
+# of individuals in the lower region
+treeData |>
+  group_by(species_id, plot_id) |>
+  # filtering a single obs per plot to remove abundance effect
+  slice_head(n = 1) |>
+  group_by(species_id) |>
+  mutate(
+    border_cl = which_border(latitude, prob = 0.1)
+  ) |>
+  select(species_id, plot_id, border_cl) ->
+plotBorder_class
+
+quant_probs <- c(0.01, 0.99)
+
+treeData |>
+  left_join(plotBorder_class) |>
+  group_by(species_id, border_cl) |>
+  summarise(
+    bind_cols(myQuantile_f(dbh, 'size', quant_probs)),
+    bind_cols(myQuantile_f(bio_01_mean_scl, 'temp', quant_probs)),
+    bind_cols(myQuantile_f(bio_12_mean_scl, 'prec', quant_probs)),
+    bind_cols(myQuantile_f(BA_comp_sp, 'BAcon', quant_probs)),
+    bind_cols(myQuantile_f(BA_comp_intra, 'BAhet', quant_probs)),
+    bind_cols(myQuantile_f(BA_sp, 'tBAsp', quant_probs)),
+    bind_cols(myQuantile_f(BA_plot, 'tBA', quant_probs))
+  ) ->
+sp_range
+
+
+# climate effect:
+# 0 means no effect of climate
+# 1 means that vital rate was reduced to zero at this climate
+clim_effect <- function(x_pos, optimal, tau)
+  return( 1 - exp(-tau * (x_pos - optimal)^2) )
+
+BA_effect <- function(x_pos, bet, thet = 1)
+  return( 1 - exp(x_pos * bet * thet) )
+
+BAsp_effect <- function(x_pos, optimal, sigma)
+  return( 1 - exp((-1/sigma^2) * (x_pos - optimal)^2) )
+
+sizeGrowth_effect <- function(x_pos, r, Lmax) {
+  Intercept = Lmax * (1 - exp(-exp(r)))
+  return( 1 - ((Intercept + exp(-exp(r)) * x_pos - x_pos)/Intercept) )
+}
+
+sizeSurv_effect <- function(x_pos, size_opt, size_var) {
+  return( 1 - (exp(-(log(x_pos/size_opt)/size_var)^2)) )
+}
+
+
+pars_growth |>
+  group_by(species_id) |>
+  mutate(iter = row_number()) |>
+  group_by(species_id, iter) |>
+  expand_grid(border_cl = c('l', 'c', 'u')) |>
+  ungroup() |>
+  left_join(sp_range) |>
+  mutate(
+    across(contains('size_'), ~ sizeGrowth_effect(.x, r, Lmax)),
+    across(contains('temp_'), ~ clim_effect(.x, optimal_temp, tau_temp)),
+    across(contains('prec_'), ~ clim_effect(.x, optimal_prec, tau_prec)),
+    across(contains('BAcon_'), ~ BA_effect(.x, Beta)),
+    across(contains('BAhet_'), ~ BA_effect(.x, Beta, theta))
+  ) |>
+  select(
+    species_id, iter, border_cl,
+    matches('size_[0-9]'),
+    contains('prec_'), contains('temp_'),
+    contains('BAcon_'), contains('BAhet_')
+  ) ->
+growth_effect
+
+pars_survival |>
+  group_by(species_id) |>
+  mutate(iter = row_number()) |>
+  group_by(species_id, iter) |>
+  expand_grid(border_cl = c('l', 'c', 'u')) |>
+  ungroup() |>
+  left_join(sp_range) |>
+  mutate(
+    across(contains('size_'), ~ sizeSurv_effect(.x, size_opt, size_var)),
+    across(contains('temp_'), ~ clim_effect(.x, optimal_temp, tau_temp)),
+    across(contains('prec_'), ~ clim_effect(.x, optimal_prec, tau_prec)),
+    across(contains('BAcon_'), ~ BA_effect(.x, Beta)),
+    across(contains('BAhet_'), ~ BA_effect(.x, Beta, theta))
+  ) |>
+  select(
+    species_id, iter, border_cl,
+    contains('prec_'), contains('temp_'),
+    contains('BAcon_'), contains('BAhet_')
+  ) ->
+survival_effect
+
+pars_rec |>
+  group_by(species_id) |>
+  mutate(iter = row_number()) |>
+  group_by(species_id, iter) |>
+  expand_grid(border_cl = c('l', 'c', 'u')) |>
+  ungroup() |>
+  left_join(sp_range) |>
+  mutate(
+    across(contains('BAsp_'), ~ BAsp_effect(.x, optimal_BA, sigma_BA)),
+    across(contains('tBA_'), ~ BA_effect(.x, -beta_p))
+  ) |>
+  select(
+    species_id, iter, border_cl,
+    contains('BAsp_'), contains('tBA_')
+  ) ->
+rec_effect
+
+# merge the mort, growth, and rec vital rates
+growth_effect |>
+  pivot_longer(
+    cols = !c(species_id, iter, border_cl),
+    names_to = c('var', 'range'),
+    names_sep = '_'
+  ) |> 
+  bind_cols(vr = 'growth') |>
+  bind_rows(
+    survival_effect |>
+      pivot_longer(
+        cols = !c(species_id, iter, border_cl),
+        names_to = c('var', 'range'),
+        names_sep = '_'
+      ) |> 
+      bind_cols(vr = 'survival')
+  ) |>
+  bind_rows(
+    rec_effect |>
+      pivot_longer(
+        cols = !c(species_id, iter, border_cl),
+        names_to = c('var', 'range'),
+        names_sep = '_'
+      ) |> 
+      bind_cols(vr = 'recruitment')
+  ) |>
+  group_by(species_id, iter, border_cl, vr, var) |>
+  mutate(
+    harsh_eff = max(value),
+  ) |>
+  filter(harsh_eff == value) |>
+  select(!value) ->
+all_effect
+```
+
+
+#### Growth
+
+```{r effSz_harshCondRangeFigG,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-efszHarshCondRangeGrowth
+#| fig-width: 6.5
+#| fig-height: 5
+#| fig-cap: "Effect size of each covariate affecting growth at the lower (1% quantile) and upper (99% quantile) observed range of the covariate. Values close to zero mean that the covariate had no effect on the intercept of the species."
+
+# figures
+all_effect |>
+  filter(vr == 'growth') |>
+  ungroup() |>
+  mutate(
+    var = case_match(
+      var,
+      'size' ~ 'd.b.h.',
+      'temp' ~ 'temperature',
+      'prec' ~ 'precipitation',
+      'BAcon' ~ 'Basal area\nconspecific',
+      'BAhet' ~ 'Basal area\nheterospecific',
+      'tBAsp' ~ 'Total conspecific\nbasal area',
+      'tBA' ~ 'Total adult\nbasal area'
+    ),
+    border_cl = case_match(
+      border_cl,
+      'l' ~ 'lower border',
+      'c' ~ 'center',
+      'u' ~ 'upper border'
+    ),
+    border_cl = factor(border_cl, levels = c('lower border', 'center', 'upper border'))
+  ) |>
+  ggplot() +
+  aes(var, -harsh_eff) +
+  aes(fill = border_cl) +
+  # facet_wrap(~vr) +
+  geom_boxplot() +
+  theme_classic() +
+  geom_hline(yintercept = 0, alpha = 0.8) +
+  xlab('') +
+  ylab('Effect size') +
+  labs(fill = '')
+```
+
+#### Survival
+
+```{r effSz_harshCondRangeFigS,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-efszHarshCondRangeSurv
+#| fig-width: 6.5
+#| fig-height: 5
+#| fig-cap: "Effect size of each covariate affecting growth at the lower (1% quantile) and upper (99% quantile) observed range of the covariate. Values close to zero mean that the covariate had no effect on the intercept of the species."
+
+# figures
+all_effect |>
+  filter(vr == 'survival') |>
+  ungroup() |>
+  mutate(
+    var = case_match(
+      var,
+      'size' ~ 'd.b.h.',
+      'temp' ~ 'temperature',
+      'prec' ~ 'precipitation',
+      'BAcon' ~ 'Basal area\nconspecific',
+      'BAhet' ~ 'Basal area\nheterospecific',
+      'tBAsp' ~ 'Total conspecific\nbasal area',
+      'tBA' ~ 'Total adult\nbasal area'
+    ),
+    border_cl = case_match(
+      border_cl,
+      'l' ~ 'lower border',
+      'c' ~ 'center',
+      'u' ~ 'upper border'
+    ),
+    border_cl = factor(border_cl, levels = c('lower border', 'center', 'upper border'))
+  ) |>
+  ggplot() +
+  aes(var, -harsh_eff) +
+  aes(fill = border_cl) +
+  # facet_wrap(~vr) +
+  geom_boxplot() +
+  theme_classic() +
+  geom_hline(yintercept = 0, alpha = 0.8) +
+  xlab('') +
+  ylab('Effect size') +
+  labs(fill = '')
+```
+
+
+#### Recruitment
+
+```{r effSz_harshCondRangeFigS,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-efszHarshCondRangeRec
+#| fig-width: 6.5
+#| fig-height: 5
+#| fig-cap: "Effect size of each covariate affecting growth at the lower (1% quantile) and upper (99% quantile) observed range of the covariate. Values close to zero mean that the covariate had no effect on the intercept of the species."
+
+# figures
+all_effect |>
+  filter(vr == 'recruitment') |>
+  ungroup() |>
+  mutate(
+    var = case_match(
+      var,
+      'size' ~ 'd.b.h.',
+      'temp' ~ 'temperature',
+      'prec' ~ 'precipitation',
+      'BAcon' ~ 'Basal area\nconspecific',
+      'BAhet' ~ 'Basal area\nheterospecific',
+      'tBAsp' ~ 'Total conspecific\nbasal area',
+      'tBA' ~ 'Total adult\nbasal area'
+    ),
+    border_cl = case_match(
+      border_cl,
+      'l' ~ 'lower border',
+      'c' ~ 'center',
+      'u' ~ 'upper border'
+    ),
+    border_cl = factor(border_cl, levels = c('lower border', 'center', 'upper border'))
+  ) |>
+  ggplot() +
+  aes(var, -harsh_eff) +
+  aes(fill = border_cl) +
+  # facet_wrap(~vr) +
+  geom_boxplot() +
+  theme_classic() +
+  geom_hline(yintercept = 0, alpha = 0.8) +
+  xlab('') +
+  ylab('Effect size') +
+  labs(fill = '')
+```
+
+

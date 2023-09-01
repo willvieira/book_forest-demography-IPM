@@ -86,7 +86,7 @@ treeData <- readRDS(file.path('..', 'data', 'treeData.RDS')) |>
 
 ## Growth rate
 
-Because the growth rate intercepet decreases non-linearly with size and time derived from both the intrinsic growth rate $r$ and the maximum size $S_{max}$ parameters, we computed the average growth rate over a 10 years interval.
+Because the growth rate intercept decreases non-linearly with size and time derived from both the intrinsic growth rate $r$ and the maximum size $S_{max}$ parameters, we computed the average growth rate over a 10 years interval.
 Also, because the size of the individual is integrated in the Von Bertalanffy growth model, we computed the 10 years growth starting from the lower size boundery of 12.7 cm.
 
 ```{r intcerpt_growth,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
