@@ -23,6 +23,7 @@ book:
       - pars_competition.qmd
       - pars_climate.qmd
       - pars_effectSize.qmd
+      - pars_condEffect.qmd
       # - descript_demoModels.qmd
     - part: Coexistence
       chapters:
