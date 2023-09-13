@@ -23,7 +23,7 @@ $$
 Where $f$ denotes one of the growth, survival, or recruitment vital rates, $x$ represents the perturbed covariate, $z$ the other covariates kept at the original value, and $\theta$ are the parameters.
 The AME preserves the same scale as the output of the function $f$.
 This approach is useful because it captures the locally linearized effect of each observation.
-Furthermore, the average effect across the observed dataset accounts for the heteogenity in the distribution of each covariate.
+Furthermore, the average effect across the observed dataset accounts for the heterogeneity in the distribution of each covariate.
 Furthermore, calculating the average effect across the observed dataset captures the heterogeneity in the distribution of each covariate, weighting the metric towards the regions where the observation is more abundant.
 
 ```{r,include=FALSE,echo=FALSE}

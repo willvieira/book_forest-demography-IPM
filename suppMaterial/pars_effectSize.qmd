@@ -1,11 +1,18 @@
-# Effect size of covariates {#sec-effectSize}
+# Conditional effect of covariates {#sec-effectSize}
 
-In this section, we quantify the relative effect size of each covariate (size, competition conspecific, competition heterospecific, temperature, and precipitation) on the vital rate intercepts.
-We concentrate on the maximum and minimum range (what we refer to below as 1% and 99% quantile) for each covariate-species combination.
-This is a kind of conditional effect at the extreme covariate ranges.
-We discuss the average condition effect across all observations in the following chapter (@sec-averageCondEffect).
-Specifically, we first compute the effect size at extreme range conditions for each covariate-species combination.
-Second, visualize the effect size at harsh conditions by selecting the strongest effect size between the maximum and minimum range condition for each covariate-species combination.
+In this section, we quantify the relative effect size of each covariate (size, competition conspecific, competition heterospecific, temperature, and precipitation) on the intercept of each vital rate function.
+Because of the non-linearity of the functions, we evaluate the condition effect of the covariate at the extreme observed values of the covariate-species combination.
+For instance, the conditional effect of annual mean temperature on the growth rate of species $x$ is evaluated at both the minimum and maximum annual mean temperature that species $x$ was observed.
+We define the minimum and maximum range of each covariate-species combination using the 1% and 99% quantile distribution, respectively.
+
+The idea behind measuring the condition effect of the covariate at extreme conditions is to assess the maximum effect observed by each species outside of the optimal condition of the specific covariate.
+While this metric allows us to identify the maximum observed effect size of the covariate, it does not account for the total distribution of observed covariates.
+For instance, the distribution of observed temperature for a specific species can be highly concentrated at the average, then while the conditional effect of temperature is relatively high at the extreme, it is not representative of the total population.
+In the next chapter (@sec-averageMarginalEffect), we discuss the marginal effect of each covariate averaged across all observations, what we call the Average Marginal Effect.
+This metric better accounts for the total observed distribution of the covariates and gives more weight to locations where data is concentrated.
+
+In this chapter, we first compute the conditional effect size at extreme range conditions for each covariate-species combination.
+Second, we visualize the effect size under harsh conditions by selecting the strongest effect size between the maximum and minimum range conditions for each covariate-species combination.
 Finally, we split each species-specific population into the lower, center, or upper range position following the latitude distribution of each plot ID, where the range is defined as plots having their latitude lower or upper than the 10% or 90% latitude quantile distribution, respectively.
 
 ```{r,include=FALSE,echo=FALSE}
@@ -201,7 +208,7 @@ growht_borderEffect |>
       names_sep = '_'
     ) |>
     mutate(
-      range = paste0(range, '% quantile'),
+      `Covariate range` = paste0(range, '% quantile'),
       var = case_match(
         var,
         'size' ~ 'd.b.h.',
@@ -213,7 +220,7 @@ growht_borderEffect |>
     ) |>
     ggplot() +
     aes(var, value) +
-    aes(fill = range) +
+    aes(fill = `Covariate range`) +
     geom_boxplot(alpha = 0.9) +
     # stat_pointinterval(position = 'dodge') +
     theme_classic() +
@@ -261,7 +268,7 @@ survival_borderEffect |>
       names_sep = '_'
     ) |>
     mutate(
-      range = paste0(range, '% quantile'),
+      `Covariate range` = paste0(range, '% quantile'),
       var = case_match(
         var,
         'size' ~ 'd.b.h.',
@@ -274,7 +281,7 @@ survival_borderEffect |>
     filter(value >= 0) |>
     ggplot() +
     aes(var, value) +
-    aes(fill = range) +
+    aes(fill = `Covariate range`) +
     geom_boxplot(alpha = 0.9) +
     # stat_pointinterval(position = 'dodge') +
     theme_classic() +
@@ -316,7 +323,7 @@ rec_borderEffect |>
     names_sep = '_'
   ) |>
   mutate(
-    range = paste0(range, '% quantile'),
+    `Covariate range` = paste0(range, '% quantile'),
     var = case_match(
       var,
       'tBAsp' ~ 'Total conspecific\nbasal area',
@@ -325,7 +332,7 @@ rec_borderEffect |>
   ) |>
   ggplot() +
   aes(var, value) +
-  aes(fill = range) +
+  aes(fill = `Covariate range`) +
   geom_boxplot(alpha = 0.9) +
   theme_classic() +
   geom_vline(xintercept = 0, alpha = 0.8)
@@ -334,6 +341,7 @@ rec_borderEffect |>
 
 ## Effect size at harsh condition
 
+Harsh condition is defined here as the extreme observed covariate with the largest conditional effect size between the 1% and 99% quantile distribution of the covariate.
 
 ```{r effSz_harshCond,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-efszHarshCond
