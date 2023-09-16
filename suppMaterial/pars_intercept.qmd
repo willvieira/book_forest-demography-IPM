@@ -86,10 +86,11 @@ treeData <- readRDS(file.path('..', 'data', 'treeData.RDS')) |>
 
 ## Growth rate
 
-Because the growth rate intercept decreases non-linearly with size and time derived from both the intrinsic growth rate $r$ and the maximum size $S_{max}$ parameters, we computed the average growth rate over a 10 years interval.
-Also, because the size of the individual is integrated in the Von Bertalanffy growth model, we computed the 10 years growth starting from the lower size boundery of 12.7 cm.
+Because the growth rate intercept decreases non-linearly with size and is governed by the interaction of two parameters ($r$ and $S_{\infty}$), we computed the average growth rate over a 10 years interval.
+Also, because the size of the individual is integrated in the Von Bertalanffy growth model, we computed the 10-years growth average starting from the lower size threshold of 12.7 cm, where growth is at its optimal.
 
 ```{r intcerpt_growth,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-intGrowth
 #| fig-width: 8.5
 #| fig-height: 5.5
 #| fig-cap: "Intercept of the growth model using the 10 years average growth rate. Species are classified by their general growth trait following @burns1990silvics"
@@ -147,7 +148,7 @@ pars_growth |>
     # values = c("#20bc45", "#87bc45", "#edbf33", "#ea5545", "#ba0000")
   ) +
   xlab('') +
-  ylab('10 years average growth rate (mm/year)') +
+  ylab('Average 10-years growth rate (mm/year)') +
   theme_classic() +
   theme(legend.position = 'none') +
   labs(fill = '') ->
@@ -156,12 +157,13 @@ p2
 print(ggarrange(p1, p2, ncol = 2))
 ```
 
-In the following figure we compare the maximum observed size in the literature with the maximum possible size parameter ($S_{max}$) where growth rate reaches zero.
+In the following figure we compare the maximum observed size in the literature with the asymptotic size ($S_{\infty}$) denoting the size in which growth rate converge to zero.
 
 ```{r intcerpt_maxObsLmax,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-efszGrowth2
 #| fig-width: 6.5
 #| fig-height: 5
-#| fig-cap: "Correlation between maximum observed size in literature following @burns1990silvics and estimated parameter maximum size $S_{max}$"
+#| fig-cap: "Correlation between maximum observed size in literature following @burns1990silvics and estimated parameter $S_{\\infty}$"
 
 parsGrowth_mean <- pars_growth |>
   group_by(species_id) |>
@@ -199,10 +201,11 @@ pars_growth |>
 
 ## Mortality probability
 
-Similar to the growth rate, the surival model has a temporal component in which survival probability decreases exponently with time.
+Similar to the growth rate, the surival model has a temporal component in which survival probability ($logit~\psi$) decreases exponently with time.
 So we computed the 10 years average mortality probability as the intercept for the survival model.
 
 ```{r intcerpt_survival,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-efszMort
 #| fig-width: 8.5
 #| fig-height: 5.5
 #| fig-cap: "Intercept of the survival model using a 10 years mortality probability. Species are classified by their shade tolerance trait following @burns1990silvics"
@@ -253,11 +256,14 @@ p2
 ggarrange(p1, p2, ncol = 2)
 ```
 
+Alternatively, we can also use the parameter $\psi$ to derive the expected longevity ($L$) which can be determined as $L = e^{\psi}$.
+In @fig-efszMort2, we plot the correlation between maximum size observed in the literature [@burns1990silvics] with longevity ($L$).
 
 ```{r intcerpt_maxAgevsPsi,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-efszMort2
 #| fig-width: 7.5
 #| fig-height: 5
-#| fig-cap: "Intercept of the survival model using a 10 years mortality probability. Species are classified by their shade tolerance trait following @burns1990silvics"
+#| fig-cap: "Correlation between maximum size observed in the literature [@burns1990silvics] and the predicted longevity posterior distribution."
 
 parsMort_mean <- pars_mort |>
   group_by(species_id) |>
@@ -286,19 +292,19 @@ pars_mort |>
   ) +
   theme_classic() +
   xlab('Maximum observed age') +
-  ylab('Maximum predicted age')
+  ylab('Expected longevity')
 ```
 
 
 ## Ingrowth rate
 
-The ingrowth model has two intercepet components: the annual ingrowth rate per m$^2$ $m$ and the annual survival probability $p$.
-For the second survival submodel we computed the 10 years survival probability of ingrowth individuals between measurement intervals.
+The ingrowth model comprises two intercept components: the annual ingrowthrate per square meter ($m$) and the annual survival probability $p$.
+In the context of the survival submodel for the ingrowth rate, we computed the 10 years survival probability of ingrowth individuals just like in the survival model.
 
 ```{r intcerpt_ingrowth,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| fig-width: 8.5
 #| fig-height: 5.5
-#| fig-cap: "Intercept of the ingrwoth model for the number of individuals that ingress the population per year per m$^2$. Species are classified by their shade tolerance trait following @burns1990silvics"
+#| fig-cap: "Intercept of the ingrwoth model for the number of individuals that ingress the population per year per m$^2$. Species are classified by their successional status."
 
 # Fig 3: m ingrowth in function of species and shade tolerance
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
