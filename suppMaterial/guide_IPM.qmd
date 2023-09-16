@@ -1,0 +1,268 @@
+# A guide to use the forest-IPM code
+
+The `forest-IPM` code is available in this GitHub repository: <https://github.com/willvieira/forest-IPM>.
+This repository contains a collection of `R` functions designed for implementing the vital rates and Kernel functions, as well as the necessary data parameters for the 32 fitted species.
+Below, I'll provide a brief overview of how to load and execute these functions and outline the type of results you can expect from the model.
+
+## Loading the functions and parameters
+
+We start by sourcing the IPM specific functions directly from GitHub:
+
+```{r loadRfunc}
+suppressPackageStartupMessages(library(tidyverse))
+
+baseURL <- 'https://raw.githubusercontent.com/willvieira/forest-IPM/master/R/'
+# source the three R scripts with the IPM functions
+c('vital_rates.R', 'kernel.R', 'BasalArea_competition.R') |>
+  walk(~source(paste0(baseURL, .x)))
+```
+
+The first wrapper function if the `getPars_sp()`  which loads species-specific parameters.
+The `sp` and `path` arguments are used for defining the species based on their ID, as outlined in TableX (TODO at the db_desciption.qmd), and to specify the location path where these parameters are stored.
+The `method` argument allows you to specify whether you wish to load the `mean` value or a `random` draw from the posterior distribution for each parameter.
+
+```{r loadPar}
+pars_abibal <- getPars_sp(
+  sp = '18032ABIBAL',
+  method = 'mean', # `mean` or `random`
+  path = file.path('..', 'data', 'parameters')
+)
+```
+
+The `pars_abibal` object is a simple list for each vital rate with named vectors that represent the parameters associated with that particular vital rate.
+
+```{r}
+(pars_abibal)
+```
+
+## Defining model conditions
+
+Let's start by establishing the initial community structured based on the size of *individuals*.
+Populations are characterized by density functions that describe the distribution of indivudals across the size range covered by the IPM ($[L, U]$).
+In this context, we set the lower threshold of the size distribution ($L$) to 127 mm in dbh, following the FIA protocol.
+As the von Bertalanffy growth model incorporates a parameter that determines the size at which growth rate converges to zero ($S_{\infty}$), we define the upper boundary of the size distribution to be the species-specific $S_{\infty}$.
+The `h` argument specifies the bin size in millimeters for the discretized kernel, while `N` represents the total population size, defined as $\int_L^{S_{\infty}} n(z) \mathrm{d}z$.
+Given that this approach generates distributions randomly, the `accuracy` threshold determines the acceptance of the brute force approximation of the integral to match the expected population size `N`.
+Finally, the `meanSize` and `sdSize` are the parameters in natural scale of the lognormal distribution used to random generate size distribution.
+
+```{r startN}
+N_sp <- init_pop(
+  params = pars_abibal,
+  L = 127,
+  h = 1,
+  N = 10,
+  accuracy = 0.001,
+  meanSize = 130,
+  sdSize = 1.8
+)
+```
+
+The `N_sp` object is also a list composed of the (i) species-specific meshpoints (needed internally to build the kernel), the density function describing the distribution of individuals, and the `h` bins size.
+
+```{r printN}
+#| label: fig-sizeDist
+#| fig-cap: "Density function of size distribution across the $[L, U]$ kernerl threshold. This is stored in the `N_sp$Nvec` object. The dots are the discretized bin values."
+#| code-fold: true
+
+N_sp |>
+  enframe() |>
+  filter(name == 'Nvec') |>
+  unnest(value) |>
+  mutate(x = 127:(n() + 126)) |>
+  ggplot(aes(x, value)) +
+  geom_point(alpha = 0.5) +
+  geom_path() +
+  theme_minimal() +
+  labs(
+    x = 'Size (mm)',
+    y = 'Density'
+  )  
+```
+
+Additionally, we need to create a second structured population vector for the heterospecific species. This vector will represent the size distribution of all species other than the focal species and will be used to compute the heterospecific competition effect.
+
+While we could simply use the `init_pop()` function as described above, with similar parameters except for the `N`, which can take any desired value, we will now introduce a second approach. This alternative method allows us to approximate a continuous population vector based on observed dbh measurements.
+Given we already have an object from the `init_pop()` function, we just need to feed the `dbh_to_sizeDist()` function with the observed dbh values and the output of the `init_pop()` funciton as follows:
+
+```{r sizeComp}
+# generate random observed values of dbh
+obs_dbh <- runif(2, 127, 500)
+# createa acontinuous population vector based on observed dbh measurements
+N_het <- dbh_to_sizeDist(
+  dbh = obs_dbh,
+  N_intra = N_sp
+)
+```
+
+The final condition parameters necessary to run the IPM model are:
+
+```{r}
+delta_time = 1            # the time interval from $t$ to $t+1$. Usually set to 1.
+plotSize = 200            # plot size in squared meters
+Temp = 0.3                # mean annual temperature scaled between 0 and 1
+Prec = 0.8                # mean annual precipitation scaled between 0 and 1
+plot_random = rep(0, 3)   # plot random effects for c(growth, survival, and recruitment)
+```
+
+
+## Run the IPM
+
+The main function of the forest IPM is the `mkKernel()`.
+
+```{r kernel}
+K_abibal = mkKernel(
+  Nvec_intra = N_sp,
+  Nvec_inter = N_het,
+  delta_time = delta_time,
+  plotSize = plotSize,
+  Temp = Temp,
+  Prec = Prec,
+  pars = pars_abibal,
+  plot_random = plot_random
+)
+```
+
+The `K_abibal` object is again a list composed of the $P$, $F$, and $K$ matrices of dimension $z^2$ described in the equation 1 in @sec-ipm_description.
+This kernel object is the core output of the IPM model, serving as the foundation for projecting populations over time or calculating the asymptotic population growth rate ($\lambda$) and other metrics.
+
+We can extract the asymptotic population growth rate ($\lambda$) using the leading eigen value of the matrix $k$:
+
+```{r}
+(max(Re(eigen(K_abibal$K)$values)))
+```
+
+Given that our matrix is density-dependent, we can project the population vector over time by continuously updating the Kernel at each time step to account the evolving size distribution of individuals.
+In the following code, we demostrate a simple loop to trace the envolving population over time while assuming that there is only conspecific density-dependence (`N_het = 0`).
+Note that this code is slow and can take around 5-10 minutes to run due to the slow `eigen()` computation.
+
+```{r runIPM,eval=FALSE}
+# define no heterospecific competition
+N_het <- init_pop(
+  params = pars_abibal,
+  L = 127,
+  h = 1,
+  N = 0
+)
+
+# generate initial Kernel
+K0 = mkKernel(
+  Nvec_intra = N_sp,
+  Nvec_inter = N_het,
+  delta_time = delta_time,
+  plotSize = plotSize,
+  Temp = Temp,
+  Prec = Prec,
+  pars = pars_abibal,
+  plot_random = plot_random
+)
+
+
+time_max = 200
+# vector to save lambda over time
+lambdas = max(Re(eigen(K0$K)$values))
+# matrix to save size distribution
+ntmat = matrix(0, nrow = length(N_sp$Nvec), ncol = time_max)
+ntmat[, 1] <- N_sp$Nvec
+
+for(Time in 2:time_max)
+{
+  # update the state
+  ntmat[, Time] <- K0$K %*% ntmat[, Time - 1]
+  N_sp$Nvec <- ntmat[, Time]
+
+  # update the kernel
+  K0 <- mkKernel(
+    Nvec_intra = N_sp,
+    Nvec_inter = N_het,
+    delta_time = delta_time,
+    plotSize = plotSize,
+    Temp = Temp,
+    Prec = Prec,
+    pars = pars_abibal,
+    plot_random = plot_random
+  )
+
+  # calculate pop growth rate
+  lambdas[Time] = max(Re(eigen(K0$K)$values))
+}
+```
+
+```{r loadExampleRunIPM,echo=FALSE}
+out <- readRDS(file.path('data', 'out_IPM_guide.RDS'))
+lambdas <- out$lambdas
+ntmat <- out$ntmat
+```
+
+For each time iteration, we saved the size ($z$) distribution of the focal species, as well as the population growth rate ($\lambda$).
+We can visualize how each of these measures envolved with time for this species-specific conditions.
+In @fig-guideLambda and  @fig-guideSizeDist we can visualize how $\lambda$ and the size density distribution envolve over time.
+
+```{r}
+#| code-fold: true
+#| label: fig-guideLambda
+
+lambdas |>
+  enframe(name = 'Time') |>
+  ggplot() +
+  aes(Time, value) +
+  geom_path(linewidth = 2) +
+  theme_classic() +
+  geom_hline(yintercept = 1, alpha = 0.2) +
+  ylab(expression(lambda))
+```
+
+```{r}
+#| code-fold: true
+#| label: fig-guideSizeDist
+
+suppressPackageStartupMessages(library(plotly))
+
+ntmat |>
+  as.data.frame() |>
+  pivot_longer(cols = everything(), values_to = 'Density') |>
+  mutate(Time = parse_number(name)) |>
+  group_by(Time) |>
+    mutate(x = 127:(n() + 126)) |>
+  ggplot() +
+  aes(x, Density) +
+  aes(group = name) +
+  aes(frame = Time) +
+  geom_path() +
+  theme_classic() +
+  xlab('Size (mm)') ->
+p
+
+ggplotly(p) |>
+  animation_opts(frame = 50) |>
+  animation_slider(
+    hide = FALSE,
+    currentvalue = list(prefix = "Time step: ", font = list(color = 'black'))
+  ) |>
+  animation_button(
+    x = 0.9, xanchor = 'left', y = 1, yanchor = 'top'
+  ) 
+
+```
+
+We can also see how these two quantites interact over time.
+
+```{r}
+#| code-fold: true
+
+ntmat |>
+  as.data.frame() |>
+  pivot_longer(cols = everything())  |>
+  group_by(name) |>
+  reframe(N = sum(value)) |>
+  mutate(Time = parse_number(name)) |>
+  arrange(Time) |>
+  bind_cols(lambda = lambdas) |>
+  ggplot() +
+  aes(N, lambda) +
+  aes(color = Time) +
+  geom_path(linewidth = 1.2) +
+  theme_classic() +
+  labs(x = 'Population size', y = expression(lambda)) +
+  geom_hline(yintercept = 1, alpha = 0.2)
+```
+

@@ -17,6 +17,7 @@ book:
     - db.qmd
     - part: Demographic models
       chapters:
+      - model_description.qmd
       - pars_intercept.qmd
       - pars_randomEffect.qmd
       - pars_size.qmd
@@ -24,9 +25,10 @@ book:
       - pars_climate.qmd
       - pars_effectSize.qmd
       - pars_condEffect.qmd
-      # - descript_demoModels.qmd
-    - part: Coexistence
+    - part: Population model
       chapters:
+      - ipm_description.qmd
+      - guide_IPM.qmd
       - coex.qmd
     - references.qmd
 

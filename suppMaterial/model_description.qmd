@@ -1,0 +1,120 @@
+# Model description {#sec-demo_model_description}
+
+```{r,include=FALSE,echo=FALSE}
+Echo=FALSE
+Eval=TRUE
+Cache=TRUE
+Warng=FALSE
+Msg=FALSE
+library(tidyverse)
+```
+
+Our study characterizes the population dynamics of forest trees using three distinct functions or vital rates that determine the fate of each individual tree.
+The growth function describes how individual trees increase in size, while the survival function describes their probability to stay alive throughout their lifespan.
+Because of trees are long-lived with a wide range of possible sizes among trees, the growth and survival rate of an individual in the population is directly related to its size.
+The recruitment vital rate ideally should also be size-dependent.
+However, due to a lack data regarding this process, we will define a general recruitment rate that remains independent of the distribution of size among individuals within a population.
+In this chapter, I will describe the concept and ecological interpretations underlying each of these three demographic models.
+My focus will primarily be on explaining the *intercept model*, reserving discussions on covariates and model fit for next chapters.
+
+## Growth model
+
+To describe the annual growth rate of an individual's d.b.h., we have chosen the von Bertalanffy growth equation [@von1957quantitative].
+This equation predicts the current size ($S(t)$) of an individual as a function of its size at the previous time step ($S_{t - 1}$):
+
+$$
+  S(t) = S_{t-1}  \times e^{-r \Delta t} + S_{\infty} (1- e^{-r \Delta t})
+$$ {#eq-VBmodel}
+
+Where $\Delta t$ is the time interval between the initial and final size measurements, and $r$ represents a dimensionless growth rate coefficient.
+$S_{\infty}$ denotes the asymptotic size ($S$), which is the location at which growth approximates to zero; it defines the maximum size in which growth rate is zero, but does not imply that an individual cannot surpass this threshold.
+
+The ecological rationale behind this equation is that growth rate exponentially decreases with size, converging to zero as size approaches $S_{\infty}$ (@fig-VBModel).
+This assumption is particularly valuable in the context of continuous population models, such as Integral Projection Models, as it prevents eviction — where individuals are projected beyond the limits of the size distribution ($[L, U]$) defined by the Kernel.
+
+```{r,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-VBModel
+#| fig-width: 8.5
+#| fig-height: 5.5
+#| fig-cap: "Illustration of the evolution of size (upper panels) and growth rate (bottom panels) over time following the von Bertalanffy growth equation. The three panels of each row is set to describe the interaction of the two parameters governing the annual growth rate of an individual tree."
+
+
+r <- exp(-c(5:3))
+linf <- c(900, 1000, 1200)
+
+labels <- c(
+  `900` = "S[infinity] ~  90",
+  `1000` = "S[infinity] ~  100",
+  `1200` = "S[infinity] ~  120"
+)
+
+expand_grid(
+    r = r,
+    Linf = linf,
+  ) |>
+  rowwise() |>
+  expand_grid(Time = 1:500) |>
+  mutate(
+    Lt = Linf * (1 - exp(-r * Time))/10,
+  ) |>
+  group_by(r, Linf) |> 
+  mutate( 
+      Lt_t0 = lag(Lt),
+      growth = Lt - Lt_t0,
+      Lt_t0 = NULL
+  ) |>
+  drop_na() ->
+dt 
+
+ggpubr::ggarrange(
+  dt |>
+    ggplot() +
+    aes(Time, Lt/10) +
+    aes(group = log(r), color = factor(log(r))) +
+    facet_wrap(
+      ~Linf,
+      labeller = labeller(Linf = as_labeller(labels, label_parsed))
+    ) +
+    geom_path(size = 1.2) +
+    theme_classic() +
+    labs(
+      x = '',
+      y = 'Size',
+      color = 'ln(r)'
+    ) +
+    theme(
+      strip.background = element_blank(),
+      strip.text = element_text(size = rel(0.9))
+    ) +
+    scale_color_brewer() +
+    scale_y_continuous(labels = scales::number_format(accuracy = 0.1)),
+    dt |>
+    ggplot() +
+    aes(Time, growth) +
+    aes(group = log(r), color = factor(log(r))) +
+    facet_wrap(
+      ~Linf,
+      labeller = labeller(Linf = as_labeller(labels, label_parsed))
+    ) +
+    geom_path(size = 1.2) +
+    theme_classic() +
+    labs(
+      x = 'Time',
+      y = 'Growth rate',
+      color = 'ln(r)'
+    ) +
+    theme(
+      strip.background = element_blank(),
+      strip.text = element_blank()
+    ) +
+    scale_color_brewer() +
+    scale_y_continuous(labels = scales::number_format(accuracy = 0.1)),
+  nrow = 2,
+  common.legend = TRUE,
+  legend = 'right'
+)
+
+```
+
+## Survival model
+
