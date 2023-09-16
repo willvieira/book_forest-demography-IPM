@@ -18,11 +18,7 @@ $$
 
 ## Numerical implementation
 
-- We use the mid point rule [@Ellner2016]
-- bins ($h$) with size ranging 0.1 - 1 cm are appropriated to obtain reliable outputs [@zuidema2010integral] -> we use a bin of 0.1 to avoid overestimating the projection. Furthermore, we do not attempt to use the absolute value of the species, but to compare the relative population growth between species and covariates.
-
-## IPM outputs
-
-- $\lambda$
-- Population size at equilibrium  ($N^*$) -> carrying capacity
-- Extinction probability from the $\lambda$ or $N^*$ uncertainity
+In practice, we employ the mid-point rule to perform the discrete-form integration of the continuous kernel $K$ [@Ellner2016].
+While this approach is straightforward to implement, it comes with the trade-off of potentially introducing bias into estimates, particularly in the case of large matrices with overall slow growth rates, such as trees.
+Simulation analyses have shown that integration bins ranging from 0.1 to 1 cm are appropriate for obtaining reliable outputs [@zuidema2010integral].
+In this study, we use the lower proposed value of 0.1 cm size bins.
