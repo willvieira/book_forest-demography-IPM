@@ -1,6 +1,9 @@
 # Preface {.unnumbered}
 
-I this book I present my approach to quantify the effect of competition and climate on the dynamics of 32 North American forest trees.
+In this book, I present my methods for quantifying the impact of competition and climate on the dynamics of 32 North American forest trees.
+While I do my best to make my approach as transparent as possible, I am confident that I will inadvertently miss certain steps.
+In such cases, you can find the missing information within the accompanying code.
+If navigating my code was not enough to solve your question (which I can totally understand), please feel free to reach out via email for further explanation or discussion.
 
 This document is a dynamic report generated using R and [Quarto](https://quarto.org/).
 While it is designed to ensure complete reproducibility of the results, it is essential to note that several chapters involve intensive computational processing.
@@ -8,7 +11,7 @@ Rendering the entire document would require several days, particularly due to th
 
 To facilitate reproducibility, I have included the code within the document, but certain code chunks have been disabled (using `eval=FALSE`).
 To replicate this vignette, you will need to download the complete dataset and place it in the `suppMaterial/data/` folder.
-Please be aware that the total data size exceeds X Gb.
+Please be aware that the total data size exceeds X GB.
 
 Before rendering this document, run the following code to obtain the necessary data:
 
