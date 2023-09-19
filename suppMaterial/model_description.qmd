@@ -19,18 +19,25 @@ My focus will primarily be on explaining the *intercept model*, reserving discus
 
 ## Growth model
 
-To describe the annual growth rate of an individual's d.b.h., we have chosen the von Bertalanffy growth equation [@von1957quantitative].
-This equation predicts the current size ($S(t)$) of an individual as a function of its size at the previous time step ($S_{t - 1}$):
+To describe the annual growth rate in dbh of an individual $i$, we have chosen the von Bertalanffy growth equation [@von1957quantitative].
+This equation predicts the future size ($z_{i}(t + 1)$) of an individual as a function of its size initial size ($z_{i}(t)$):
 
 $$
-  S(t) = S_{t-1}  \times e^{-r \Delta t} + S_{\infty} (1- e^{-r \Delta t})
+  z_{i}(t+1) = z_{i}(t)  \times e^{-\Gamma \Delta t} + \zeta_{\infty} (1- e^{-\Gamma \Delta t})
 $$ {#eq-VBmodel}
 
-Where $\Delta t$ is the time interval between the initial and final size measurements, and $r$ represents a dimensionless growth rate coefficient.
-$S_{\infty}$ denotes the asymptotic size ($S$), which is the location at which growth approximates to zero; it defines the maximum size in which growth rate is zero, but does not imply that an individual cannot surpass this threshold.
+Where $\Delta t$ is the time interval between the initial and final size measurements, and $\Gamma$ represents a dimensionless growth rate coefficient.
+$\zeta_{\infty}$ denotes the asymptotic size ($z$), which is the location at which growth approximates to zero; it defines the maximum size in which growth rate is zero, but does not imply that an individual cannot surpass this threshold.
+We did not specify in the equation @eq-VBmodel, but both $\Gamma$ and $\zeta_{\infty}$ parameters are species-specific.
 
-The ecological rationale behind this equation is that growth rate exponentially decreases with size, converging to zero as size approaches $S_{\infty}$ (@fig-VBModel).
+The ecological rationale behind this equation is that growth rate exponentially decreases with size, converging to zero as size approaches $\zeta_{\infty}$ (@fig-VBModel).
 This assumption is particularly valuable in the context of continuous population models, such as Integral Projection Models, as it prevents eviction — where individuals are projected beyond the limits of the size distribution ($[L, U]$) defined by the Kernel.
+The final likelihood growth model accounting for individual variability is defined as follows: 
+
+$$
+z_{i}(t+1) \sim Normal(z_{i}(t)  \times e^{-\Gamma \Delta t} + \zeta_{\infty} (1- e^{-\Gamma \Delta t}), \sigma)
+$$
+
 
 ```{r,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-VBModel
@@ -43,9 +50,9 @@ r <- exp(-c(5:3))
 linf <- c(900, 1000, 1200)
 
 labels <- c(
-  `900` = "S[infinity] ~  90",
-  `1000` = "S[infinity] ~  100",
-  `1200` = "S[infinity] ~  120"
+  `900` = "Z[infinity] ~  90",
+  `1000` = "Z[infinity] ~  100",
+  `1200` = "Z[infinity] ~  120"
 )
 
 expand_grid(
@@ -101,7 +108,7 @@ ggpubr::ggarrange(
     labs(
       x = 'Time',
       y = 'Growth rate',
-      color = 'ln(r)'
+      color = expression('ln'~Gamma)
     ) +
     theme(
       strip.background = element_blank(),
@@ -118,3 +125,154 @@ ggpubr::ggarrange(
 
 ## Survival model
 
+The mortality probability for an individual $i$ ($M_i$) within the time interval between $t$ and $t+1$ is modeled as a Bernoulli distribution:
+
+$$
+M_i \sim Bernoulli(p_i)
+$$
+
+Here, $M_i$ represents the individual's status (alive/dead) and $p_i$ the mortality probability of the individual $i$.
+The mortality probability is calculated based on the annual survival rate ($\psi$) and the time interval between census ($\Delta t$):
+
+$$
+p_i = 1 - logit(\psi)^{\Delta t}
+$$
+
+The rationale of this model is that the survival probability (1 - $M_i$) increases with the longevity parameter $\psi$ and decreases exponentially with time $\Delta t$ (@fig-mortModel).
+
+```{r,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-mortModel
+#| fig-cap: "Illustration of how the annual survival probability ($logit(\\psi$) reduces with time interval."
+#| fig-height: 4
+
+tibble(
+    psi = c(3, 4, 5)
+  ) |>
+  group_by(psi) |>
+  expand_grid(deltaYear = seq(0, 750, 1)) |>
+  mutate(long = 1/(1 + exp(-psi))^deltaYear) |>
+  ggplot(aes(x = deltaYear,  y = long, color = factor(psi))) +
+    geom_path(size = 1.2) +
+    scale_color_brewer() +
+    theme_classic() +
+    labs(
+      x = 'Time',
+      y = 'Survival probability',
+      color = expression(psi)
+    )
+
+```
+
+## Recruitment model
+
+We used data from the U.S. and Quebec forest inventory to create a more extensive climate gradient dataset.
+In contrast, the protocols for recording seedlings and juveniles were not entirely consistent between these two data sources.
+As a result, we quantified the recruitment rate ($I$) as the ingrowth of new individuals into the population of adults with dbh greater than 12.7 cm.
+
+Similar to growth and survival, the count of ingrowth individuals ($I$) reaching the 12.7 cm size threshold is dependent on the time interval between measurements.
+Therefore, we introduce two parameters that will control de potential number of recruited individuals.
+While the parameter $\phi$ determines the annual ingrowth rate per square meter, the parameter $\rho$ denotes the annual survival probability of each ingrowth individual, which decline over time:
+
+$$
+  I \sim Poisson(~\phi \times plot~size \times \frac{1 - p^{\Delta t}}{1-p}~)
+$$
+
+Where $plot~size$ represents the area of the plot in square meters.
+The reasoning of this model is that between two measurements, individuals are intering the population every year at rate $\phi$, and their probability of surving up to the next measurement $\rho$ decays with time (@fig-recModel).
+The rationale behind this model is that, between two measurements, new individuals enter the population annually at a rate of $\phi$, and their likelihood of surviving until the subsequent measurement ($\rho$) decline over time (@fig-recModel).
+
+```{r,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-recModel
+#| fig-cap: "Illustration of how both ingrowth rate ($\\phi$) and the annual survival probability ($\\rho$) interact with time interval to determine the mean number of ingrowth."
+#| fig-height: 4
+
+expand_grid(
+    phi = -c(9, 8, 7),
+    rho = -c(7, 4, 3),
+    plot_size = 168
+  ) |>
+  mutate(
+    rho_label = paste0('ρ = ', as.character(round(exp(-exp(rho)), 3))),
+    phi_label = case_match(
+      phi,
+      -9 ~ '1e-4',
+      -8 ~ '3e-4',
+      -7 ~ '9e-4'
+    )
+  ) |>
+  rowwise() |>
+  expand_grid(deltaYear = seq(0, 50, .1)) |>
+  ungroup() |>
+  mutate(
+    lambda = exp(phi) *
+             plot_size *
+             (1 - exp(-exp(rho))^deltaYear)/(1 - exp(-exp(rho)))
+  ) |>
+  ggplot() +
+  aes(deltaYear, lambda) +
+  aes(color = phi_label) +
+  facet_wrap(~ rho_label) +
+  geom_path(size = 1.2) +
+  scale_color_brewer() +
+  theme_classic() + 
+  labs(
+    x = 'Time',
+    y = 'Mean number of ingrowth',
+    color = expression(phi)
+  )
+
+```
+
+## Recruited size model
+
+In the recruitment process, we determined a submodel to predict the size distribution of recruited individuals ($z_I$).
+The time interval between two measures is included in the model in the form of a linear predictor, where the mean size of recruited individuals increase with time as follows:
+To account for the time interval between two measurements, we incorporated a linear predictor where the mean size of recruited individuals increases over time as follows:
+
+$$
+  z_{I} \sim TNormal(\Omega + \omicron \Delta t,~\sigma^{\Omega}, ~ \alpha, ~ \beta)
+$$
+
+Where TNormal is a truncated distribution with the lower and upper limits determined by the $\alpha$ and $\beta$ parameters, respectively.
+In our study,  we have set $\alpha$ to 12.7 cm, aligning it with the ingrowth threshold, while $\beta$ is set to infinity to allow for an unbounded upper limit.
+
+<!-- 
+table 1. table to match the name of parameters used in the Stan scripts with the greek letters employed here.
+
+Growth
+r | Gamma
+rPlot_log    | \Gamma_j
+sigma_plot   | \sigma^{\Gamma}_{j}
+sigma_obs    | \sigma^{\Gamma}
+Lmax         | \zeta_{\infty}
+Beta         | \Beta^{\Gamma}
+theta        | \theta^{\Gamma}
+optimal_temp | \xi^{\Gamma}_{MAT}
+tau_temp     | \tau^{\Gamma}_{MAT}
+optimal_prec | \xi^{\Gamma}_{MAP}
+tau_prec     | \tau^{\Gamma}_{MAP}
+Survival
+psi          | \psi
+psiPlot      | \psi_{j}
+sigma_plot   | \sigma^{\psi}_{j}
+size_opt     | \Upsilon
+size_var     | \sigma_^{\Upsilon}
+Beta         | \Beta^{\psi}
+theta        | \theta^{\psi}
+optimal_temp | \xi^{\Gamma}_{MAT}
+tau_temp     | \tau^{\Gamma}_{MAT}
+optimal_prec | \xi^{\Gamma}_{MAP}
+tau_prec     | \tau^{\Gamma}_{MAP}
+recruitment
+mPop_log     | \phi
+mPlot_log    | \phi_{j}
+sigma_plot   | \sigma^{\phi}
+p_log        | \rho
+beta_p       | \Beta^{\rho}
+optimal_BA   | \delta^{\phi}
+sigma_BA     | \sigma^{\delta}
+sizeIngrowth
+size_int     | \Omega
+phi_time     | \omicron
+sigma_size   | \sigma^{\alpha}
+-->
