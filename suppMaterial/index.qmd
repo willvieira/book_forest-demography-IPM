@@ -1,17 +1,17 @@
 # Preface {.unnumbered}
 
 In this book, I present my methods for quantifying the impact of competition and climate on the dynamics of 32 North American forest trees.
-While I do my best to make my approach as transparent as possible, I am confident that I will inadvertently miss certain steps.
+While I try my best to make this approach as transparent as possible, it is very likely that I will miss certain steps.
 In such cases, you can find the missing information within the accompanying code.
-If navigating my code was not enough to solve your question (which I can totally understand), please feel free to reach out via email for further explanation or discussion.
+If navigating my code was not enough to solve your question, feel free to reach out via email.
 
 This document is a dynamic report generated using R and [Quarto](https://quarto.org/).
-While it is designed to ensure complete reproducibility of the results, it is essential to note that several chapters involve intensive computational processing.
+It is designed to ensure the reproducibility of the results, but note that some sections involve intensive computational processing.
 Rendering the entire document would require several days, particularly due to the Bayesian model fitting and sensitivity analysis of the IPM, which were executed on a cluster.
 
-To facilitate reproducibility, I have included the code within the document, but certain code chunks have been disabled (using `eval=FALSE`).
+To facilitate reproducibility, I have included the code within this document, but certain code chunks have been disabled (using `eval=FALSE`).
 To replicate this vignette, you will need to download the complete dataset and place it in the `suppMaterial/data/` folder.
-Please be aware that the total data size exceeds X GB.
+Note that the total data size exceeds X GB.
 
 Before rendering this document, run the following code to obtain the necessary data:
 
