@@ -2,6 +2,7 @@
 
 The Integral Projection Model (IPM) is a category of mathematical tools used to improve our understanding of population dynamics.
 It distinguishes itself from other traditional population models by assuming that the population is structured based on a continuous trait [@Easterling2000].
+This is particularly significant for trees, given the substantial variability in vital rates depending on the size of the individual [@kohyama1992].
 Specifically, an IPM consists of a set of functions that predicts the transition of a distribution of individual traits from time $t$ to time $t+1$:
 
 $$
