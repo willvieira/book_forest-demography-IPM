@@ -200,6 +200,7 @@ In @fig-guideLambda and  @fig-guideSizeDist we can visualize how $\lambda$ and t
 ```{r}
 #| code-fold: true
 #| label: fig-guideLambda
+#| fig-cap: "Population growth rate over time."
 
 lambdas |>
   enframe(name = 'Time') |>
@@ -214,6 +215,7 @@ lambdas |>
 ```{r}
 #| code-fold: true
 #| label: fig-guideSizeDist
+#| fig-cap: "Population size distribution envolving over time."
 
 suppressPackageStartupMessages(library(plotly))
 
@@ -248,6 +250,8 @@ We can also see how these two quantites interact over time.
 
 ```{r}
 #| code-fold: true
+#| label: fig-lambdaVsN
+#| fig-cap: "Correlation between population growth rate and total population size over time."
 
 ntmat |>
   as.data.frame() |>
