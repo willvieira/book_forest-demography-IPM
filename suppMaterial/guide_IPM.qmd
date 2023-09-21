@@ -136,6 +136,16 @@ In the following code, we demostrate a simple loop to trace the envolving popula
 Note that this code is slow and can take around 5-10 minutes to run due to the slow `eigen()` computation.
 
 ```{r runIPM,eval=FALSE}
+set.seed(0.0)
+
+# Initial population size (small)
+N_sp <- init_pop(
+  params = pars_abibal,
+  L = 127,
+  h = 1,
+  N = 1
+)
+
 # define no heterospecific competition
 N_het <- init_pop(
   params = pars_abibal,
@@ -184,6 +194,8 @@ for(Time in 2:time_max)
 
   # calculate pop growth rate
   lambdas[Time] = max(Re(eigen(K0$K)$values))
+
+  cat(' Time step', Time, 'of', time_max, '(', round(Time/time_max * 100, 1), '%)\r')
 }
 ```
 
