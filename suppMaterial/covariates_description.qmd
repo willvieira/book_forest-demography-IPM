@@ -1,0 +1,376 @@
+# Mixed covariates {#sec-mixed_cov}
+
+```{r,include=FALSE,echo=FALSE}
+Echo=FALSE
+Eval=TRUE
+Cache=TRUE
+Warng=FALSE
+Msg=FALSE
+library(tidyverse)
+library(ggtext)
+library(ggpubr)
+library(MetBrewer)
+```
+
+In this study, our main objective is to assess how climate and competition affect the demographic rates of tree species, and hence shaping their range distribution.
+Climate, typically characterized by temperature and precipitation, is widely assumed as an important factor affecting vital rates and has been the focus of recent studies [@Csergo2017; @lesquin2021; @Kunstler2021; @Guyennon2023].
+Climate also exerts an indirect influence by shaping species composition, which in turn, impacts the variation in demographic rates through species interactions.
+indeed, competition for light has been shown as a principal driver in the demographic rates of forest trees [@Zhang2015; @lesquin2021].
+
+There are additional factors that influence the growth, survival, and recruitment of forest trees beyond the climate-competition dimensions.
+For instance, events like wildfire and insect outbreaks play crucial roles in changing demographic rates, particularly considering that these disturbances are sensitivite to climate change [@seidl2011].
+However, it's important to note that such disturbances are sporadic events, and our primary focus is on understanding responses to average conditions.
+At the local scale, soil nitrogen can improve growth rate [@Ibanez2018] and facilitation can improve performance at range limits [@Ettinger2017].
+At a local scale, soil nitrogen content can enhance growth rates [@Ibanez2018], and facilitation can increase recruitment rates at range limits [@Ettinger2017].
+All these factors and other not cited here have the potential to affect the demographic rates of forest trees.
+However, our objective here is not to have the best and most complex model to achive the highest predicitive metric, but to do inference [@Tredennick2021].
+Specifically, we aim to test the relative effect of climate and competition while controlling for other influential factors.
+Therefore, our modeling approach is guided by biological mechanisms, which tend to provide more robust extrapolation [@Briscoe2019], rather than being solely dictated by specific statistical metrics.
+
+In the following sections, we describe the inclusion of covariates into each demographic model.
+We start by incrementing the intercept growth, survival, and recruitment models, as described in the previous section, with plot random effects to account for the spatial heterogeneity among plots.
+Then, building on the intercept model with plot random effects, we introduce the competition for light component using individual basal area information.
+Finally, we complete the model by incorporating the climate component, wherein we include the effects of mean annual temperature (MAT) and mean annual precipitation (MAP).
+
+It's worth noting that, due to the use of structured population models, the demographic models should vary as a function of the size trait.
+The von Bertalanffy growth model implicitly incorporates the size effect within the model.
+The lack of available data for the regeneration process forced us to use an ingrowth rate model that is indepedent of size.
+As a result, only the survival model will feature an explicit fixed-effect of size.
+
+## Plot random effects
+
+We account for the shared variance among individuals within the same plot in each demographic model using random effects.
+In the context of each species-demographic model combination, we draw plot random effects ($\alpha_j$) from a normal distribution with a mean of zero, defined as:
+
+$$
+  \alpha_{j} \sim N(0, \sigma^2)
+$$
+
+where $\sigma^2$ represents the variance among all plots $j$.
+Note that both parameters, $\alpha_j$ and $\sigma^2$, are species and demographic model-specific.
+These plot random effects ($\alpha_j$) serve to adjust the intercept parameters ($I$) within each demographic model as follows:
+
+$$
+  I_j = \overline{I} + \alpha_j
+$$
+
+Where $I$ can assume one of three forms: $\Gamma$ for the growth, $\psi$ for the survival, and $\phi$ for the recruitment model.
+
+## Size effect
+
+For the growth model, the size effect is implicit incorporated in the model.
+Specifically, following the von Bertalanffy model's definition, an individual's growth rate decreases exponentially with size, eventually reaching a zero growth rate as size approaches $\zeta_{\infty}$ (@fig-sizeEffect).
+
+```{r,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-sizeEffect
+#| fig-width: 8.5
+#| fig-height: 4.5
+#| fig-cap: "Illustration of the effect of size on growth rate (left panel) and survival probability (right panel) for different sets of parameters."
+
+tibble(
+    r = c(-4, -5),
+    Lmax = c(1600, 1000),
+    group = c(1, 2)
+  ) |>
+  group_by(group) |>
+  expand_grid(size = seq(127, 2000, 0.1)) |>
+  mutate(
+    Int = Lmax * (1 - exp(-exp(r))),
+    size_tp1 = Int + exp(-exp(r)) * size,
+    growth = (size_tp1 - size)/size
+  ) |>
+  ggplot() +
+  aes(size/10, growth) +
+  aes(color = factor(group)) +
+  geom_line() +
+  geom_hline(yintercept = 0, alpha = 0.6, linetype = 3) +
+  labs(
+    x = 'DBH (cm)',
+    y = 'Relative growth',
+    color = '' 
+  ) +
+  scale_color_manual(
+    values = met.brewer('Juarez', 2),
+    labels = c(
+      expression(Gamma~"="~"-4;"~zeta[infinity]~"=160"),
+      expression(Gamma~"="~"-5;"~zeta[infinity]~"=100")
+    )
+  ) +
+  theme_classic() +
+  theme(legend.position = 'top') ->
+p1
+
+tibble(
+    opt_size = c(400, 400, 800),
+    size_var = c(10, 15, 10),
+    group = c(1, 2, 3)
+  ) |>
+  group_by(opt_size, size_var) |>
+  expand_grid(size = seq(127, 2000, 0.1)) |>
+  mutate(
+    sizeEffect = exp(-(log(size/opt_size)/size_var)^2)
+  ) |>
+  ggplot() +
+  aes(size/10, sizeEffect) +
+  aes(color = factor(group)) +
+  geom_path() +
+  geom_hline(yintercept = 1, alpha = 0.6, linetype = 3) +
+  labs(
+    x = 'DBH (cm)',
+    y = 'Effect on survival probability',
+    color = ''
+  ) +
+  theme_classic() +
+  scale_color_manual(
+    values = met.brewer('Juarez', 3),
+    labels = c(
+      expression(upsilon~'='~'40;'~sigma^upsilon~'='~'10'),
+      expression(upsilon~'='~'40;'~sigma^upsilon~'='~'15'),
+      expression(upsilon~'='~'80;'~sigma^upsilon~'='~'10')
+    )
+  ) +
+  theme(legend.position = 'top') ->
+p2
+
+ggarrange(
+  p1, p2,
+  nrow = 1
+)
+```
+
+In the survival model, the intercept longevity ($\psi$) varies as a log-normal function of individual dbh as follows:
+
+$$
+  \psi + \frac{ ln(\frac{DBH}{\upsilon}) }{\sigma^{\upsilon}}
+$$
+
+
+Here, $\upsilon$ determines the size at which survival is at its optimal and $\sigma^{\upsilon}$ quantifies the extent of survival decrease from the optimal size.
+A higher parameter value corresponds to a reduced effect of size on the survival probability (@fig-sizeEffect).
+
+## Competition effect
+
+We use the basal area of larger individuals (BAL) as a metric for competition.
+Basal area is calculated as the sum of the cross-sectional areas of all trees within a plot, derived from their diameter at breast height (dbh) measurements, and its unit is square meters per hectare.
+For each focal individual, we calculate the competition intensity by summing the basal area of all individuals with a size greater than that of the focal individual. 
+We differentiate this sum of basal area between conspecific and heterospecific individuals.
+More details can be found in the @sec-dataset.
+
+Both the growth ($\Gamma$) and longevity ($\psi$) intercept parameters decrease exponentially with BAL.
+This negative effect of BAL on growth and longevity is driven by two parameters that describe the effect of conspecific ($\beta$) and heterospecfic ($\theta$) competition:
+
+$$
+  \Gamma + \beta^{\Gamma} \times (BAL_{cons} + \theta^{\Gamma} \times BAL_{het})
+$$
+
+$$
+  \psi + \beta^{\psi} \times (BAL_{cons} + \theta^{\psi} \times BAL_{het})
+$$
+
+When $\theta < 1$, it means that conspecific competition is stronger than heterospecific competition.
+Conversely, when $\theta > 1$, heterospecific competition prevails, and when $\theta = 1$, there is no distinction between conspecific and heterospecific competition (@fig-CovCompEffectGrowthMort).
+Note that both $\beta$ and $\theta$ are unbounded parameters that can either converge towards negative values (indicating competition) or positive values (indivating facilitation).
+
+```{r,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-CovCompEffectGrowthMort
+#| fig-width: 8.5
+#| fig-height: 4.5
+#| fig-cap: "Illustration of the impact of competition on growth and survival intercept parameters. The $\\beta$ parameter governs the strength of competition, while the $\\theta$ parameter determines the extent to which this intensity is transferred to heterospecific competition. In the left panel, heterospecific competition is weaker than conspecific competition ($\\theta < 1$), whereas in the right panel, heterospecific competition is stronger ($\\theta > 1$)."
+
+tibble(
+    beta = -c(0.02, 0.05),
+    theta = c(0.5, 1.5),
+    group = c("1", "2")
+  ) |>
+  group_by(group) |>
+  expand_grid(BAL = seq(0, 80, 0.1)) |>
+  mutate(
+    Conspecific_eff = exp(beta * BAL),
+    Heterospecific_eff = exp(beta * theta * BAL)
+  ) |>
+  pivot_longer(cols = contains('eff')) |>
+  mutate(
+    name = gsub('_eff', '', name),
+    group = case_match(
+      group,
+      "1" ~ "beta~'='~'-0.02;'~theta~'='~'0.5'",
+      "2" ~ "beta~'='~'-0.05;'~theta~'='~'1.5'"
+    )) |>
+  ggplot() +
+  aes(BAL, value) +
+  aes(color = name) +
+  facet_wrap(~group, labeller = label_parsed) +
+  geom_path() +
+  # geom_hline(yintercept = 0, alpha = 0.6, linetype = 3) +
+  labs(
+    x = expression('Basal area of larger individuals ('~m^2~ha^-1~')'),
+    y = expression('Effect on '~Gamma~'or'~psi),
+    color = '' 
+  ) +
+  scale_color_manual(
+    values = met.brewer('Juarez', 2)
+  ) +
+  theme_classic() +
+  theme(
+    legend.position = 'top',
+    strip.background = element_blank()
+  )
+```
+
+For the recruitment model, conspecific and heterospecific BAL affect different components of the model.
+Conspecific BAL, or simply the total conspecific plot basal area (as recruitment is necessarily smaller than any adult individual), has a unimodal effect on the annual ingrowth rate ($\phi$).
+This effect is characterized by an optimal basal area for ingrowth at $\delta^{\phi}$ and an increased effect controlled by the parameter $\sigma^{\phi}$:
+
+$$
+  \phi - \left(\frac{BAL_{cons} - \delta^{\phi}}{\sigma^{\phi}}\right)^2
+$$
+
+The underlying concept of this equation is that ingrowth rate should increase with conspecific density, but only up to a certain point determined by $\delta^{\phi}$.
+At higher densities, ingrowth rate is expected to decrease due to competition (@fig-CovCompEffectRec).
+
+```{r,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-CovCompEffectRec
+#| fig-width: 8.5
+#| fig-height: 4.5
+#| fig-cap: "Illustration of the impact of conspecific basal area on the ingrowth rate and the impact of total basal area on the survival rate of recruited individuals."
+
+tibble(
+    opt_BA = c(5, 40, 40),
+    sigma_BA = c(20, 20, 60),
+    group = c('A', 'B', 'C')
+  ) |>
+  group_by(group) |>
+  expand_grid(BAL = seq(0, 80, 0.1)) |>
+  mutate(
+    cons_eff = exp(-((BAL - opt_BA)/sigma_BA)^2)
+  ) |>
+  ggplot() +
+  aes(BAL, cons_eff) +
+  aes(color = group) +
+  geom_path() +
+  labs(
+    x = expression('BAL'['cons']~'('~m^2~ha^-1~')'),
+    y = expression('Effect on '~phi),
+    color = '' 
+  ) +
+  scale_color_manual(
+    values = met.brewer('Juarez', 3),
+    labels = c(
+      expression(delta^phi~'='~'5;'~sigma^phi~'='~'10'),
+      expression(delta^phi~'='~'40;'~sigma^phi~'='~'10'),
+      expression(delta^phi~'='~'40;'~sigma^phi~'='~'30')
+    )
+  ) +
+  theme_classic() +
+  theme(
+    legend.position = 'top'
+  ) ->
+p1
+
+tibble(
+    beta = -c(0.02, 0.05, 0.08),
+    group = c('A', 'B', 'C')
+  ) |>
+  group_by(group) |>
+  expand_grid(BAL = seq(0, 80, 0.1)) |>
+  mutate(
+    cons_eff = exp(beta * BAL)
+  ) |>
+  ggplot() +
+  aes(BAL, cons_eff) +
+  aes(color = group) +
+  geom_path() +
+  labs(
+    x = expression('BAL'['cons']~'+'~'BAL'['het']~'('~m^2~ha^-1~')'),
+    y = expression('Effect on '~rho),
+    color = '' 
+  ) +
+  scale_color_manual(
+    values = met.brewer('Juarez', 3),
+    labels = c(
+      expression(beta^rho~'='~'-0.02'),
+      expression(beta^rho~'='~'-0.05'),
+      expression(beta^rho~'='~'-0.08')
+    )
+  ) +
+  theme_classic() +
+  theme(
+    legend.position = 'top'
+  ) ->
+p2
+
+ggarrange(
+  p1, p2,
+  nrow = 1
+)
+```
+
+Finally, the annual survival probability reduces exponentially with the total basal area of the plot, where there is no distinction between conspecific and heterospecific competition:
+
+$$
+  \rho + \beta^{\rho} \times (BAL_{cons} +  BAL_{het})
+$$
+
+
+## Climate effect
+
+As our focus is on inference rather than prediction, we chose to not conduct model selection concerning the climate variables.
+Instead, we opted for the mean annual temperature (MAT) and mean annual precipitation (MAP) as our chosen bioclimatic variables, which are widely used for species distribution modeling.
+Each demographic function varies in function of a bell-shaped curve determined by an optimal climate condition ($\xi$) and a climate breadth parameter ($\sigma$) as follows:
+
+$$
+  \Gamma + \left(\frac{MAT - \xi^{\Gamma}_{MAT}}{\sigma^{\Gamma}_{MAT}}\right)^2 + \left(\frac{MAP - \xi^{\Gamma}_{MAP}}{\sigma^{\Gamma}_{MA{P}}}\right)^2
+$$
+
+$$
+  \psi + \left(\frac{MAT - \xi^{\psi}_{MAT}}{\sigma^{\psi}_{MAT}}\right)^2 + \left(\frac{MAP - \xi^{\psi}_{MAP}}{\sigma^{\psi}_{MA{P}}}\right)^2
+$$
+
+$$
+  \phi + \left(\frac{MAT - \xi^{\phi}_{MAT}}{\sigma^{\phi}_{MAT}}\right)^2 + \left(\frac{MAP - \xi^{\phi}_{MAP}}{\sigma^{\phi}_{MA{P}}}\right)^2
+$$
+
+The climate breadth parameter ($\sigma$) influences the strength of the specific climate variable's effect on each demographic model (@fig-CovClim).
+This unimodal function is flexible as it can assume various shapes to better accommodate the data.
+However, this flexibility also introduces the possibility of parameter degeneracy or redundancy, where different combinations of parameter values yield similar outcomes.
+To mitigate parameter degeneracy, we constrained the optimal climate condition parameter ($\xi$) within the observed climate range for the species, thereby assuming that the optimal climate condition falls within our data range.
+
+```{r,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-CovClim
+#| fig-width: 5.5
+#| fig-height: 4
+#| fig-cap: "Illustration of a hypothetical scaled climate variable's impact on the growth, survival, and recruitment intercept parameters."
+
+tibble(
+    opt_clim = c(0, 0.5, 0.5, 1),
+    sigma_clim = c(.5, .3, 1, .5),
+    group = c('A', 'B', 'C', 'D')
+  ) |>
+  group_by(group) |>
+  expand_grid(clim = seq(0, 1, 0.01)) |>
+  mutate(
+    clim_eff = exp(-((clim - opt_clim)/sigma_clim)^2)
+  ) |>
+  ggplot() +
+  aes(clim, clim_eff) +
+  aes(color = group) +
+  geom_path() +
+  labs(
+    x = 'Climate variable (scaled)',
+    y = expression('Effect on '~Gamma~'/'~psi~'/'~phi),
+    color = '' 
+  ) +
+  scale_color_manual(
+    values = met.brewer('Juarez', 4),
+    labels = c(
+      expression(xi~'='~'0;'~sigma~'='~'0.5'),
+      expression(xi~'='~'0.5;'~sigma~'='~'0.3'),
+      expression(xi~'='~'0.5;'~sigma~'='~'1'),
+      expression(xi~'='~'1;'~sigma~'='~'0.5')
+    )
+  ) +
+  theme_classic() +
+  theme(
+    legend.position = 'top'
+  )
+```
