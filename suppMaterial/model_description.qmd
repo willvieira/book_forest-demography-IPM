@@ -142,7 +142,7 @@ The rationale of this model is that the survival probability (1 - $M_i$) increas
 
 ```{r,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-mortModel
-#| fig-cap: "Illustration of how the annual survival probability ($logit(\\psi$) reduces with time interval."
+#| fig-cap: "Illustration of how the annual survival probability $logit(\\psi$) reduces with time interval."
 #| fig-height: 4
 
 tibble(
@@ -248,21 +248,21 @@ Lmax         | \zeta_{\infty}
 Beta         | \Beta^{\Gamma}
 theta        | \theta^{\Gamma}
 optimal_temp | \xi^{\Gamma}_{MAT}
-tau_temp     | \tau^{\Gamma}_{MAT}
+tau_temp     | \sigma^{\Gamma}_{MAT}
 optimal_prec | \xi^{\Gamma}_{MAP}
-tau_prec     | \tau^{\Gamma}_{MAP}
+tau_prec     | \sigma^{\Gamma}_{MAP}
 Survival
 psi          | \psi
 psiPlot      | \psi_{j}
 sigma_plot   | \sigma^{\psi}_{j}
-size_opt     | \Upsilon
-size_var     | \sigma_^{\Upsilon}
+size_opt     | \upsilon
+size_var     | \sigma_^{\upsilon}
 Beta         | \Beta^{\psi}
 theta        | \theta^{\psi}
 optimal_temp | \xi^{\Gamma}_{MAT}
-tau_temp     | \tau^{\Gamma}_{MAT}
+tau_temp     | \sigma^{\Gamma}_{MAT}
 optimal_prec | \xi^{\Gamma}_{MAP}
-tau_prec     | \tau^{\Gamma}_{MAP}
+tau_prec     | \sigma^{\Gamma}_{MAP}
 recruitment
 mPop_log     | \phi
 mPlot_log    | \phi_{j}
@@ -271,6 +271,10 @@ p_log        | \rho
 beta_p       | \Beta^{\rho}
 optimal_BA   | \delta^{\phi}
 sigma_BA     | \sigma^{\delta}
+optimal_temp | \xi^{\phi}_{MAT}
+tau_temp     | \sigma^{\phi}_{MAT}
+optimal_prec | \xi^{\phi}_{MAP}
+tau_prec     | \sigma^{\phi}_{MAP}
 sizeIngrowth
 size_int     | \Omega
 phi_time     | \omicron
