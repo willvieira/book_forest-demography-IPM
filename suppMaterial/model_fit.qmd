@@ -1,0 +1,19 @@
+# Model fit
+
+We assessed the growth, survival, and recruitment rates by examining transitions between two measurements.
+While we fitted the growth and survival functions at the individual level, recruitment was evaluated at the plot level.
+Due to differences in measurement thresholds between the FIA and Quebec protocols, we only considered individuals with a dbh $\ge$ 127 mm.
+Therefore, the ingrowth rate was quantified as the number of individuals crossing the 127 mm threshold.
+To quantify growth and survival, we included individual trees with at least two measurements over time.
+Similarly, for ingrowth, we used plots with a minimum of two measurements over time.
+To simplify the model hierarchy, we did not incorporate temporal models.
+Instead, we treated two transition measurements for the same individual as independent information.
+The variation at the individual level was partially accounted for by the plot random effects, where different individuals with multiple measurements shared the same variation.
+
+We fitted each of the growth, survival, and recruitment models separately for each species.
+The models were fitted using the Hamiltonian Monte Carlo (HMC) algorithm via the Stan software [version 2.30.1 @stan2022stan] and the cmdstandr R package [version 0.5.3 @cmdstanr].
+We conducted 2000 iterations for both the warm-up and sampling phases for each of the four chains, resulting in a total of 8000 posterior samples.
+However, to save computation time and storage space, we kept only the last 1000 iterations of the sampling phase, resulting in a total of 4000 posterior samples.
+We assessed model convergence using Stan's $\hat{R}$ statistic, considering convergence achieved when $\hat{R} < 1.01$.
+The complete code used for data preparation, model execution, and diagnostic analysis is hosted at [https://github.com/willvieira/TreesDemography](https://github.com/willvieira/TreesDemography).
+Diagnostic reports for all fitted models, including information on model convergence, parameter distributions, prediction checks, $R^2$, and other metrics, are available at [https://willvieira.github.io/TreesDemography/](https://willvieira.github.io/TreesDemography/).
