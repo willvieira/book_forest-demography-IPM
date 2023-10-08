@@ -855,7 +855,7 @@ AME_growth |>
 ```
 
 
-### AME of competition covariates grouped by shade tolerance
+### AME of temperature in the growth function over the latitude gradient
 
 ```{r plot_AME_growthVsLatitude,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-AMEsummTemp
