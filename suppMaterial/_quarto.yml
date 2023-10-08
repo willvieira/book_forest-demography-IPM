@@ -3,10 +3,17 @@ project:
 
 book:
   title: "Supplementary material"
-  subtitle: "Competition and climate effect on the dynamics of North American forest trees - from individuals to population"
+  subtitle: "Competition and climate effect on the dynamics of North American forest trees: from individuals to population"
   author:
     - name: Willian Vieira
       orcid: 0000-0003-0283-4570
+    - name: Andrew MacDonald
+      orcid: 0000-0003-1162-169X
+    - name: Amaël Le Squin
+      orcid: 0000-0003-3516-4155
+    - name: Robert L. Bradley
+    - name: Dominique Gravel
+      orcid: 0000-0002-4498-7076
 
   search: true
   repo-url: "https://github.com/willvieira/ms_forest-demography-IPM/"
@@ -14,10 +21,17 @@ book:
   # cover-image: cover.png
   chapters:
     - index.qmd
+    - introduction.qmd
     - db.qmd
     - part: Demographic models
       chapters:
       - model_description.qmd
+      - covariates_description.qmd
+      - model_fit.qmd
+      - model_comparison.qmd
+      - model_parameters.qmd
+    - part: Demographic model evaluation
+      chapters:
       - pars_intercept.qmd
       - pars_randomEffect.qmd
       - pars_size.qmd
@@ -25,7 +39,7 @@ book:
       - pars_climate.qmd
       - pars_effectSize.qmd
       - pars_condEffect.qmd
-    - part: Population model
+    - part: Using demographic models to infer population level performance
       chapters:
       - ipm_description.qmd
       - guide_IPM.qmd
@@ -33,6 +47,12 @@ book:
     - references.qmd
 
 bibliography: references.bib
+
+website:
+  comments: 
+    hypothesis:
+      theme: clean
+      openSidebar: false
 
 format:
   html:
