@@ -271,7 +271,7 @@ From the `treeData.RDS` dataset, we derived four additional datasets, each repre
 #| label: tbl-tabMetadata
 #| tbl-cap: "Description of metadata for each variable linked to its corresponding dataset object (R object). Note that replicated variables shared among the R objects have been excluded. Consequently, there is no detailed description for the `sizeIngrowth_dt` dataset."
 
-read_csv(file.path('data', 'db_metada.csv')) |>
+read_csv(file.path('..', 'data', 'db_metada.csv')) |>
 		gt() |>
 		tab_style(
 			style = cell_text(weight = "bold"),
