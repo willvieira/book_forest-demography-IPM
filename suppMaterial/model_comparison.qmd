@@ -607,4 +607,81 @@ loo_pareto |>
 ```
 
 
+## Size effect in survival
+
+We initially incorporated the size effect into the survival models due to the structured-population approach.
+However, we observed that the effect of size on mortality probability was generally weak and variable among species, with no clear pattern of increased mortality probability with larger individual size.
+All models that included the size effect performed worse than the null model, which contained only plot random effects [@fig-loo_mort].
+
+```{r load_survival,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+vital_rates |>
+  set_names() |>
+  map(~dir(file.path(model_dir, .x))) |>
+  map(~.x[.x != 'intcpt']) ->
+demo_models
+
+mort_models <- demo_models['mort']
+
+spIds |>
+  pull(species_id_old) |>
+  map(
+    ~looCompare(Sp = .x, models = mort_models) |>
+      bind_cols(species_id = .x)
+  ) |>
+  bind_rows() |>
+  # clean columns and variables
+  mutate(
+    model = gsub('intcpt_', '', model),
+    model = gsub('_', ' + ', model),
+    vital_rate = case_match(
+      vital_rate,
+      'growth' ~ 'Growth',
+      'mort' ~ 'Survival',
+      'recruit' ~ 'Recruitment'
+    )
+  ) ->
+loo_mort
+```
+
+```{r plotLoo,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-loo_mort
+#| fig-width: 8
+#| fig-height: 6
+#| fig-cap: "Boxplot shows the LOO-CV compare between the competing models based on the difference in the expected log pointwise predictive density (ELPD_diff) across the 32 tree species. The sd_diff is the standard error of the ELPD difference between the model and the reference model (ELPD_diff equal to zero)."
+
+loo_mort |>
+  select(species_id, vital_rate, model, elpd_diff, se_diff) |>
+  pivot_longer(cols = contains('diff')) |>
+  ggplot() +
+  aes(value, model) +
+  facet_wrap(name~vital_rate, scales = 'free') +
+  geom_jitter(
+    aes(color = species_id),
+    alpha = 0.8,
+    height = 0.15
+  ) +
+  geom_boxplot(
+    fill = 'transparent',
+    outlier.shape = NA
+  ) +
+  theme_classic() +
+  theme(
+    legend.position = 'none',
+    strip.background = element_blank(),
+    strip.text.x = element_text(size = rel(1.1))
+  ) +
+  labs(x = NULL, y = NULL, color = NULL)
+```
+
 ## Conclusion
+
+In summary, our analysis revealed that incorporating competition into the growth, survival, and recruitment models proved more effective in gaining individual-level information compared to climate variables.
+The parameter $\sigma_{plot}$, which is interpreted as spatial heterogeneity, was lowest in the growth model, followed by recruitment, and then survival.
+As the models became more complex with the inclusion of covariates, recruitment exhibited the most significant reduction in spatial variance, followed by growth, with no clear pattern in the case of survival.
+
+Regarding predictive performance, competition contributed more to the overall predictive capacity ($R^2$, MSE, and corrected accuracy) in the growth and survival models compared to climate variables.
+Although recruitment had the largest reduction in $\sigma_{plot}$, it had minimal impact on prediction accuracy.
+
+Finally, the LOO-CV indicates a clear trend where the complete model featuring plot random effects along with both competition and climate covariates outperformed the other competing models.
+Furthermore, the absolute value of the ELPD shows that the growth model gained the most information from the inclusion of covariates, followed by recruitment and survival models.
+Consequently, we selected the complete model with plot random effects, competition, and climate covariates as the preferred model for further analysis.
