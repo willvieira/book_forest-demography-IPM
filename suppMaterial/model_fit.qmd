@@ -14,6 +14,6 @@ We fitted each of the growth, survival, and recruitment models separately for ea
 The models were fitted using the Hamiltonian Monte Carlo (HMC) algorithm via the Stan software [version 2.30.1 @stan2022stan] and the cmdstandr R package [version 0.5.3 @cmdstanr].
 We conducted 2000 iterations for both the warm-up and sampling phases for each of the four chains, resulting in a total of 8000 posterior samples.
 However, to save computation time and storage space, we kept only the last 1000 iterations of the sampling phase, resulting in a total of 4000 posterior samples.
-We assessed model convergence using Stan's $\hat{R}$ statistic, considering convergence achieved when $\hat{R} < 1.01$.
+We assessed model convergence using Stan's $\hat{R}$ statistic, considering convergence achieved when $\hat{R} < 1.05$.
 The complete code used for data preparation, model execution, and diagnostic analysis is hosted at [https://github.com/willvieira/TreesDemography](https://github.com/willvieira/TreesDemography).
 Diagnostic reports for all fitted models, including information on model convergence, parameter distributions, prediction checks, $R^2$, and other metrics, are available at [https://willvieira.github.io/TreesDemography/](https://willvieira.github.io/TreesDemography/).
