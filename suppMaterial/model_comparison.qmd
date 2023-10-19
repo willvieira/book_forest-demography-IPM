@@ -1,0 +1,610 @@
+# Model comparison {#sec-model_comparison}
+
+```{r,include=FALSE,echo=FALSE}
+Echo=FALSE
+Eval=TRUE
+Cache=TRUE
+Warng=FALSE
+Msg=FALSE
+library(tidyverse)
+library(ggdist)
+library(loo)
+```
+
+```{r loadPars,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+# main directory where parameters are saved (TODO)
+model_dir <- file.path('..', '..', 'TreesDemography', 'output_sim_processed')
+
+# define which model to load for each demographic rate
+vital_rates <- c('growth', 'mort', 'recruit')
+
+vital_rates |>
+  set_names() |>
+  map(~dir(file.path(model_dir, .x))) |>
+  map(~.x[.x != 'intcpt']) |>
+  # remove size models for the survival
+  map(~.x[grep('size', .x, invert = TRUE)]) ->
+demo_models
+
+## Species if info
+spIds <- read_csv(
+  file.path(
+    '..', 'data', 'species_id.csv'
+  )
+) |>
+mutate(
+  shade = factor(shade, levels = c('tolerant', 'intermediate', 'intolerant')),
+  shade_sylvics = factor(shade_sylvics, levels = c('very-tolerant',
+                                            'tolerant',
+                                            'intermediate',
+                                            'intolerant',
+                                            'very-intolerant'
+                                            )),
+  succession = factor(succession, levels = c('pioneer',
+                                              'intermediate',
+                                              'climax'))
+) |>
+filter(sp_to_analyze)
+```
+
+We constructed the demographic models incrementally, starting from the simple intercept model and gradually adding plot random effects, competition, and climate covariates.
+While the intercept-only model represents the most basic form, we opted to discard it and use the intercept model with random effects as the baseline or null model for comparison with more complex models.
+We ensured the convergence of all these model forms (described in @sec-mixed_cov), and comprehensive diagnostic details are available at [https://github.com/willvieira/TreesDemography](https://github.com/willvieira/TreesDemography).
+
+Our primary objective is to select the model that has learned most from the data.
+We used complementary metrics to quantify the gain in information achieved by adding complexity to each demographic model.
+One intuitive metric involves assessing the reduction in variance attributed to likelihood and the variance associated with plot random effects.
+A greater reduction in their variance implies a greater information gain from model complexity.
+The next metrics are all derived from the idea of increasing predictive accuracy.
+Although our focus is on inference, measuring predictive power is crucial for quantifying the additional information gained from the inclusion of new covariates.
+The first two classic measures of predictive accuracy are the mean squared error (MSE) and the pseudo $R^2$.
+Both these metrics are based on the linear relationship between observed and predicted demographic outputs.
+Finally, we used Leave-One-Out Cross-Validation (LOO-CV), a technique that uses the sampled data to estimate the model's out-of-sample predictive accuracy [@vehtari2017practical].
+LOO-CV allows us to assess both how well each individual model describes the observed data and to compare competing models to determine which one has learned the most from the data.
+
+## Parameter variance
+
+This section describes how the variance attributed to plot random effects changes with increasing model complexity.
+As covariates are introduced, it's expected that part of the variance in demographic rates, initially attributed to random effects, shifts towards the covariate fixed effects.
+Therefore, the larger the reduction in variance associated with plot random effects, the more significant the role of covariates in explaining demographic rates.
+The @fig-sigma_plot shows the change in $\sigma_{plot}$ with increased model complexity for growth, survival, and recruitment vital rates.
+
+```{r load_sigmaPlot,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+# load sigma plot parameter
+load_par <- function(
+  file,
+  Par
+){
+  x = readRDS(file) |>
+    filter(par == Par) |>
+    pull(value)
+
+  return(x)
+}
+
+demo_models |>
+  enframe() |>
+  unnest(value) |>
+  rename(
+    vital_rate = name,
+    model = value
+  ) |>
+  rowwise() |>
+  expand_grid(sp_id = spIds$species_id_old) |>
+  mutate(
+    fileName = paste0(model_dir, '/', vital_rate, '/', model, '/posterior_pop_', sp_id, '.RDS')
+  ) |>
+  rowwise() |>
+  mutate(par = list(load_par(fileName, Par = 'sigma_plot'))) |>
+  select(!fileName) |>
+  unnest(par) |>
+  # clean model names
+  mutate(
+    model = gsub('intcpt_', '', model),
+    model = gsub('_', ' + ', model),
+    vital_rate = case_match(
+      vital_rate,
+      'growth' ~ 'Growth',
+      'mort' ~ 'Survival',
+      'recruit' ~ 'Recruitment'
+    )
+  ) ->
+sigma_plot
+```
+
+```{r load_sigmaPlot,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-sigma_plot
+#| fig-width: 8
+#| fig-height: 4
+#| fig-cap: "Boxplot shows the change in the posterior distribution of the parameter $\\sigma_{plot}$ across the 32 tree species as models become more complex. For each growth, survival, and recrutiment vital rate, the simplest model (plot random effects only) increase in complexity with the addition of fixed size, competition, and climate covariates. Each colored dot represents the species' average posterior distribution."
+
+# sigma_plot |>
+#   left_join(
+#     spIds,
+#     by = c('sp_id' = 'species_id_old')
+#   ) |>
+#   ggplot() +
+#   aes(par, fct_reorder(species_name, par)) +
+#   aes(color = model) +
+#   facet_wrap(~vital_rate, scales = 'free_x') +
+#   stat_pointinterval(alpha = 0.7) +
+#   theme_classic() +
+#   theme(
+#     axis.text.y = element_text(face = "italic"),
+#     legend.position = 'top'
+#   ) +
+#   labs(
+#     x = expression(sigma[plot]),
+#     y = NULL, color = NULL
+#   )
+
+sigma_plot |>
+  group_by(sp_id, model, vital_rate) |> 
+  reframe(mean_par = mean(par)) ->
+sigma_mean
+
+sigma_plot |>
+  ggplot() +
+  aes(par, model) +
+  facet_wrap(~vital_rate, scales = 'free') +
+  geom_jitter(
+    data = sigma_mean,
+    aes(mean_par, model, color = sp_id),
+    alpha = 0.8,
+    height = 0.15
+  ) +
+  geom_boxplot(fill = 'transparent') +
+  theme_classic() +
+  theme(
+    legend.position = 'none',
+    strip.background = element_blank(),
+    strip.text.x = element_text(hjust = 0, margin=margin(l=0.8), size = rel(1.1))
+  ) +
+  labs(
+    x = expression(sigma[plot]),
+    y = NULL, color = NULL
+  )
+```
+
+## Model predictive accuracy
+
+To evaluate the predictive accuracy of growth and recruitment demographic rates, we used pseudo $R^2$ and MSE metrics derived from the comparison of observed and predicted values.
+Higher $R^2$ values and lower MSE indicate better overall model accuracy.
+The @fig-R2 and @fig-MSE provide comparisons of the growth and recruitment models using $R^2$ and MSE, respectively.
+
+```{r load_R2MSE,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+# function to load R2
+load_R2 <- function(file) {
+  # Is it related to the growth vital rate?
+  isGrowth <- ifelse(length(grep('growth', file)) > 0, TRUE, FALSE)
+  
+  r2_tb <- readRDS(file)
+
+  if(isGrowth) {
+    return(
+      r2_tb |>
+        select(!contains('R2gelman')) |>
+        select(!contains('_size')) |>
+        rename(
+          R2reg = R2reg_growth
+        )
+    )
+  }else{
+    return(
+      r2_tb |>
+        select(!contains('R2gelman'))
+    )
+  }
+}
+
+# Load R2
+demo_models |>
+  enframe() |>
+  unnest(value) |>
+  rename(
+    vital_rate = name,
+    model = value
+  ) |>
+  filter(vital_rate != 'mort') |>
+  mutate(
+    fileName = paste0(model_dir, '/', vital_rate, '/', model, '/R2.RDS')
+  ) |>
+  rowwise() |>
+  mutate(
+    r2_db = list(load_R2(fileName))
+  ) |>
+  unnest(r2_db) |>
+  select(!fileName) |>
+  # clean model names
+  mutate(
+    model = gsub('intcpt_', '', model),
+    model = gsub('_', ' + ', model),
+    vital_rate = case_match(
+      vital_rate,
+      'growth' ~ 'Growth',
+      'recruit' ~ 'Recruitment'
+    )
+  ) ->
+R2
+
+# function to load MSE
+load_MSE <- function(file) {
+  # Is it related to the growth vital rate?
+  isGrowth <- ifelse(length(grep('growth', file)) > 0, TRUE, FALSE)
+  
+  mse_tb <- readRDS(file)
+
+  if(isGrowth) {
+    return(
+      mse_tb |>
+        select(!contains('_size')) |>
+        rename(
+          MSE = MSE_growth
+        )
+    )
+  }else{
+    return(
+      mse_tb
+    )
+  }
+}
+
+# Load MSE
+demo_models |>
+  enframe() |>
+  unnest(value) |>
+  rename(
+    vital_rate = name,
+    model = value
+  ) |>
+  filter(vital_rate != 'mort') |>
+  mutate(
+    fileName = paste0(model_dir, '/', vital_rate, '/', model, '/MSE.RDS')
+  ) |>
+  rowwise() |>
+  mutate(
+    MSE_db = list(load_MSE(fileName))
+  ) |>
+  unnest(MSE_db) |>
+  select(!fileName) |>
+  # clean model names
+  mutate(
+    model = gsub('intcpt_', '', model),
+    model = gsub('_', ' + ', model),
+    vital_rate = case_match(
+      vital_rate,
+      'growth' ~ 'Growth',
+      'recruit' ~ 'Recruitment'
+    )
+  ) ->
+MSE
+```
+
+```{r plotR2,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-R2
+#| fig-width: 6
+#| fig-height: 4
+#| fig-cap: "Posterior distribution of pseudo $R^2$ across the 32 tree species between the different models. For each growth, survival, and recrutiment vital rate, the simplest model (plot random effects only) increase in complexity with the addition of fixed competition and climate covariates. Each colored dot represents the species' average posterior distribution."
+
+# R2 |>
+#   left_join(
+#     spIds,
+#     by = c('species_id' = 'species_id_old')
+#   ) |>
+#   ggplot() +
+#   aes(R2reg, fct_reorder(species_name, R2reg)) +
+#   aes(color = model) +
+#   facet_wrap(~vital_rate, scales = 'free_x') +
+#   stat_pointinterval(alpha = 0.7) +
+#   theme_classic() +
+#   theme(
+#     axis.text.y = element_text(face = "italic"),
+#     legend.position = 'top'
+#   ) +
+#   labs(
+#     x = expression('pseudo'~R^2),
+#     y = NULL, color = NULL
+#   )
+
+R2 |>
+  group_by(species_id, model, vital_rate) |> 
+  reframe(mean_r2 = mean(R2reg)) ->
+R2_mean
+
+R2 |>
+  ggplot() +
+  aes(R2reg, model) +
+  facet_wrap(~vital_rate, scales = 'free_x') +
+  geom_jitter(
+    data = R2_mean,
+    aes(mean_r2, model, color = species_id),
+    alpha = 0.8,
+    height = 0.15
+  ) +
+  geom_boxplot(fill = 'transparent') +
+  theme_classic() +
+  theme(
+    legend.position = 'none',
+    strip.background = element_blank(),
+    strip.text.x = element_text(hjust = 0, margin=margin(l=0.8), size = rel(1.1))
+  ) +
+  labs(
+    x = expression('pseudo'~R^2),
+    y = NULL, color = NULL
+  )
+```
+
+```{r plotMSE,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-MSE
+#| fig-width: 6
+#| fig-height: 4
+#| fig-cap: "Posterior distribution of Mean Squared Error (MSE) across the 32 tree species as models become more complex."
+
+# MSE |>
+#   left_join(
+#     spIds,
+#     by = c('species_id' = 'species_id_old')
+#   ) |>
+#   ggplot() +
+#   aes(MSE, fct_reorder(species_name, MSE)) +
+#   aes(color = model) +
+#   facet_wrap(~vital_rate, scales = 'free_x') +
+#   stat_pointinterval(alpha = 0.7) +
+#   theme_classic() +
+#   theme(
+#     axis.text.y = element_text(face = "italic"),
+#     legend.position = 'top'
+#   ) +
+#   labs(
+#     x = 'MSE',
+#     y = NULL, color = NULL
+#   )
+
+MSE |>
+  group_by(species_id, model, vital_rate) |> 
+  reframe(MSE_mean = mean(MSE)) ->
+MSE_mean
+
+MSE |>
+  ggplot() +
+  aes(MSE, model) +
+  facet_wrap(~vital_rate, scales = 'free_x') +
+  geom_jitter(
+    data = MSE_mean,
+    aes(MSE_mean, model, color = species_id),
+    alpha = 0.8,
+    height = 0.15
+  ) +
+  geom_boxplot(fill = 'transparent') +
+  theme_classic() +
+  theme(
+    legend.position = 'none',
+    strip.background = element_blank(),
+    strip.text.x = element_text(hjust = 0, margin=margin(l=0.8), size = rel(1.1))
+  ) +
+  labs(
+    x = 'Mean squared error',
+    y = NULL, color = NULL
+  )
+```
+
+For the survival model, we used three complementary metrics to assess model predictions.
+While the accuracy of classification models is often evaluated through the fraction of correct predictions, this measure can be misleading for unbalanced datasets such as mortality, where dead events are rare.
+To address this issue, we calculated sensitivity, which measures the percentage of dead trees correctly identified as dead (true positives).
+We also computed specificity, which measures the percentage of live trees correctly identified as alive (true negatives).
+The combination of sensitivity and specificity allows us to calculate corrected accuracy, which considers the unbalanced accuracy predictions of positive and negative events (@fig-Acc).
+
+```{r load_acc,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+# Load accuracy
+demo_models |>
+  enframe() |>
+  unnest(value) |>
+  rename(
+    vital_rate = name,
+    model = value
+  ) |>
+  filter(vital_rate == 'mort') |>
+  mutate(
+    fileName = paste0(model_dir, '/', vital_rate, '/', model, '/accur.RDS')
+  ) |>
+  rowwise() |>
+  mutate(
+    acc_db = list(readRDS(fileName))
+  ) |>
+  unnest(acc_db) |>
+  select(!c(vital_rate, fileName, TP, TN, FN, FP, Acc)) |>
+  pivot_longer(cols = c(Sensitivity, Specificity, AccCorrected)) |>
+  # clean model names
+  mutate(
+    model = gsub('intcpt_', '', model),
+    model = gsub('_', ' + ', model),
+    name = case_match(
+      name,
+      'AccCorrected' ~ 'Accuracy corrected',
+      .default = name
+    )
+  ) ->
+acc
+```
+
+```{r plotAcc,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-Acc
+#| fig-width: 8
+#| fig-height: 4
+#| fig-cap: "Comparing the posterior distribution of sensitivity, specificity, and accuracy across the 32 tree species as models become more complex. Each colored dot represents the species' average posterior distribution."
+
+# acc |>
+#   left_join(
+#     spIds,
+#     by = c('species_id' = 'species_id_old')
+#   ) |>
+#   ggplot() +
+#   aes(value, fct_reorder(species_name, value)) +
+#   aes(color = model) +
+#   facet_wrap(~name, scales = 'free_x') +
+#   stat_pointinterval(alpha = 0.7) +
+#   theme_classic() +
+#   theme(
+#     axis.text.y = element_text(face = "italic"),
+#     legend.position = 'top'
+#   ) +
+#   labs(x = NULL, y = NULL, color = NULL)
+
+acc |>
+  group_by(species_id, model, name) |> 
+  reframe(acc_mean = mean(value)) ->
+acc_mean
+
+acc |>
+  ggplot() +
+  aes(value, model) +
+  facet_grid(~name, scales = 'free_x') +
+  geom_jitter(
+    data = acc_mean,
+    aes(acc_mean, model, color = species_id),
+    alpha = 0.8,
+    height = 0.15
+  ) +
+  geom_boxplot(fill = 'transparent') +
+  theme_classic() +
+  theme(
+    legend.position = 'none',
+    strip.background = element_blank(),
+    strip.text.x = element_text(size = rel(1.1))
+  ) +
+  labs(x = NULL, y = NULL, color = NULL)
+```
+
+## Leave-one-out cross-validation
+
+The final evaluation of competing models is conducted using the LOO-CV metric, where models are compared based on the difference in the expected log pointwise predictive density (ELPD_diff).
+In cases involving multiple models comparision, the difference is calculated relative to the model with highest ELPD [@vehtari2017practical].
+Consequently, the model with ELPD_diff equal to zero is defined as the best model, while the other models performance are assessed based on their deviation from the reference model in pointwise predictive cross-validation.
+Given the large number of observations in the dataset, we approximated LOO-CV using PSIS-LOO and subsampling.
+For each species, we approximated LOO-CV by sampling one-fifth of the total number of observations.
+
+```{r load_loo,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+# Function to load and compare Loo between different models across vitalRate and species
+looCompare <- function(Sp, models = demo_models, model_path = model_dir)
+{
+  models |>
+    enframe() |>
+    unnest(value) |>
+    rename(
+      vital_rate = name,
+      model = value
+    ) |>
+    group_by(vital_rate) |>
+    mutate(md = 1:length(model)) |>
+    ungroup() |>
+    mutate(
+      file = paste0(model_path, '/', vital_rate, '/', model, '/loo_', Sp, '.RDS')
+    ) |>
+    rowwise() |>
+    mutate(loo_obj = list(readRDS(file))) |>
+    group_by(vital_rate) |>
+    mutate(loo_comp = list(
+      loo::loo_compare(loo_obj) |>
+        as.data.frame() |>
+        rownames_to_column(var = 'sim')
+      )
+    ) |>
+    select(!c(file, loo_obj)) |>
+    unnest(loo_comp) |>
+    filter(md == parse_number(sim)) |>
+    select(!c(sim, md))
+}
+
+spIds |>
+  pull(species_id_old) |>
+  map(
+    ~looCompare(Sp = .x) |>
+      bind_cols(species_id = .x)
+  ) |>
+  bind_rows() |>
+  # clean columns and variables
+  mutate(
+    model = gsub('intcpt_', '', model),
+    model = gsub('_', ' + ', model),
+    vital_rate = case_match(
+      vital_rate,
+      'growth' ~ 'Growth',
+      'mort' ~ 'Survival',
+      'recruit' ~ 'Recruitment'
+    )
+  ) ->
+loo_tb
+```
+
+```{r plotLoo,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-loo
+#| fig-width: 8
+#| fig-height: 6
+#| fig-cap: "Boxplot shows the LOO-CV compare between the competing models based on the difference in the expected log pointwise predictive density (ELPD_diff) across the 32 tree species. The sd_diff is the standard error of the ELPD difference between the model and the reference model (ELPD_diff equal to zero)."
+
+loo_tb |>
+  select(species_id, vital_rate, model, elpd_diff, se_diff) |>
+  pivot_longer(cols = contains('diff')) |>
+  ggplot() +
+  aes(value, model) +
+  facet_wrap(name~vital_rate, scales = 'free') +
+  geom_jitter(
+    aes(color = species_id),
+    alpha = 0.8,
+    height = 0.15
+  ) +
+  geom_boxplot(
+    fill = 'transparent',
+    outlier.shape = NA
+  ) +
+  theme_classic() +
+  theme(
+    legend.position = 'none',
+    strip.background = element_blank(),
+    strip.text.x = element_text(size = rel(1.1))
+  ) +
+  labs(x = NULL, y = NULL, color = NULL)
+```
+
+```{r load_loo2,echo=Echo,eval=FALSE,cache=Cache,warning=Warng,message=Msg}
+# Function to load and compare Loo between different models across vitalRate and species
+loo_paretoK <- function(file)
+{
+  pareto_k_table(
+    readRDS(file)
+  ) |>
+  as.data.frame() |>
+  mutate(int = c('good', 'ok', 'bad', 'very bad'))
+}
+
+demo_models |>
+  enframe() |>
+  unnest(value) |>
+  rename(
+    vital_rate = name,
+    model = value
+  ) |>
+  expand_grid(species_id = spIds$species_id_old) |>
+  mutate(
+    file = paste0(model_dir, '/', vital_rate, '/', model, '/loo_', species_id, '.RDS')
+  ) |>
+  rowwise() |>
+  mutate(
+    paretoK = list(loo_paretoK(file))
+  ) |>
+  select(!file) |>
+  unnest(paretoK) ->
+loo_pareto
+
+
+loo_pareto |>
+  filter(int %in% c('good', 'very bad')) |>
+  ggplot() +
+  aes(Proportion, model) +
+  facet_wrap(int~vital_rate, scales = 'free') +
+  geom_boxplot()
+
+```
+
+
+## Conclusion
