@@ -19,11 +19,18 @@ library(ggrepel)
 ```
 
 ```{r re_loadPars,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+data_path <- readLines('_data.path')
+pars_path <- file.path(data_path, 'output_sim_processed')
+models <- c(
+  'growth' = 'intcpt_plot_comp_clim',
+  'mort' = 'intcpt_plot_comp_clim',
+  'recruit' = 'intcpt_plot_comp_clim'
+)
 
 ## Species if info
 spIds <- read_csv(
   file.path(
-    '..', 'data', 'species_id.csv'
+    data_path, 'species_id.csv'
   )
 ) |>
 mutate(
@@ -44,39 +51,39 @@ filter(sp_to_analyze)
 # Load parameters
 map_dfr(
   spIds$species_id_old,
-  ~ read_csv(
+  ~ readRDS(
     paste0(
-      '../data/parameters/growth_', .x, '.csv'
-    ),
-    show_col_types = FALSE
+      pars_path, '/growth/', models['growth'], '/posterior_pop_', .x, '.RDS'
+    )
   ) |>
-  select(c(r, sigma_plot)) |>
+  filter(par %in% c('r', 'sigma_plot')) |>
+  pivot_wider(names_from = par) |>
   bind_cols(species_id = .x)
 ) ->
 pars_growth
 
 map_dfr(
   spIds$species_id_old,
-  ~ read_csv(
+  ~ readRDS(
     paste0(
-      '../data/parameters/mort_', .x, '.csv'
-    ),
-    show_col_types = FALSE
+      pars_path, '/mort/', models['mort'], '/posterior_pop_', .x, '.RDS'
+    )
   ) |>
-  select(psi, sigma_plot) |>
+  filter(par %in% c('psi', 'sigma_plot')) |>
+  pivot_wider(names_from = par) |>
   bind_cols(species_id = .x)
 ) ->
 pars_survival
 
 map_dfr(
   spIds$species_id_old,
-  ~ read_csv(
+  ~ readRDS(
     paste0(
-      '../data/parameters/rec_', .x, '.csv'
-    ),
-    show_col_types = FALSE
+      pars_path, '/recruit/', models['recruit'], '/posterior_pop_', .x, '.RDS'
+    )
   ) |>
-  select(mPop_log, sigma_plot) |>
+  filter(par %in% c('mPop_log', 'sigma_plot')) |>
+  pivot_wider(names_from = par) |>
   bind_cols(species_id = .x)
 ) ->
 pars_rec
@@ -96,7 +103,7 @@ pars_growth |>
   ) ->
 pars_all
 
-treeData <- readRDS(file.path('..', 'data', 'treeData.RDS')) |>
+treeData <- readRDS(file.path(data_path, 'treeData.RDS')) |>
   filter(species_id %in% spIds$species_id_old)
 ```
 
@@ -185,7 +192,7 @@ pars_growth |>
   ) +
   theme(axis.text.y = element_text(face = "italic")) +
   labs(
-    x = 'Growth rate (r)',
+    x = expression(Gamma),
     y = '',
     color = ''
   )
@@ -221,7 +228,7 @@ pars_survival |>
   ) +
   theme(axis.text.y = element_text(face = "italic")) +
   labs(
-    x = 'Longevity',
+    x = expression(psi),
     y = '',
     color = ''
   )
@@ -257,7 +264,7 @@ pars_rec |>
   ) +
   theme(axis.text.y = element_text(face = "italic")) +
   labs(
-    x = 'Ingrowth rate',
+    x = expression(phi),
     y = '',
     color = ''
   )

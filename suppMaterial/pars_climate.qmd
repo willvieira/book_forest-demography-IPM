@@ -19,11 +19,18 @@ library(ggrepel)
 ```
 
 ```{r intercept_loadPars,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+data_path <- readLines('_data.path')
+pars_path <- file.path(data_path, 'output_sim_processed')
+models <- c(
+  'growth' = 'intcpt_plot_comp_clim',
+  'mort' = 'intcpt_plot_comp_clim',
+  'recruit' = 'intcpt_plot_comp_clim'
+)
 
 ## Species if info
 spIds <- read_csv(
   file.path(
-    '..', 'data', 'species_id.csv'
+    data_path, 'species_id.csv'
   )
 ) |>
 mutate(
@@ -42,7 +49,7 @@ filter(sp_to_analyze)
 
 
 # load data to unscale climate variables and function to scale climate back to original range
-clim_scaleRange <- readRDS(file.path('..', 'data', 'climate_scaleRange.RDS')) |>
+clim_scaleRange <- readRDS(file.path(data_path, 'climate_scaleRange.RDS')) |>
   bind_cols()
 
 unscaleClim <- function(
@@ -66,31 +73,44 @@ unscaleClim <- function(
 # Load parameters
 map_dfr(
     spIds$species_id_old,
-    ~ read_csv(
-      paste0(
-        '../data/parameters/growth_', .x, '.csv'
-      ),
-      show_col_types = FALSE
-    ) |>
-    select(c(contains('optimal'), contains('tau'))) |>
+    ~ readRDS(
+        paste0(
+          pars_path, '/growth/', models['growth'], '/posterior_pop_', .x, '.RDS'
+        )
+      ) |>
+    pivot_wider(names_from = par) |>
+    select(iter, c(contains('optimal'), contains('tau'))) |>
     bind_cols(species_id = .x)
   ) ->
 pars_growth
 
 map_dfr(
     spIds$species_id_old,
-    ~ read_csv(
+    ~ readRDS(
       paste0(
-        '../data/parameters/mort_', .x, '.csv'
-      ),
-      show_col_types = FALSE
+        pars_path, '/mort/', models['mort'], '/posterior_pop_', .x, '.RDS'
+      )
     ) |>
-    select(c(contains('optimal'), contains('tau'))) |>
+    pivot_wider(names_from = par) |>
+    select(iter, c(contains('optimal'), contains('tau'))) |>
     bind_cols(species_id = .x)
   ) ->
   pars_survival
 
-treeData <- readRDS(file.path('..', 'data', 'treeData.RDS')) |>
+map_dfr(
+    spIds$species_id_old,
+    ~ readRDS(
+      paste0(
+        pars_path, '/recruit/', models['recruit'], '/posterior_pop_', .x, '.RDS'
+      )
+    ) |>
+    pivot_wider(names_from = par) |>
+    select(iter, c(contains('optimal'), contains('tau'))) |>
+    bind_cols(species_id = .x)
+  ) ->
+  pars_recruit
+
+treeData <- readRDS(file.path(data_path, 'treeData.RDS')) |>
   filter(species_id %in% spIds$species_id_old)
 ```
 
@@ -131,8 +151,15 @@ treeData |>
         select(species_id, iter, survival) |>
         ungroup()
       ) |>
+      left_join(
+        pars_recruit |>
+        group_by(species_id) |>
+        mutate(recruit = optimal_temp, iter = 1:n()) |>
+        select(species_id, iter, recruit) |>
+        ungroup()
+      ) |>
       pivot_longer(
-        cols = c(growth, survival)
+        cols = c(growth, survival, recruit)
       ) |>
       left_join(
         spIds,
@@ -140,13 +167,16 @@ treeData |>
       ),
     aes(unscaleClim(value, 'temp'), species_name, color = name),
     alpha = 0.95,
-    position = position_dodge(width = 0.2) # dodge to avoid overlap
+    position = position_dodge(width = 0.4) # dodge to avoid overlap
   ) +
   theme_classic() +
   scale_color_manual(
-    values = c('#5ab4ac', '#d8b365')
+    values = c('#018571', '#dfc27d', '#a6611a')
   ) +
-  theme(axis.text.y = element_text(face = "italic")) +
+  theme(
+    axis.text.y = element_text(face = "italic"),
+    panel.grid.major.y = element_line(colour = rgb(0,0,0,.1))
+  ) +
   labs(
     color = 'Optimal climate',
     x = expression(paste("Annual mean temperature (", degree, "C)")),
@@ -183,8 +213,15 @@ treeData |>
         select(species_id, iter, survival) |>
         ungroup()
       ) |>
+      left_join(
+        pars_recruit |>
+        group_by(species_id) |>
+        mutate(recruit = optimal_prec, iter = 1:n()) |>
+        select(species_id, iter, recruit) |>
+        ungroup()
+      ) |>
       pivot_longer(
-        cols = c(growth, survival)
+        cols = c(growth, survival, recruit)
       ) |>
       left_join(
         spIds,
@@ -192,15 +229,18 @@ treeData |>
       ),
     aes(unscaleClim(value, 'prec'), species_name, color = name),
     alpha = 0.95,
-    position = position_dodge(width = 0.2) # dodge to avoid overlap
+    position = position_dodge(width = 0.4) # dodge to avoid overlap
   ) +
   theme_classic() +
   scale_color_manual(
-    values = c('#5ab4ac', '#d8b365')
+    values = c('#018571', '#dfc27d', '#a6611a')
   ) +
   xlab('Annual Precipitation (mm)') +
   ylab('') +
-  theme(axis.text.y = element_text(face = "italic")) +
+  theme(
+    axis.text.y = element_text(face = "italic"),
+    panel.grid.major.y = element_line(colour = rgb(0,0,0,.1))
+  ) +
   labs(color = 'Optimal climate')
 ```
 
@@ -235,6 +275,15 @@ pars_growth |>
       select(species_id, iter, contains('survival')) |>
       ungroup()
   ) |>
+  left_join(
+    pars_recruit |>
+      mutate(temp_recruit = tau_temp,
+            prec_recruit = tau_prec) |>
+      group_by(species_id) |>
+      mutate(iter = 1:n()) |>
+      select(species_id, iter, contains('recruit')) |>
+      ungroup()
+  ) |>
   pivot_longer(
     cols = c(contains('temp_'), contains('prec_')),
     names_to = c('clim', 'vr'),
@@ -258,7 +307,7 @@ pars_growth |>
   stat_pointinterval() +
   theme_classic() +
   scale_color_manual(
-    values = c('#5ab4ac', '#d8b365')
+    values = c('#018571', '#dfc27d', '#a6611a')
   ) +
   xlab(expression(tau^-1)) +
   ylab('') +
@@ -287,6 +336,15 @@ pars_growth |>
       group_by(species_id) |>
       mutate(iter = 1:n()) |>
       select(species_id, iter, contains('survival')) |>
+      ungroup()
+  ) |>
+  left_join(
+    pars_recruit |>
+      mutate(temp_recruit = tau_temp,
+            prec_recruit = tau_prec) |>
+      group_by(species_id) |>
+      mutate(iter = 1:n()) |>
+      select(species_id, iter, contains('recruit')) |>
       ungroup()
   ) |>
   pivot_longer(
@@ -351,6 +409,10 @@ pars_growth |>
     pars_survival |>
       bind_cols(vr = 'survival')
   ) |>
+  bind_rows(
+    pars_recruit |>
+      bind_cols(vr = 'recruitment')
+  ) |>
   left_join(sp_range) |>
   mutate(
     optimal_temp_scl = (optimal_temp - min_temp)/(max_temp - min_temp),
@@ -389,6 +451,17 @@ pars_growth |>
       ungroup() |>
       select(species_id, iter, temp_survival, prec_survival)
   ) |> 
+  left_join(
+    pars_recruit |>
+      group_by(species_id) |>
+      mutate(
+        iter = 1:n(),
+        temp_recruitment = tau_temp,
+        prec_recruitment = tau_prec
+      ) |>
+      ungroup() |>
+      select(species_id, iter, temp_recruitment, prec_recruitment)
+  ) |>
   pivot_longer(
     cols = c(contains('temp'), contains('prec')),
     names_to = c('clim', 'vr'),
@@ -409,11 +482,11 @@ pars_growth |>
   facet_wrap(~clim) +
   stat_pointinterval() +
   scale_color_manual(
-    values = c('#5ab4ac', '#d8b365')
+    values = c('#018571', '#dfc27d', '#a6611a')
   ) +
   geom_smooth(method = 'lm') +
   theme_classic() +
-  xlab('Mean pptimal climate relative to species range') +
+  xlab('Mean optimal climate relative to species range') +
   ylab(expression( tau^-1)) +
   labs(color = 'Vital rate') +
   theme(legend.position = 'top')
@@ -481,12 +554,23 @@ pars_growth |>
       ungroup() |>
       select(species_id, iter, temp_survival, prec_survival)
   ) |> 
+  left_join(
+    pars_recruit |>
+      group_by(species_id) |>
+      mutate(
+        iter = 1:n(),
+        temp_recruitment = tau_temp,
+        prec_recruitment = tau_prec
+      ) |>
+      ungroup() |>
+      select(species_id, iter, temp_recruitment, prec_recruitment)
+  ) |>
   pivot_longer(
     cols = c(contains('temp'), contains('prec')),
     names_to = c('clim', 'vr'),
     names_sep = '_'
   ) |>
-  left_join(sp_range)  |>
+  left_join(sp_range) |>
   left_join(
     spIds,
     by = c('species_id' = 'species_id_old')
@@ -504,7 +588,7 @@ pars_growth |>
     # position = position_dodge(width = 0.2)
   ) +
   scale_color_manual(
-    values = c('#5ab4ac', '#d8b365')
+    values = c('#018571', '#dfc27d', '#a6611a')
   ) +
   geom_smooth(method = 'lm') +
   theme_classic() +
@@ -515,7 +599,8 @@ pars_growth |>
 ```
 
 
-## Climate effect between the lower and upper climate range
+## Marginal effect at the lower and upper climate range
+
 To have an integral understanding of the climate effect across the range of the species, we computed the effect size of each climate variable on each vital rate for both the minimum and maximum observed climate conditions.
 Effect size ranges from zero (no effect) to 1 (maximum negative effect).
 We defined the minimum and maximum climate conditions for each species separately using the 0.1 and 99% quantile probability distributions.
@@ -563,12 +648,23 @@ pars_survival |>
   select(species_id, contains('temp_'), contains('prec_')) ->
 survival_borderEffect
 
+pars_recruit |>
+  group_by(species_id) |>
+  mutate(iter = row_number()) |>
+  ungroup() |>
+  left_join(sp_range) |>
+  mutate(
+    across(contains('temp_'), ~ clim_effect(.x, optimal_temp, tau_temp)),
+    across(contains('prec_'), ~ clim_effect(.x, optimal_prec, tau_prec))
+  ) |>
+  select(species_id, contains('temp_'), contains('prec_')) ->
+recruitment_borderEffect
 ```
 
 ```{r climate_figBorderGrowthMortality,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-climEffectSize
 #| fig-width: 9
-#| fig-height: 10
+#| fig-height: 11
 #| fig-cap: "Annual mean temperature and annual precipitation effect size on growth and survival vital rates between the minimum and maximum observed climate condition. Note that the effect size ranges from 0 (no effect) to 1 (maximum negative effect), and the effect at the lower climate condition were converted to negative for visual clarity."
 
 # fig overall performance across climate and vital rates
@@ -587,6 +683,15 @@ growth_borderEffect |>
         names_sep = '_'
       ) |> 
       bind_cols(vr = 'survival')
+  ) |>
+  bind_rows(
+    recruitment_borderEffect |>
+      pivot_longer(
+        cols = !species_id,
+        names_to = c('clim', 'range'),
+        names_sep = '_'
+      ) |> 
+      bind_cols(vr = 'recruitment')
   ) |>
   left_join(
     spIds,
@@ -608,7 +713,7 @@ growth_borderEffect |>
   ggplot() +
   aes(value, species_name) +
   aes(color = as.factor(range)) +
-  facet_wrap(~vr+clim) +
+  facet_grid(clim~vr) +
   stat_pointinterval() +
   theme_classic() +
   scale_color_manual(
@@ -617,8 +722,9 @@ growth_borderEffect |>
   geom_vline(xintercept = 0, alpha = 0.8) +
   theme(
     axis.text.y = element_text(face = "italic"),
+    legend.position = 'top'
   ) +
-  xlab('Effect size between lower (left) and upper (rigth) climate range') +
+  xlab('Marginal efect at the lower (left) and upper (rigth) climate range') +
   ylab('') +
   labs(color = 'Climate\nrange position')
 ```
@@ -645,6 +751,15 @@ growth_borderEffect |>
       ) |> 
       bind_cols(vr = 'survival')
   ) |>
+  bind_rows(
+    recruitment_borderEffect |>
+      pivot_longer(
+        cols = !species_id,
+        names_to = c('clim', 'range'),
+        names_sep = '_'
+      ) |> 
+      bind_cols(vr = 'recruitment')
+  ) |>
   mutate(
     clim = case_match(clim, 'temp' ~ 'Annual mean temperature', 'prec' ~ 'Annual precipitation'),
     range = case_match(range, 'max' ~ 'Upper limit', 'min' ~ 'Lower limit')
@@ -655,7 +770,7 @@ growth_borderEffect |>
   facet_wrap(~clim) +
   geom_boxplot() +
   scale_fill_manual(
-    values = c('#5ab4ac', '#d8b365')
+    values = c('#018571', '#dfc27d', '#a6611a')
   ) +
   theme_classic() +
   geom_hline(yintercept = 0, alpha = 0.8) +
@@ -669,7 +784,7 @@ We have tested multiple combinations of lower/upper and temperature/precipitatio
 
 ```{r climate_effctSizeRangeSize2,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-latVsEffect
-#| fig-width: 8
+#| fig-width: 9
 #| fig-height: 5
 #| fig-cap: "Effect size of annual mean temperature at lower observed range in function of the median latitudinal position of species."
 
@@ -711,6 +826,26 @@ survival_borderEffect |>
       ) |>
       bind_cols(vr = 'growth')
   ) |>
+  bind_rows(
+    recruitment_borderEffect |>
+      pivot_longer(
+        cols = !species_id,
+        names_to = c('clim', 'range'),
+        names_sep = '_'
+      ) |>
+      filter(clim == 'temp' & range == 'min') |>
+      group_by(species_id) |>
+      reframe(value = mean(value)) |>
+      left_join(
+        treeData |>
+          filter(!is.na(latitude)) |>
+          group_by(species_id) |>
+          reframe(
+            temp = median(latitude)
+          )
+      ) |>
+      bind_cols(vr = 'recruitment')
+  ) |>
   left_join(
     spIds,
     by = c('species_id' = 'species_id_old')
@@ -732,6 +867,15 @@ survival_borderEffect |>
         names_sep = '_'
       ) |>
       bind_cols(vr = 'growth')
+  ) |>
+  bind_rows(
+    recruitment_borderEffect |>
+      pivot_longer(
+        cols = !species_id,
+        names_to = c('clim', 'range'),
+        names_sep = '_'
+      ) |>
+      bind_cols(vr = 'recruitment')
   ) |>
   filter(clim == 'temp' & range == 'min') |>
   left_join(

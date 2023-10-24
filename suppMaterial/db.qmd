@@ -19,8 +19,9 @@ library(gt)
 ```
 
 ```{r,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
-treeData <- readRDS(file.path('..', 'data', 'treeData.RDS'))
-spIds <- read_csv(file.path('..', 'data', 'species_id.csv'))
+data_path <- readLines('_data.path')
+treeData <- readRDS(file.path(data_path, 'treeData.RDS'))
+spIds <- read_csv(file.path(data_path, 'species_id.csv'))
 ```
 
 In this chapter, I will describe the different data sources and the data preparation procedures used to create a tidy dataset for our analysis.
@@ -151,7 +152,7 @@ treeData |>
 	) ->
 p3
 
-readRDS(file.path('..', 'data', 'fec_dt.RDS')) |>
+readRDS(file.path(data_path, 'fec_dt.RDS')) |>
 	group_by(plot_id) |>
 	reframe(
 		db_origin = unique(db_origin),
@@ -196,6 +197,7 @@ treeData |>
 	) |>
 	group_by(species_name) |>
 	reframe(
+		`Species ID` = unique(species_id),
 		`Number of\n plots` = length(unique(plot_id)),
 		`Number of\n individual` = length(unique(tree_id)),
 		`Number of\n observation` = n()
@@ -267,11 +269,18 @@ From the `treeData.RDS` dataset, we derived four additional datasets, each repre
 - `fec_dt.RDS`: Contains ingrowth rate (number of individuals entering the population at 127 mm) between time $t$ and $t + \Delta t$.
 - `sizeIngrowth_dt.RDS`: Contains the size distribution of all individuals that entered the population for each remeasurements.
 
+You can access all the data objects mentioned in the ownCloud folder via this link: [doc.ielab.usherbrooke.ca/s/83YSAiLAGeLm682](https://doc.ielab.usherbrooke.ca/s/83YSAiLAGeLm682).
+In addition to the data objects, this folder contains three extra files:
+
+- `climate_scaleRange.RDS`contains the maximum and minimum values required to scale the climate covariates..
+- `db_metadata.csv` contains the csv description used in the table bellow.
+- `species_id.csv`  contains species descriptions and additional traits used in the analysis.
+
 ```{r,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: tbl-tabMetadata
 #| tbl-cap: "Description of metadata for each variable linked to its corresponding dataset object (R object). Note that replicated variables shared among the R objects have been excluded. Consequently, there is no detailed description for the `sizeIngrowth_dt` dataset."
 
-read_csv(file.path('..', 'data', 'db_metada.csv')) |>
+read_csv(file.path(data_path, 'db_metadata.csv')) |>
 		gt() |>
 		tab_style(
 			style = cell_text(weight = "bold"),

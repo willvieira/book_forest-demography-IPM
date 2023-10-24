@@ -30,11 +30,18 @@ library(ggrepel)
 ```
 
 ```{r re_loadPars,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+data_path <- readLines('_data.path')
+pars_path <- file.path(data_path, 'output_sim_processed')
+models <- c(
+  'growth' = 'intcpt_plot_comp_clim',
+  'mort' = 'intcpt_plot_comp_clim',
+  'recruit' = 'intcpt_plot_comp_clim'
+)
 
 ## Species if info
 spIds <- read_csv(
   file.path(
-    '..', 'data', 'species_id.csv'
+    data_path, 'species_id.csv'
   )
 ) |>
 mutate(
@@ -55,44 +62,44 @@ filter(sp_to_analyze)
 # Load parameters
 map_dfr(
   spIds$species_id_old,
-  ~ read_csv(
+  ~ readRDS(
     paste0(
-      '../data/parameters/growth_', .x, '.csv'
-    ),
-    show_col_types = FALSE
+      pars_path, '/growth/', models['growth'], '/posterior_pop_', .x, '.RDS'
+    )
   ) |>
-  select(r, Lmax, c(contains('optimal'), contains('tau'), 'Beta', 'theta')) |>
+  pivot_wider(names_from = par) |>
+  select(iter, r, Lmax, c(contains('optimal'), contains('tau'), 'Beta', 'theta')) |>
   bind_cols(species_id = .x)
 ) ->
 pars_growth
 
 map_dfr(
   spIds$species_id_old,
-  ~ read_csv(
+  ~ readRDS(
     paste0(
-      '../data/parameters/mort_', .x, '.csv'
-    ),
-    show_col_types = FALSE
+      pars_path, '/mort/', models['mort'], '/posterior_pop_', .x, '.RDS'
+    )
   ) |>
-  select(size_opt, size_var, c(contains('optimal'), contains('tau'), 'Beta', 'theta')) |>
+  pivot_wider(names_from = par) |>
+  select(iter, c(contains('optimal'), contains('tau'), 'Beta', 'theta')) |>
   bind_cols(species_id = .x)
 ) ->
 pars_survival
 
 map_dfr(
   spIds$species_id_old,
-  ~ read_csv(
+  ~ readRDS(
     paste0(
-      '../data/parameters/rec_', .x, '.csv'
-    ),
-    show_col_types = FALSE
+      pars_path, '/recruit/', models['recruit'], '/posterior_pop_', .x, '.RDS'
+    )
   ) |>
-  select(c(contains('_BA'), beta_p)) |>
+  pivot_wider(names_from = par) |>
+  select(iter, contains('optimal'), contains('tau'), c(contains('_BA'), beta_p)) |>
   bind_cols(species_id = .x)
 ) ->
 pars_rec
 
-treeData <- readRDS(file.path('..', 'data', 'treeData.RDS')) |>
+treeData <- readRDS(file.path(data_path, 'treeData.RDS')) |>
   filter(species_id %in% spIds$species_id_old)
 ```
 
@@ -125,7 +132,7 @@ treeData |>
     bind_cols(myQuantile_f(bio_01_mean_scl, 'temp', probs_cov)),
     bind_cols(myQuantile_f(bio_12_mean_scl, 'prec', probs_cov)),
     bind_cols(myQuantile_f(BA_comp_sp, 'BAcon', probs_cov)),
-    bind_cols(myQuantile_f(BA_comp_intra, 'BAhet', probs_cov)),
+    bind_cols(myQuantile_f(BA_comp_inter, 'BAhet', probs_cov)),
     bind_cols(myQuantile_f(BA_sp, 'tBAsp', probs_cov)),
     bind_cols(myQuantile_f(BA_plot, 'tBA', probs_cov))
   ) ->
@@ -236,17 +243,12 @@ growht_borderEffect |>
 #| fig-height: 5
 #| fig-cap: "Effect size of each covariate affecting growth at the lower (1% quantile) and upper (99% quantile) observed range of the covariate. Values close to zero mean that the covariate had no effect on the intercept of the species."
 
-sizeSurv_effect <- function(x_pos, size_opt, size_var) {
-  return( 1 - (exp(-(log(x_pos/size_opt)/size_var)^2)) )
-}
-
 pars_survival |>
   group_by(species_id) |>
   mutate(iter = row_number()) |>
   ungroup() |>
   left_join(sp_range) |>
   mutate(
-    across(contains('size_'), ~ sizeSurv_effect(.x, size_opt, size_var)),
     across(contains('temp_'), ~ clim_effect(.x, optimal_temp, tau_temp)),
     across(contains('prec_'), ~ clim_effect(.x, optimal_prec, tau_prec)),
     across(contains('BAcon_'), ~ BA_effect(.x, Beta)),
@@ -254,7 +256,6 @@ pars_survival |>
   ) |>
   select(
     species_id, iter,
-    matches('size_[0-9]'),
     contains('temp_'), contains('prec_'),
     contains('BAcon_'), contains('BAhet_')
   ) ->
@@ -271,7 +272,6 @@ survival_borderEffect |>
       `Covariate range` = paste0(range, '% quantile'),
       var = case_match(
         var,
-        'size' ~ 'd.b.h.',
         'temp' ~ 'temperature',
         'prec' ~ 'precipitation',
         'BAcon' ~ 'Basal area\nconspecific',
@@ -307,11 +307,14 @@ pars_rec |>
   ungroup() |>
   left_join(sp_range) |>
   mutate(
+    across(contains('temp_'), ~ clim_effect(.x, optimal_temp, tau_temp)),
+    across(contains('prec_'), ~ clim_effect(.x, optimal_prec, tau_prec)),
     across(contains('BAsp_'), ~ BAsp_effect(.x, optimal_BA, sigma_BA)),
     across(contains('tBA_'), ~ BA_effect(.x, -beta_p))
   ) |>
   select(
     species_id, iter,
+    contains('temp_'), contains('prec_'),
     contains('BAsp_'), contains('tBA_')
   ) ->
 rec_borderEffect
@@ -326,6 +329,8 @@ rec_borderEffect |>
     `Covariate range` = paste0(range, '% quantile'),
     var = case_match(
       var,
+      'temp' ~ 'temperature',
+      'prec' ~ 'precipitation',
       'tBAsp' ~ 'Total conspecific\nbasal area',
       'tBA' ~ 'Total adult\nbasal area'
     )
@@ -463,7 +468,7 @@ treeData |>
     bind_cols(myQuantile_f(bio_01_mean_scl, 'temp', quant_probs)),
     bind_cols(myQuantile_f(bio_12_mean_scl, 'prec', quant_probs)),
     bind_cols(myQuantile_f(BA_comp_sp, 'BAcon', quant_probs)),
-    bind_cols(myQuantile_f(BA_comp_intra, 'BAhet', quant_probs)),
+    bind_cols(myQuantile_f(BA_comp_inter, 'BAhet', quant_probs)),
     bind_cols(myQuantile_f(BA_sp, 'tBAsp', quant_probs)),
     bind_cols(myQuantile_f(BA_plot, 'tBA', quant_probs))
   ) ->
@@ -522,7 +527,6 @@ pars_survival |>
   ungroup() |>
   left_join(sp_range) |>
   mutate(
-    across(contains('size_'), ~ sizeSurv_effect(.x, size_opt, size_var)),
     across(contains('temp_'), ~ clim_effect(.x, optimal_temp, tau_temp)),
     across(contains('prec_'), ~ clim_effect(.x, optimal_prec, tau_prec)),
     across(contains('BAcon_'), ~ BA_effect(.x, Beta)),
@@ -543,11 +547,14 @@ pars_rec |>
   ungroup() |>
   left_join(sp_range) |>
   mutate(
+    across(contains('temp_'), ~ clim_effect(.x, optimal_temp, tau_temp)),
+    across(contains('prec_'), ~ clim_effect(.x, optimal_prec, tau_prec)),
     across(contains('BAsp_'), ~ BAsp_effect(.x, optimal_BA, sigma_BA)),
     across(contains('tBA_'), ~ BA_effect(.x, -beta_p))
   ) |>
   select(
     species_id, iter, border_cl,
+    contains('prec_'), contains('temp_'),
     contains('BAsp_'), contains('tBA_')
   ) ->
 rec_effect
@@ -646,7 +653,6 @@ all_effect |>
   mutate(
     var = case_match(
       var,
-      'size' ~ 'd.b.h.',
       'temp' ~ 'temperature',
       'prec' ~ 'precipitation',
       'BAcon' ~ 'Basal area\nconspecific',
@@ -717,5 +723,3 @@ all_effect |>
   ylab('Effect size') +
   labs(fill = '')
 ```
-
-

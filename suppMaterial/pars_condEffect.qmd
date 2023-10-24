@@ -42,11 +42,18 @@ library(data.table)
 ```
 
 ```{r re_loadSpData,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+data_path <- readLines('_data.path')
+pars_path <- file.path(data_path, 'output_sim_processed')
+models <- c(
+  'growth' = 'intcpt_plot_comp_clim',
+  'mort' = 'intcpt_plot_comp_clim',
+  'recruit' = 'intcpt_plot_comp_clim'
+)
 
 ## Species if info
 spIds <- read_csv(
   file.path(
-    '..', 'data', 'species_id.csv'
+    data_path, 'species_id.csv'
   )
 ) |>
 mutate(
@@ -64,7 +71,7 @@ mutate(
 filter(sp_to_analyze)
 
 # climate range used to scale and unscale climate variables
-climate_range = readRDS(file.path('..', 'data', 'climate_scaleRange.RDS'))
+climate_range = readRDS(file.path(data_path, 'climate_scaleRange.RDS'))
 
 # functions to scale OR unscale climate variables
 scale_clim <- function(
@@ -92,99 +99,62 @@ scale_clim <- function(
 }
 
 # dataset
-treeData <- readRDS(file.path('..', 'data', 'treeData.RDS')) |>
+treeData <- readRDS(file.path(data_path, 'treeData.RDS')) |>
   filter(species_id %in% spIds$species_id_old)
 
-fec_dt <- readRDS(file.path('..', 'data', 'fec_dt.RDS')) |>
+fec_dt <- readRDS(file.path(data_path, 'fec_dt.RDS')) |>
   filter(species_id %in% spIds$species_id_old)
 ```
 
 ```{r ImportPlotRandomEffects,echo=Echo,eval=FALSE,cache=Cache,warning=Warng,message=Msg}
-
 # I set eval to FALSE so this is ran a single time only - keeping here just for documentation
-dir.create(file.path('..', 'data', 'parameters_randomEffects'))
+dir.create(file.path('..', 'data', 'parameters_randomEffects'), recursive = TRUE)
 
-parsAddress <- '../../TreesDemography/output/'
-sample_draws = 8000
+sample_draws = 4000
 
 for(sp in spIds$species_id_old)
 {
   # growth
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  pars <- read_cmdstan_csv(
-      list.files(
-        paste0(
-          parsAddress, 'bertalanffy_plot_BAspcTempPrecscl_fulldb/', sp
-        ),
-        full.names = TRUE
-      ), format = 'draws_df'
-    )$post_warmup_draws |>
-    select(contains('rPlot')) |>
-    slice_sample(n = sample_draws)
-
-  # load plot ID reference table
-  toSub = readRDS(paste0(parsAddress, 'bertalanffy_plot_BAspcTempPrecscl_fulldb/toSub_plot_', sp, '.RDS'))
-  
-  # rename parameter columns to respective plot_id
-  names(pars) <- toSub |> arrange(plot_id_seq) |> pull(plot_id)
-
+  readRDS(
+    paste0(
+      pars_path, '/growth/', models['growth'], '/posterior_plot_', sp, '.RDS'
+    )
+  ) |>
+  select(iter, value, plot_id) |>
+  pivot_wider(names_from = plot_id, values_from = value) |>
+  select(!iter) |>
   write_csv(
-    pars,
     file = paste0('../data/parameters_randomEffects/growth_', sp, '.csv')
   )
 
-
   # survival
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  pars <- read_cmdstan_csv(
-      list.files(
-        paste0(
-          parsAddress, 'mort_plot_sizeBAcompTempPrec_alldb/', sp
-        ),
-        full.names = TRUE
-      ), format = 'draws_df'
-    )$post_warmup_draws |>
-    select(contains('psiPlot')) |>
-    slice_sample(n = sample_draws)
-
-  # load plot ID reference table
-  toSub = readRDS(paste0(parsAddress, 'mort_plot_sizeBAcompTempPrec_alldb/trainData_', sp, '.RDS'))
-    
-  # rename parameter columns to respective plot_id
-  names(pars) <- toSub |>
-    select(plot_id, plot_id_seq) |>
-    distinct() |>
-    arrange(plot_id_seq) |>
-    pull(plot_id)
-
+  readRDS(
+    paste0(
+      pars_path, '/mort/', models['mort'], '/posterior_plot_', sp, '.RDS'
+    )
+  ) |>
+  select(iter, value, plot_id) |>
+  pivot_wider(names_from = plot_id, values_from = value) |>
+  select(!iter) |>
   write_csv(
-    pars,
     file = paste0('../data/parameters_randomEffects/mort_', sp, '.csv')
   )
 
 
   # recruitment
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  pars <- read_cmdstan_csv(
-      list.files(
-        paste0(
-          parsAddress, 'rec_m_p_BA_v2/', sp
-        ),
-        full.names = TRUE
-      ), format = 'draws_df'
-    )$post_warmup_draws |>
-    select(contains('mPlot_log')) |>
-    slice_sample(n = sample_draws)
-
-  # load plot ID reference table
-  toSub = readRDS(paste0(parsAddress, 'rec_m_p_BA_v2/toSub_', sp, '.RDS'))
-  
-  # rename parameter columns to respective plot_id
-  names(pars) <- toSub |> arrange(plot_id_seq) |> pull(plot_id)
-
+  readRDS(
+    paste0(
+      pars_path, '/recruit/', models['recruit'], '/posterior_plot_', sp, '.RDS'
+    )
+  ) |>
+  select(iter, value, plot_id) |>
+  pivot_wider(names_from = plot_id, values_from = value) |>
+  select(!iter) |>
   write_csv(
-    pars,
-    file = paste0('../data/parameters_randomEffects/rec_', sp, '.csv')
+    file = paste0('../data/parameters_randomEffects/recruit_', sp, '.csv')
   )
 
   cat('species', which(sp == spIds$species_id_old), 'of', nrow(spIds))
@@ -198,35 +168,45 @@ getPars_sp <- function(
   vitalRate = 'growth', # or 'mort/rec'
   rowID = 1, # posterior draw (1:8000)
   randomEffects = FALSE, # if TRUE, return random effects parameters only
-  addressPars = '../data/'
+  addressPars = data_path,
+  model_dir = models
 ){
-  fixed_or_random = ifelse(randomEffects, 'parameters_randomEffects/', 'parameters/')
+  fixed_or_random = ifelse(randomEffects, 'parameters_randomEffects/', 'output_sim_processed/')
 
-  # Main parameters
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  colNames = system(
-    paste0(
-      'perl -nle "print && exit if $. == 1" ',
-      addressPars, fixed_or_random, vitalRate, '_', sp, '.csv'
-    ),
-    intern = TRUE
-  )
+  if(randomEffects) {
+    colNames = system(
+      paste0(
+        'perl -nle "print && exit if $. == 1" ',
+        addressPars, fixed_or_random, vitalRate, '_', sp, '.csv'
+      ),
+      intern = TRUE
+    )
 
-  vals = system(
-    paste0(
-      'perl -nle "print && exit if $. == ', rowID + 1, '" ',
-      addressPars, fixed_or_random, vitalRate, '_', sp, '.csv'
-    ),
-    intern = TRUE
-  )
+    vals = system(
+      paste0(
+        'perl -nle "print && exit if $. == ', rowID + 1, '" ',
+        addressPars, fixed_or_random, vitalRate, '_', sp, '.csv'
+      ),
+      intern = TRUE
+    )
 
-  setNames(
-      as.numeric(str_split_1(vals, pattern = ',')),
-      str_split_1(colNames, pattern = ',')
-    ) |>
-    rbind() |>
-    as_tibble() ->
-  pars_fixed
+    setNames(
+        as.numeric(str_split_1(vals, pattern = ',')),
+        str_split_1(colNames, pattern = ',')
+      ) |>
+      rbind() |>
+      as_tibble() ->
+    pars_fixed
+  
+  }else{
+    readRDS(
+        paste0(addressPars, fixed_or_random, vitalRate, '/', model_dir[vitalRate], '/posterior_pop_', sp, '.RDS')
+      ) |>
+      pivot_wider(names_from = par, values_from = value) |>
+      filter(iter == rowID) |>
+      select(!c(iter, lp__)) ->
+    pars_fixed
+  }
 
   return( pars_fixed )
 }
@@ -252,12 +232,11 @@ growth_f <- function(dbh, deltaTime, comp_cons, comp_het, temp, prec, r, plot_re
 }
 
 # Mortality function
-mort_f <- function(dbh, deltaTime, comp_cons, comp_het, temp, prec, psi, plot_re, size_opt, size_var, beta, theta, opt_temp, tau_temp, opt_prec, tau_prec) {
+mort_f <- function(dbh, deltaTime, comp_cons, comp_het, temp, prec, psi, plot_re, beta, theta, opt_temp, tau_temp, opt_prec, tau_prec) {
   longev_log = 1/(1 + exp(
         -(
           psi + 
           plot_re +
-          -(log(dbh/size_opt)/size_var)^2 +
           beta * (comp_cons + theta * comp_het) +
           -tau_temp * (temp - opt_temp)^2 +
           -tau_prec * (prec - opt_prec)^2
@@ -270,10 +249,12 @@ mort_f <- function(dbh, deltaTime, comp_cons, comp_het, temp, prec, psi, plot_re
 }
 
 # Recruitment function
-rec_f <- function(deltaYear_plot, plot_size, BA_adult_sp, BA_adult, mPop_log, plot_re, optimal_BA, sigma_BA, p_log, beta_p) {
+rec_f <- function(deltaYear_plot, plot_size, BA_adult_sp, BA_adult, temp, prec, mPop_log, plot_re, optimal_BA, sigma_BA, p_log, beta_p, opt_temp, tau_temp, opt_prec, tau_prec) {
   m = exp(
       mPop_log + plot_re +
-      (-1/sigma_BA^2) * (BA_adult_sp - optimal_BA)^2
+      (-1/sigma_BA^2) * (BA_adult_sp - optimal_BA)^2 +
+      -tau_temp * (temp - opt_temp)^2 +
+      -tau_prec * (prec - opt_prec)^2
     )
   p = exp(
       -exp(
@@ -289,6 +270,7 @@ rec_f <- function(deltaYear_plot, plot_size, BA_adult_sp, BA_adult, mPop_log, pl
 
 ```{r FuncMarginal,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 # function to get the growth marginal effect for a specific species posterior draw
+# this is so ungly, sorry if anyone wants to read this
 marginEffect <- function(
   Sp, # species id
   rowID, # posterior draw (1:8000)
@@ -298,15 +280,15 @@ marginEffect <- function(
   at_range = 0.1 # quantile probability to classify plot at latitude ranges (if NULL all plots)
 ){
   # focal species data
-  if(vitalRate == 'rec') {
+  if(vitalRate == 'recruit') {
     dataset |>
       filter(species_id == Sp) |>
-      select(species_id, plot_id, latitude, deltaYear_plot, plot_size, BA_adult_sp, BA_adult) ->
+      select(species_id, plot_id, latitude, deltaYear_plot, plot_size, BA_adult_sp, BA_adult, contains('_scl'), bio_01_mean, bio_12_mean) ->
     td_sp
   }else{
     dataset |>
       filter(species_id == Sp & dbh >= 127) |>
-      select(species_id, plot_id, latitude, deltaTime, dbh0, dbh, BA_comp_sp, BA_comp_intra, BA_sp, BA_plot, contains('_scl'), bio_01_mean, bio_12_mean) ->
+      select(species_id, plot_id, latitude, deltaTime, dbh0, dbh, BA_comp_sp, BA_comp_inter, BA_sp, BA_plot, contains('_scl'), bio_01_mean, bio_12_mean) ->
     td_sp
   }
 
@@ -353,7 +335,7 @@ marginEffect <- function(
   if(!randomEffects)
     parsRandom_sp$plot_re = 0
 
-  if(vitalRate == 'rec') {
+  if(vitalRate == 'recruit') {
     td_sp |>
       # add parameters
       bind_cols(parsFixed_sp) |>
@@ -363,7 +345,12 @@ marginEffect <- function(
         # perturbation in covariate
         # plot = cov_perturbation(plot_re),
         ba_sp = cov_perturbation(BA_adult_sp),
-        ba_tot = cov_perturbation(BA_adult)
+        ba_tot = cov_perturbation(BA_adult),
+        temp_nonScl = cov_perturbation(bio_01_mean),
+        prec_nonScl = cov_perturbation(bio_12_mean),
+        # scale perturbed climate variables
+        temp = scale_clim(temp_nonScl, clim = 'temp', direction = 'scale'),
+        prec = scale_clim(prec_nonScl, clim = 'prec', direction = 'scale')
       ) ->
     td_sp
   }else{
@@ -376,9 +363,8 @@ marginEffect <- function(
       mutate(
         # perturbation in  covariate
         # plot = cov_perturbation(plot_re),
-        size = cov_perturbation(dbh0),
         ba_con = cov_perturbation(BA_comp_sp),
-        ba_het = cov_perturbation(BA_comp_intra), 
+        ba_het = cov_perturbation(BA_comp_inter), 
         temp_nonScl = cov_perturbation(bio_01_mean),
         prec_nonScl = cov_perturbation(bio_12_mean),
         # scale perturbed climate variables
@@ -392,19 +378,17 @@ marginEffect <- function(
     td_sp |>
       mutate(
         # base line growth
-        y = growth_f(dbh0, deltaTime, BA_comp_sp, BA_comp_intra, bio_01_mean_scl, bio_12_mean_scl, r, plot_re, Lmax, Beta, theta, optimal_temp, tau_temp, optimal_prec, tau_prec),
+        y = growth_f(dbh0, deltaTime, BA_comp_sp, BA_comp_inter, bio_01_mean_scl, bio_12_mean_scl, r, plot_re, Lmax, Beta, theta, optimal_temp, tau_temp, optimal_prec, tau_prec),
         # growth for each perturbed covariate
-        # y_plot = growth_f(dbh0, deltaTime, BA_comp_sp, BA_comp_intra, bio_01_mean_scl, bio_12_mean_scl, r, plot, Lmax, Beta, theta, optimal_temp, tau_temp, optimal_prec, tau_prec),
-        # y_size = growth_f(size, deltaTime, BA_comp_sp, BA_comp_intra, bio_01_mean_scl, bio_12_mean_scl, r, plot_re, Lmax, Beta, theta, optimal_temp, tau_temp, optimal_prec, tau_prec),
-        y_bacon = growth_f(dbh0, deltaTime, ba_con, BA_comp_intra, bio_01_mean_scl, bio_12_mean_scl, r, plot_re, Lmax, Beta, theta, optimal_temp, tau_temp, optimal_prec, tau_prec),
+        # y_plot = growth_f(dbh0, deltaTime, BA_comp_sp, BA_comp_inter, bio_01_mean_scl, bio_12_mean_scl, r, plot, Lmax, Beta, theta, optimal_temp, tau_temp, optimal_prec, tau_prec),
+        y_bacon = growth_f(dbh0, deltaTime, ba_con, BA_comp_inter, bio_01_mean_scl, bio_12_mean_scl, r, plot_re, Lmax, Beta, theta, optimal_temp, tau_temp, optimal_prec, tau_prec),
         y_bahet = growth_f(dbh0, deltaTime, BA_comp_sp, ba_het, bio_01_mean_scl, bio_12_mean_scl, r, plot_re, Lmax, Beta, theta, optimal_temp, tau_temp, optimal_prec, tau_prec),
-        y_temp = growth_f(dbh0, deltaTime, BA_comp_sp, BA_comp_intra, temp, bio_12_mean_scl, r, plot_re, Lmax, Beta, theta, optimal_temp, tau_temp, optimal_prec, tau_prec),
-        y_prec = growth_f(dbh0, deltaTime, BA_comp_sp, BA_comp_intra, bio_01_mean_scl, prec, r, plot_re, Lmax, Beta, theta, optimal_temp, tau_temp, optimal_prec, tau_prec),
+        y_temp = growth_f(dbh0, deltaTime, BA_comp_sp, BA_comp_inter, temp, bio_12_mean_scl, r, plot_re, Lmax, Beta, theta, optimal_temp, tau_temp, optimal_prec, tau_prec),
+        y_prec = growth_f(dbh0, deltaTime, BA_comp_sp, BA_comp_inter, bio_01_mean_scl, prec, r, plot_re, Lmax, Beta, theta, optimal_temp, tau_temp, optimal_prec, tau_prec),
         # compute absolute deviation from perturbation
         # ydiff_plot = abs(y_plot - y)/(plot - plot_re),
-        # ydiff_size = abs(y_size - y)/(size - dbh0),
         ydiff_bacon = abs(y_bacon - y)/(ba_con - BA_comp_sp),
-        ydiff_bahet = abs(y_bahet - y)/(ba_het - BA_comp_intra),
+        ydiff_bahet = abs(y_bahet - y)/(ba_het - BA_comp_inter),
         ydiff_temp = abs(y_temp - y)/(temp_nonScl - bio_01_mean),
         ydiff_prec = abs(y_prec - y)/(prec_nonScl - bio_12_mean)
       ) |>
@@ -415,36 +399,38 @@ marginEffect <- function(
     td_sp |>
       mutate(
         # base line mortality
-        y = mort_f(dbh0, deltaTime, BA_comp_sp, BA_comp_intra, bio_01_mean_scl, bio_12_mean_scl, psi, plot_re, size_opt, size_var, Beta, theta, optimal_temp, tau_temp, optimal_prec, tau_prec),
+        y = mort_f(dbh0, deltaTime, BA_comp_sp, BA_comp_inter, bio_01_mean_scl, bio_12_mean_scl, psi, plot_re, Beta, theta, optimal_temp, tau_temp, optimal_prec, tau_prec),
         # growth for each perturbed covariate
-        # y_plot = mort_f(dbh0, deltaTime, BA_comp_sp, BA_comp_intra, bio_01_mean_scl, bio_12_mean_scl, psi, plot, size_opt, size_var, Beta, theta, optimal_temp, tau_temp, optimal_prec, tau_prec),
-        y_size = mort_f(size, deltaTime, BA_comp_sp, BA_comp_intra, bio_01_mean_scl, bio_12_mean_scl, psi, plot_re, size_opt, size_var, Beta, theta, optimal_temp, tau_temp, optimal_prec, tau_prec),
-        y_bacon = mort_f(dbh0, deltaTime, ba_con, BA_comp_intra, bio_01_mean_scl, bio_12_mean_scl, psi, plot_re, size_opt, size_var, Beta, theta, optimal_temp, tau_temp, optimal_prec, tau_prec),
-        y_bahet = mort_f(dbh0, deltaTime, BA_comp_sp, ba_het, bio_01_mean_scl, bio_12_mean_scl, psi, plot_re, size_opt, size_var, Beta, theta, optimal_temp, tau_temp, optimal_prec, tau_prec),
-        y_temp = mort_f(dbh0, deltaTime, BA_comp_sp, BA_comp_intra, temp, bio_12_mean_scl, psi, plot_re, size_opt, size_var, Beta, theta, optimal_temp, tau_temp, optimal_prec, tau_prec),
-        y_prec = mort_f(dbh0, deltaTime, BA_comp_sp, BA_comp_intra, bio_01_mean_scl, prec, psi, plot_re, size_opt, size_var, Beta, theta, optimal_temp, tau_temp, optimal_prec, tau_prec),
+        # y_plot = mort_f(dbh0, deltaTime, BA_comp_sp, BA_comp_inter, bio_01_mean_scl, bio_12_mean_scl, psi, plot, Beta, theta, optimal_temp, tau_temp, optimal_prec, tau_prec),
+        y_bacon = mort_f(dbh0, deltaTime, ba_con, BA_comp_inter, bio_01_mean_scl, bio_12_mean_scl, psi, plot_re, Beta, theta, optimal_temp, tau_temp, optimal_prec, tau_prec),
+        y_bahet = mort_f(dbh0, deltaTime, BA_comp_sp, ba_het, bio_01_mean_scl, bio_12_mean_scl, psi, plot_re, Beta, theta, optimal_temp, tau_temp, optimal_prec, tau_prec),
+        y_temp = mort_f(dbh0, deltaTime, BA_comp_sp, BA_comp_inter, temp, bio_12_mean_scl, psi, plot_re, Beta, theta, optimal_temp, tau_temp, optimal_prec, tau_prec),
+        y_prec = mort_f(dbh0, deltaTime, BA_comp_sp, BA_comp_inter, bio_01_mean_scl, prec, psi, plot_re, Beta, theta, optimal_temp, tau_temp, optimal_prec, tau_prec),
         # compute absolute deviation from perturbation
         # ydiff_plot = abs(y_plot - y)/(plot - plot_re),
-        ydiff_size = abs(y_size - y)/(size - dbh0),
         ydiff_bacon = abs(y_bacon - y)/(ba_con - BA_comp_sp),
-        ydiff_bahet = abs(y_bahet - y)/(ba_het - BA_comp_intra),
+        ydiff_bahet = abs(y_bahet - y)/(ba_het - BA_comp_inter),
         ydiff_temp = abs(y_temp - y)/(temp_nonScl - bio_01_mean),
         ydiff_prec = abs(y_prec - y)/(prec_nonScl - bio_12_mean)
       ) |>
       group_by(plot_position) |>
       reframe(across(contains('ydiff'), mean)) ->
     out
-  }else if(vitalRate == 'rec') {
+  }else if(vitalRate == 'recruit') {
     td_sp |>
       mutate(
         # base line recruitment
-        y = rec_f(deltaYear_plot, plot_size, BA_adult_sp, BA_adult, mPop_log, plot_re, optimal_BA, sigma_BA, p_log, beta_p),
+        y = rec_f(deltaYear_plot, plot_size, BA_adult_sp, BA_adult, bio_01_mean_scl, bio_12_mean_scl, mPop_log, plot_re, optimal_BA, sigma_BA, p_log, beta_p, optimal_temp, tau_temp, optimal_prec, tau_prec),
         # recruitment for each perturbed covariate
-        y_basp = rec_f(deltaYear_plot, plot_size, ba_sp, BA_adult, mPop_log, plot_re, optimal_BA, sigma_BA, p_log, beta_p),
-        y_batot = rec_f(deltaYear_plot, plot_size, BA_adult_sp, ba_tot, mPop_log, plot_re, optimal_BA, sigma_BA, p_log, beta_p),
+        y_basp = rec_f(deltaYear_plot, plot_size, ba_sp, BA_adult, bio_01_mean_scl, bio_12_mean_scl, mPop_log, plot_re, optimal_BA, sigma_BA, p_log, beta_p, optimal_temp, tau_temp, optimal_prec, tau_prec),
+        y_batot = rec_f(deltaYear_plot, plot_size, BA_adult_sp, ba_tot, bio_01_mean_scl, bio_12_mean_scl, mPop_log, plot_re, optimal_BA, sigma_BA, p_log, beta_p, optimal_temp, tau_temp, optimal_prec, tau_prec),
+        y_temp = rec_f(deltaYear_plot, plot_size, BA_adult_sp, BA_adult, temp, bio_12_mean_scl, mPop_log, plot_re, optimal_BA, sigma_BA, p_log, beta_p, optimal_temp, tau_temp, optimal_prec, tau_prec),
+        y_prec = rec_f(deltaYear_plot, plot_size, BA_adult_sp, BA_adult, bio_01_mean_scl, prec, mPop_log, plot_re, optimal_BA, sigma_BA, p_log, beta_p, optimal_temp, tau_temp, optimal_prec, tau_prec),
         # compute absolute deviation from perturbation
         ydiff_basp = abs(y_basp - y)/(ba_sp - BA_adult_sp),
         ydiff_batot = abs(y_batot - y)/(ba_tot - BA_adult),
+        ydiff_temp = abs(y_temp - y)/(temp_nonScl - bio_01_mean),
+        ydiff_prec = abs(y_prec - y)/(prec_nonScl - bio_12_mean)
       ) |>
       group_by(plot_position) |>
       reframe(across(contains('ydiff'), mean)) ->
@@ -478,7 +464,7 @@ treeData[deltaTime == 0, dbh0 := dbh]
 # Compute marginal effect growth
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-sampled_rows <- sample(1:8000, 1000)
+sampled_rows <- sample(1:4000, 1000)
 
 # Growth
 map_dfr(
@@ -538,7 +524,7 @@ map_dfr(
   ~map2_dfr(
     sampled_rows,
     .x,
-    ~marginEffect(Sp = .y, rowID = .x, fec_dt, vitalRate = 'rec', randomEffects = TRUE, at_range = NULL) |>
+    ~marginEffect(Sp = .y, rowID = .x, fec_dt, vitalRate = 'recruit', randomEffects = TRUE, at_range = NULL) |>
       bind_cols(species_id = .y)
   ),
   .progress = TRUE
@@ -551,7 +537,7 @@ AME_rec
 #   ~map2_dfr(
 #     sampled_rows,
 #     .x,
-#     ~marginEffect(Sp = .y, rowID = .x, fec_dt, vitalRate = 'rec', randomEffects = TRUE, at_range = 0.1) |>
+#     ~marginEffect(Sp = .y, rowID = .x, fec_dt, vitalRate = 'recruit', randomEffects = TRUE, at_range = 0.1) |>
 #       bind_cols(species_id = .y)
 #   ),
 #   .progress = TRUE
@@ -573,88 +559,62 @@ saveRDS(AME_rec, file.path('data', 'AME_rec.RDS'))
 
 ```{r plot_AME_gmr,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-AMEall
-#| fig-width: 8.5
-#| fig-height: 12
+#| fig-width: 9
+#| fig-height: 8
 #| fig-cap: "Average Marginal effect of each covariate on the growth and survival vital rates. The larger the values, the stronger the marginal effect of the covariate across all observation for the species. Note that size (d.b.h.) is intrinsic to the growth equation model where annual growth rate reduces exponentialy with size reaching a growth rate of zero when size reaches $L_{\\infty}$, so the size AME is exactly ln(1) for all species."
 
 AME_growth <- readRDS(file.path('data', 'AME_growth.RDS'))
 AME_mort <- readRDS(file.path('data', 'AME_mort.RDS'))
 AME_rec <- readRDS(file.path('data', 'AME_rec.RDS'))
 
-ggarrange(
-  # AME per species per covariate (growth and survival)
-  AME_growth |>
-    pivot_longer(cols = !species_id) |>
-    bind_cols(vr = 'Growth') |>
-    bind_rows(
-      AME_mort |>
-        pivot_longer(cols = !species_id) |>
-        bind_cols(vr = 'Survival') 
-    ) |>
-    left_join(
-      spIds,
-      by = c('species_id'= 'species_id_old')
-    ) |>
-    mutate(
-      name = gsub('ydiff_', '', name),
-      name = case_match(
-        name,
-        'bacon' ~ 'BA cons',
-        'bahet' ~ 'BA het',
-        'size' ~ 'd.b.h',
-        'temp' ~ 'Temperature',
-        'prec' ~ 'Precipitation'
-      )
-    ) |>
-    ggplot() +
-    aes(log(value), species_name) +
-    aes(color = name) +
-    facet_grid(~vr, scales = 'free') +
-    stat_pointinterval() +
-    scale_color_manual(
-      values = c('#7fc97f',  '#ffff99', '#beaed4', '#386cb0', '#fdc086')
-    ) +
-    theme_classic() +
-    theme(axis.text.y = element_text(face = "italic")) +
-    labs(
-      color = 'Covariate',
-      x = 'ln(Average Marginal effect)',
-      y = ''
-    ),
-
-  # AME per species per covariate (recruitment)
-  AME_rec |>
-    pivot_longer(cols = !species_id) |>
-    left_join(
-      spIds,
-      by = c('species_id'= 'species_id_old')
-    ) |>
-    mutate(
-      name = gsub('ydiff_', '', name),
-      name = case_match(
-        name,
-        'basp' ~ 'BA cons',
-        'batot' ~ 'BA total'
-      )
-    ) |>
-    ggplot() + 
-    aes(log(abs(value)), fct_reorder(species_name, value)) +
-    aes(color = name) +
-    stat_pointinterval() +
-    theme_classic() +
-    scale_color_manual(
-      values = c('#7fc97f',  '#ffff99')
-    ) +
-    theme(axis.text.y = element_text(face = "italic")) +
-    labs(
-      color = 'Covariate',
-      x = 'ln(Average Marginal effect)',
-      y = '',
-      subtitle = 'Recruitment'
-    ),
-  nrow = 2
-)
-
+# AME per species per covariate (growth and survival)
+AME_growth |>
+  pivot_longer(cols = !species_id) |>
+  bind_cols(vr = 'Growth') |>
+  bind_rows(
+    AME_mort |>
+      pivot_longer(cols = !species_id) |>
+      bind_cols(vr = 'Survival') 
+  ) |>
+  bind_rows(
+    AME_rec |>
+      pivot_longer(cols = !species_id) |>
+      bind_cols(vr = 'Recruitment') 
+  ) |>
+  left_join(
+    spIds,
+    by = c('species_id'= 'species_id_old')
+  ) |>
+  mutate(
+    name = gsub('ydiff_', '', name),
+    name = case_match(
+      name,
+      'bacon' ~ 'BA cons',
+      'bahet' ~ 'BA het',
+      'basp' ~ 'BA cons',
+      'batot' ~ 'BA total',
+      'temp' ~ 'Temperature',
+      'prec' ~ 'Precipitation'
+    )
+  ) |>
+  ggplot() +
+  aes(log(value), species_name) +
+  aes(color = name) +
+  facet_grid(~vr, scales = 'free') +
+  stat_pointinterval() +
+  scale_color_manual(
+    values = c('#7fc97f', '#beaed4', '#ffff99', '#386cb0', '#fdc086')
+  ) +
+  theme_classic() +
+  theme(
+    legend.position = 'top',
+    axis.text.y = element_text(face = "italic")
+  ) +
+  labs(
+    color = 'Covariate',
+    x = 'ln(Average Marginal effect)',
+    y = ''
+  )
 
 # AME_rec |>
 #   pivot_longer(cols = !species_id) |>
@@ -739,8 +699,7 @@ ggarrange(
         name,
         'bacon' ~ 'BA cons',
         'bahet' ~ 'BA het',
-        'size' ~ 'd.b.h.',
-        'temp' ~ 'Temper.',
+        'temp' ~ 'Temperature',
         'prec' ~ 'Precipitation'
       )
     ) |>
@@ -749,7 +708,7 @@ ggarrange(
     aes(fill = name) +
     geom_boxplot() +
     scale_fill_manual(
-      values = c('#7fc97f', '#ffff99', '#beaed4', '#386cb0', '#fdc086')
+      values = c('#7fc97f', '#ffff99', '#386cb0', '#fdc086')
     ) +
     theme_classic() +
     labs(
@@ -769,7 +728,9 @@ ggarrange(
       name = case_match(
         name,
         'basp' ~ 'BA cons',
-        'batot' ~ 'BA total'
+        'batot' ~ 'BA total',
+        'temp' ~ 'Temperature',
+        'prec' ~ 'Precipitation'
       )
     ) |>
     ggplot() +
@@ -777,7 +738,7 @@ ggarrange(
     aes(fill = name) +
     geom_boxplot() +
     scale_fill_manual(
-      values = c('#7fc97f', '#ffff99')
+      values = c('#7fc97f', '#ffff99', '#386cb0', '#fdc086')
     ) +
     theme_classic() +
     labs(
@@ -859,12 +820,23 @@ AME_growth |>
 
 ```{r plot_AME_growthVsLatitude,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-AMEsummTemp
-#| fig-width: 6.5
+#| fig-width: 9
 #| fig-height: 5
-#| fig-cap: "Average Marginal effect of Temperature in the growth vital rate in function of average latitudinal position of the species. Blue line is 50% quantile quantile and the gray lines are the 25% and 75% quantiles."
+#| fig-cap: "Average Marginal effect of Temperature in function of average latitudinal position of the species. Blue line is 50% quantile quantile and the gray lines are the 25% and 75% quantiles."
 
 AME_growth |>
   select(species_id, ydiff_temp) |>
+  bind_cols(vr = 'Growth') |>
+  bind_rows(
+    AME_mort |>
+      select(species_id, ydiff_temp) |>
+      bind_cols(vr = 'Survival')
+  ) |>
+  bind_rows(
+    AME_rec |>
+      select(species_id, ydiff_temp) |>
+      bind_cols(vr = 'Recruitment')
+  ) |>
   left_join(
     spIds,
     by = c('species_id'= 'species_id_old')
@@ -876,7 +848,7 @@ AME_growth |>
         range_pos = median(latitude, na.rm = TRUE)
       )
   ) |>
-  group_by(species_name) |>
+  group_by(species_name, vr) |>
   reframe(
     range_pos = mean(range_pos),
     value = mean(ydiff_temp)
@@ -885,6 +857,17 @@ mean_rangeValue
 
 AME_growth |>
   pivot_longer(cols = !species_id) |>
+  bind_cols(vr = 'Growth') |>
+  bind_rows(
+    AME_mort |>
+    pivot_longer(cols = !species_id) |>
+    bind_cols(vr = 'Survival') 
+  ) |>
+  bind_rows(
+    AME_rec |>
+    pivot_longer(cols = !species_id) |>
+    bind_cols(vr = 'Recruitment') 
+  ) |>
   left_join(
     spIds,
     by = c('species_id'= 'species_id_old')
@@ -903,6 +886,7 @@ AME_growth |>
   ggplot() +
   aes(range_pos, log(value)) +
   stat_pointinterval() +
+  facet_wrap(~vr) +
   geom_text_repel(
     data = mean_rangeValue,
     aes(x = range_pos, y = log(value), label = species_name),
@@ -915,8 +899,7 @@ AME_growth |>
   theme_classic() +
   labs(
     x = 'Median latitude distribution',
-    y = 'ln(Average Marginal effect)',
-    subtitle = 'Growth'
+    y = 'ln(Average Marginal effect)'
   )
 ```
 

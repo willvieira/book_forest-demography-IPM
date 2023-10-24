@@ -29,12 +29,11 @@ book:
       - covariates_description.qmd
       - model_fit.qmd
       - model_comparison.qmd
-      - model_parameters.qmd
+      - parameters_descr.qmd
     - part: Demographic model evaluation
       chapters:
       - pars_intercept.qmd
       - pars_randomEffect.qmd
-      - pars_size.qmd
       - pars_competition.qmd
       - pars_climate.qmd
       - pars_effectSize.qmd
@@ -57,7 +56,6 @@ website:
 format:
   html:
     theme: cosmo
-    keep-md: true
   pdf:
     documentclass: scrreprt
     geometry:

@@ -4,6 +4,11 @@ The `forest-IPM` code is available in this GitHub repository: <https://github.co
 This repository contains a collection of `R` functions designed for implementing the vital rates and Kernel functions, as well as the necessary data parameters for the 32 fitted species.
 Below, I'll provide a brief overview of how to load and execute these functions and outline the type of results you can expect from the model.
 
+Before we begin, we need to access the set of parameters for each species-demographic model.
+As described in @sec-parameters, the parameters are stored in an ownCloud folder, which you can access through this link: [Parameter Dataset](https://doc.ielab.usherbrooke.ca/s/83YSAiLAGeLm682).
+Once you have downloaded the parameters, you need to specify the path location where the parameters are stored.
+To do this, create a file named `_data.path` and place it at the root of your project.
+
 ## Loading the functions and parameters
 
 We start by sourcing the IPM specific functions directly from GitHub:
@@ -17,15 +22,18 @@ c('vital_rates.R', 'kernel.R', 'BasalArea_competition.R') |>
   walk(~source(paste0(baseURL, .x)))
 ```
 
-The first wrapper function if the `getPars_sp()`  which loads species-specific parameters.
-The `sp` and `path` arguments are used for defining the species based on their ID, as outlined in TableX (TODO at the db_desciption.qmd), and to specify the location path where these parameters are stored.
+The first wrapper function if the `getPars_sp()` which loads species-specific parameters.
+The `sp` and `path` arguments are used for defining the species based on their ID, as outlined in @tbl-tabSpecies, and to specify the location path where these parameters are stored.
 The `method` argument allows you to specify whether you wish to load the `mean` value or a `random` draw from the posterior distribution for each parameter.
+The `model` argument defines which specific model you want to download the parameters.
+However, the IPM function are currently available only for the complete model, so this argument should remain as `intcpt_plot_comp_clim`.
 
 ```{r loadPar}
 pars_abibal <- getPars_sp(
   sp = '18032ABIBAL',
   method = 'mean', # `mean` or `random`
-  path = file.path('..', 'data', 'parameters')
+  model = 'intcpt_plot_comp_clim',
+  path = file.path(readLines('_data.path'), 'output_sim_processed')
 )
 ```
 

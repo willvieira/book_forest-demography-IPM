@@ -12,8 +12,10 @@ library(loo)
 ```
 
 ```{r loadPars,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
-# main directory where parameters are saved (TODO)
-model_dir <- file.path('..', '..', 'TreesDemography', 'output_sim_processed')
+data_path <- readLines('_data.path')
+
+# main directory where parameters are saved
+model_dir <- file.path(data_path, 'output_sim_processed')
 
 # define which model to load for each demographic rate
 vital_rates <- c('growth', 'mort', 'recruit')
@@ -29,7 +31,7 @@ demo_models
 ## Species if info
 spIds <- read_csv(
   file.path(
-    '..', 'data', 'species_id.csv'
+    data_path, 'species_id.csv'
   )
 ) |>
 mutate(
@@ -613,7 +615,10 @@ We initially incorporated the size effect into the survival models due to the st
 However, we observed that the effect of size on mortality probability was generally weak and variable among species, with no clear pattern of increased mortality probability with larger individual size.
 All models that included the size effect performed worse than the null model, which contained only plot random effects [@fig-loo_mort].
 
-```{r load_survival,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+```{r load_survival,echo=Echo,eval=FALSE,cache=Cache,warning=Warng,message=Msg}
+# This code does not work because I removed the folders containing the simulations with the size covariate
+# to reduce stackage usage.
+
 vital_rates |>
   set_names() |>
   map(~dir(file.path(model_dir, .x))) |>
@@ -649,7 +654,7 @@ loo_mort
 #| fig-height: 6
 #| fig-cap: "Boxplot shows the LOO-CV compare between the competing models based on the difference in the expected log pointwise predictive density (ELPD_diff) across the 32 tree species. The sd_diff is the standard error of the ELPD difference between the model and the reference model (ELPD_diff equal to zero)."
 
-loo_mort |>
+readRDS(file.path('data', 'loo_mortSize.RDS')) |>
   select(species_id, vital_rate, model, elpd_diff, se_diff) |>
   pivot_longer(cols = contains('diff')) |>
   ggplot() +

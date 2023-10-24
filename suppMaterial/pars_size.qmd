@@ -21,11 +21,18 @@ library(ggrepel)
 ```
 
 ```{r size_loadPars,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+data_path <- readLines('_data.path')
+pars_path <- file.path(data_path, 'output_sim_processed')
+models <- c(
+  'growth' = 'intcpt_plot_comp_clim',
+  'mort' = 'intcpt_plot_comp_clim',
+  'recruit' = 'intcpt_plot_comp_clim'
+)
 
 ## Species if info
 spIds <- read_csv(
   file.path(
-    '..', 'data', 'species_id.csv'
+    data_path, 'species_id.csv'
   )
 ) |>
 mutate(
@@ -46,31 +53,18 @@ filter(sp_to_analyze)
 # Load parameters
 map_dfr(
     spIds$species_id_old,
-    ~ read_csv(
-      paste0(
-        '../data/parameters/growth_', .x, '.csv'
-      ),
-      show_col_types = FALSE
-    ) |>
-    select(r, Lmax) |>
-    bind_cols(species_id = .x)
-  ) ->
-pars_growth
-
-map_dfr(
-    spIds$species_id_old,
-    ~ read_csv(
-      paste0(
-        '../data/parameters/mort_', .x, '.csv'
-      ),
-      show_col_types = FALSE
-    ) |>
-    select(size_opt, size_var) |>
+    ~ readRDS(
+        paste0(
+          pars_path, '/mort/', models['mort'], '/posterior_pop_', .x, '.RDS'
+        )
+      ) |>
+    filter(par %in% c('size_opt', 'size_var')) |>
+    pivot_wider(names_from = par) |>
     bind_cols(species_id = .x)
   ) ->
 pars_survival
 
-treeData <- readRDS(file.path('..', 'data', 'treeData.RDS')) |>
+treeData <- readRDS(file.path(data_path, 'treeData.RDS')) |>
   filter(species_id %in% spIds$species_id_old)
 ```
 
@@ -88,7 +82,6 @@ The second panel shows how the optimal size for survival relates to the shade to
 #| fig-width: 8.5
 #| fig-height: 5.5
 #| fig-cap: "Posterior distribution of the optimal size for the survival model is represented by the point interval. Gray density is the size distribution of all observations across space and time. Species are classified by their shade tolerance trait following @burns1990silvics"
-
 
 treeData |>
   left_join(

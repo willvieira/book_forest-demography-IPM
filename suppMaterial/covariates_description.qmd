@@ -34,8 +34,11 @@ Finally, we complete the model by incorporating the climate component, wherein w
 
 It's worth noting that, due to the use of structured population models, the demographic models should vary as a function of the size trait.
 The von Bertalanffy growth model implicitly incorporates the size effect within the model.
-The lack of available data for the regeneration process forced us to use an ingrowth rate model that is indepedent of size.
-As a result, only the survival model will feature an explicit fixed-effect of size.
+For survival, we initially included individual size as a covariate, following a lognormal distribution, to capture the potential higher mortality rates for small individuals (due to competition) and very large individuals (due to senescence).
+However, all models incorporating the size covariate performed worse compared to the baseline model with plot random effects only (more details in @sec-model_comparison).
+Therefore, we chose not to include the size covariate in the survival model.
+Additionally, due to the unavailability of data for the regeneration process, we used an ingrowth rate model that is independent of size.
+Consequently, only the growth model varies as a function of individual size.
 
 ## Plot random effects
 

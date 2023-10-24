@@ -18,11 +18,18 @@ library(ggrepel)
 
 
 ```{r intercept_loadPars,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+data_path <- readLines('_data.path')
+pars_path <- file.path(data_path, 'output_sim_processed')
+models <- c(
+  'growth' = 'intcpt_plot_comp_clim',
+  'mort' = 'intcpt_plot_comp_clim',
+  'recruit' = 'intcpt_plot_comp_clim'
+)
 
 # Using parameters from the `forest-IPM` repo
 spIds <- read_csv(
   file.path(
-    '..', 'data', 'species_id.csv'
+    data_path, 'species_id.csv'
   )
 ) |>
 mutate(
@@ -41,52 +48,51 @@ filter(sp_to_analyze)
 
 map_dfr(
   spIds$species_id_old,
-  ~ read_csv(
+  ~ readRDS(
     paste0(
-      '../data/parameters/growth_', .x, '.csv'
-    ),
-    show_col_types = FALSE
+      pars_path, '/growth/', models['growth'], '/posterior_pop_', .x, '.RDS'
+    )
   ) |>
-  select(c(r, Lmax)) |>
+  filter(par %in% c('r', 'Lmax')) |>
+  pivot_wider(names_from = par) |>
   bind_cols(species_id = .x)
 ) ->
 pars_growth
 
 map_dfr(
   spIds$species_id_old,
-  ~ read_csv(
+  ~ readRDS(
     paste0(
-      '../data/parameters/mort_', .x, '.csv'
-    ),
-    show_col_types = FALSE
+      pars_path, '/mort/', models['mort'], '/posterior_pop_', .x, '.RDS'
+    )
   ) |>
-  select('psi') |>
+  filter(par %in% c('psi')) |>
+  pivot_wider(names_from = par) |>
   bind_cols(species_id = .x)
 ) ->
 pars_mort
 
 map_dfr(
   spIds$species_id_old,
-  ~ read_csv(
+  ~ readRDS(
     paste0(
-      '../data/parameters/rec_', .x, '.csv'
-    ),
-    show_col_types = FALSE
+      pars_path, '/recruit/', models['recruit'], '/posterior_pop_', .x, '.RDS'
+    )
   ) |>
-  select(c(mPop_log, p_log)) |>
+  filter(par %in% c('mPop_log', 'p_log')) |>
+  pivot_wider(names_from = par) |>
   bind_cols(species_id = .x)
 ) ->
 pars_rec
 
-treeData <- readRDS(file.path('..', 'data', 'treeData.RDS')) |>
+treeData <- readRDS(file.path(data_path, 'treeData.RDS')) |>
   filter(species_id %in% spIds$species_id_old)
-
 ```
 
 
 ## Growth rate
 
-Because the growth rate intercept decreases non-linearly with size and is governed by the interaction of two parameters ($r$ and $S_{\infty}$), we computed the average growth rate over a 10 years interval.
+Because the growth rate intercept decreases non-linearly with size and is governed by the interaction of two parameters ($\Gamma$ and $\zeta_{\infty}$), we computed the average growth rate over a 10 years interval.
 Also, because the size of the individual is integrated in the Von Bertalanffy growth model, we computed the 10-years growth average starting from the lower size threshold of 12.7 cm, where growth is at its optimal.
 
 ```{r intcerpt_growth,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
@@ -157,13 +163,13 @@ p2
 print(ggarrange(p1, p2, ncol = 2))
 ```
 
-In the following figure we compare the maximum observed size in the literature with the asymptotic size ($S_{\infty}$) denoting the size in which growth rate converge to zero.
+In the following figure we compare the maximum observed size in the literature with the asymptotic size ($\zeta_{\infty}$) denoting the size in which growth rate converge to zero.
 
 ```{r intcerpt_maxObsLmax,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-efszGrowth2
 #| fig-width: 6.5
 #| fig-height: 5
-#| fig-cap: "Correlation between maximum observed size in literature following @burns1990silvics and estimated parameter $S_{\\infty}$"
+#| fig-cap: "Correlation between maximum observed size in literature following @burns1990silvics and estimated parameter $\\zeta_{\\infty}$"
 
 parsGrowth_mean <- pars_growth |>
   group_by(species_id) |>
@@ -298,7 +304,7 @@ pars_mort |>
 
 ## Ingrowth rate
 
-The ingrowth model comprises two intercept components: the annual ingrowthrate per square meter ($m$) and the annual survival probability $p$.
+The ingrowth model comprises two intercept components: the annual ingrowth rate per square meter ($\phi$) and the annual survival probability $\rho$.
 In the context of the survival submodel for the ingrowth rate, we computed the 10 years survival probability of ingrowth individuals just like in the survival model.
 
 ```{r intcerpt_ingrowth,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
@@ -358,7 +364,6 @@ In the context of the survival submodel for the ingrowth rate, we computed the 1
 
   ggarrange(p1, p2, ncol = 2)
 ```
-
 
 ```{r intcerpt_ingP,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| fig-width: 8.5
