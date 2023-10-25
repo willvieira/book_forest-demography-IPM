@@ -1,0 +1,354 @@
+# Sensitivity analysis {#sec-sensAnalysis}
+
+```{r,include=FALSE,echo=FALSE}
+Echo=FALSE
+Eval=TRUE
+Cache=TRUE
+Warng=FALSE
+Msg=FALSE
+library(tidyverse)
+library(ggdist)
+library(ggtext)
+library(ggrepel)
+library(ggtern)
+library(ggdensity)
+```
+
+```{r loadSimData,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+base_url <- 'https://github.com/willvieira/forest-IPM/raw/master/simulations/sensAnalysis_v3/output_processed/'
+for(Var in c('lambdas', 'outRF_cov', 'outRF_pars'))
+  assign(Var, readRDS(gzcon(url(paste0(base_url, Var, '.RDS')))))
+
+data_path <- readLines('_data.path')
+
+## Species if info
+spIds <- read_csv(
+  file.path(
+    data_path, 'species_id.csv'
+  )
+) |>
+mutate(
+  shade = factor(shade, levels = c('tolerant', 'intermediate', 'intolerant')),
+  shade_sylvics = factor(shade_sylvics, levels = c('very-tolerant',
+                                            'tolerant',
+                                            'intermediate',
+                                            'intolerant',
+                                            'very-intolerant'
+                                            )),
+  succession = factor(succession, levels = c('pioneer',
+                                              'intermediate',
+                                              'climax'))
+) |>
+filter(sp_to_analyze)
+```
+
+Here, we conducted a global sensitivity analysis (GSA) of the population growth rate ($\lambda$) with respect to demographic models.
+GSA uses various methods to decompose the total variance of an outcome into contributions from parameters or input variables.
+In structured population models, sensitivity analyses involve computing partial derivatives of $\lambda$ with respect to individual parameters, following @Caswell1978 as:
+
+$$
+ \frac{\partial \lambda}{\partial \theta_i}
+$$
+
+where theta represents a vector of $i$ parameters.
+However, because of the high dimensionality of IPM due to a large number of parameters, these methods can quickly become computationally expensive.
+To address this, we leveraged the efficiency of non-parametric models such as random forests for variable importance classification [@antoniadis2021].
+
+This approach not only offers speed but also suits our study as it allows us to quantify both sources of variability in $\lambda$.
+It accounts for the sensitivity of $\lambda$ to each parameter and considers the uncertainty associated with the parameters.
+Therefore, a specific parameter may have higher importance because either $\lambda$ is more sensitive to it or because the parameter is more uncertain.
+
+We quantified the variability in population growth rate in function of the parameters using an *insileco* experimental approach.
+Specifically, we quantified the variability $\lambda$ for different climate conditions, ranging from cold to the center and up to the hot mean annual temperatures experienced by each species.
+Furthermore, we combined the climate conditions with a low and high competition intensity.
+We defined the temperature ranges for each species using the 1st, 50th, and 99th percentiles.
+Low competition was defined as a population size of `N=0.1`, while high competition was set at the 99th percentile of plot basal area.
+Precipitation was kept at optimal conditions, computed based on the average optimal precipitation parameters among growth, survival, and recruitment models. 
+
+For each species, climate, and competition condition, we computed $\lambda$ 500 times using different draws from the posterior distribution, setting plot random effects to zero.
+The code used for this analysis can be found in the [`forest-IPM`](https://github.com/willvieira/forest-IPM/tree/master/simulations/sensAnalysis_v3) GitHub repository.
+
+## Simulation summary
+
+The final simulation involved a total of `r nrow(lambdas)` draws across species and different conditions.
+The @fig-lambdaDist illustrates the distribution of $\lambda$ computed using 500 random draws from the posterior distribution of parameters across different climate and competition conditions.
+
+```{r lambdaDist,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-lambdaDist
+#| fig-width: 9
+#| fig-height: 8
+#| fig-cap: "Distribution of 500 draws of population growth rate $\\lambda$ for different climate and competition conditions."
+
+lambdas |>
+  left_join(
+    spIds,
+    by = c('species_id' = 'species_id_old')
+  ) |>
+  mutate(
+    `Temperature\ncondition` = factor(clim, levels = c('cold', 'center', 'hot')),
+    `Competition` = comp
+  ) |>
+  ggplot(aes(log(lambda), color = `Temperature\ncondition`, linetype = Competition)) +
+    geom_density(linewidth = .5) +
+    facet_wrap(~species_name, scales = 'free') +
+    geom_vline(xintercept = 0, alpha = 0.7, linetype = 2) +
+    theme_classic() +
+    scale_color_manual(values = c('#91bfdb', '#99d594', '#fc8d59')) +
+    labs(
+      x = expression('ln('~lambda~')'),
+      y = ''
+    ) +
+    theme(
+      axis.text.y = element_blank(),
+      axis.ticks.y = element_blank(),
+      axis.text.x = element_text(size = rel(0.8)),
+      strip.text = element_text(size = rel(0.6), face = 'italic'),
+      strip.background = element_blank(),
+      legend.position = 'top'
+    ) +
+    scale_x_continuous(n.breaks = 4)
+```
+
+The @fig-lambdaSumm presents the distribution of the average and standard deviation of $\lambda$ across the 500 draws for each species.
+
+```{r lambdaSumm,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-lambdaSumm
+#| fig-width: 8
+#| fig-height: 4
+#| fig-cap: "Distribution of 500 draws of population growth rate $\\lambda$ for different climate and competition conditions."
+
+lambdas |>
+  mutate(
+    `Temperature\ncondition` = factor(clim, levels = c('cold', 'center', 'hot')),
+    Competition = comp
+  ) |>
+  group_by(species_id, Competition, `Temperature\ncondition`) |>
+  reframe(
+    `mean lambda` = mean(log(lambda)),
+    `sd lambda` = sd(log(lambda))
+  ) |>
+  pivot_longer(
+    cols = c(`mean lambda`, `sd lambda`)
+  ) |>
+  ggplot(aes(Competition, value, fill = `Temperature\ncondition`)) +
+    geom_boxplot() +
+    facet_wrap(~name, scales = 'free') +
+    scale_fill_manual(values = c('#91bfdb', '#99d594', '#fc8d59')) +
+    theme_minimal() +
+    xlab('Competition intensity') +
+    ylab('') +
+    labs(fill = 'Temperature')
+```
+
+## Demographic model importance
+
+Random forest is a non-parametric classification or regression model that enables ranking the importance of each input variable in explaining the variance of the response variable.
+We used the permutation method for ranking variable importance [@breiman2001].
+This method measures the change in model performance by individually shuffling (permuting) the values of each input variable.
+The greater the change in predictive accuracy with shuffling, the more important the variable is considered.
+This is computed individually for each tree and then averaged across all $n$ random trees.
+Finally, we normalized the importance output of each regression model so that they sum to 1.
+We used the R package `ranger` with default hyperparameters for fitting the random forest models [@Wright2017].
+
+Figure @fig-rfr2 shows the distribution of $R^2$ from 20 random forest replications across different climate and competition conditions.
+These values range from 0.2 to 0.9, with an average value of 0.63 across species and conditions.
+This variation possibily reflects the uncertainty in the parameters across species.
+
+```{r rfr2,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-rfr2
+#| fig-width: 6
+#| fig-height: 5
+#| fig-cap: "Distribution of $R^2$ ffrom 20 random forest replications across different climate and competition conditions."
+
+outRF_pars |>
+  left_join(
+    spIds,
+    by = c('species_id' = 'species_id_old')
+  ) |>
+  group_by(species_name, rep, comp, clim) |>
+  slice_head(n = 1) |>
+  ggplot() +
+  aes(R2, fct_reorder(species_name, R2)) +
+  stat_pointinterval() +
+  theme_classic() +
+  theme(
+    axis.text.y = element_text(face = "italic"),
+    legend.position = 'none'
+  ) +
+    theme(
+    axis.text.y = element_text(face = "italic"),
+    panel.grid.major.y = element_line(colour = rgb(0,0,0,.1))
+  ) +
+  labs(
+    x = expression(R^2),
+    y = ''
+  )
+
+```
+
+As our primary interest lies in demographic levels rather than parameter levels, we focus on the combined importance of all parameters for each demographic model.
+This splits the total importance among the four demographic functions of the IPM: growth, survival, recruitment, and recruited size models.
+The recruited size model had an insignificant contribution to $\lambda$, with nearly all random forest models showing a contribution below 1%.
+Thus, we omitted this model and concentrated on the growth, survival, and recruitment models, which collectively explain over 99% of the variation in $\lambda$ [@fig-ternaryLambda].
+
+```{r ternaryLambda,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-ternaryLambda
+#| fig-width: 8
+#| fig-height: 7
+#| fig-cap: "Ternary plot decribing the distribution of importance among the growth, survival, and recruitment models. Species are classified by their general growth trait following @burns1990silvics."
+
+outRF_pars |>
+  group_by(species_id, comp, clim, rep, parvr) |>
+  slice_head(n = 1) |>
+  select(!c(par, imp, rep)) |>
+  group_by(species_id, comp, clim, parvr) |>
+  reframe(
+    R2 = mean(R2),
+    impvr = mean(impvr)
+  ) |>
+  pivot_wider(
+    names_from = parvr,
+    values_from = impvr
+  ) |>
+  left_join(
+    spIds,
+    by = c('species_id' = 'species_id_old')
+  ) |>
+  mutate(
+    clim = factor(clim, levels = c('cold', 'center', 'hot')),
+    comp = paste0(comp, ' competition'),
+    Growth = growth,
+    Survival = mort,
+    Recruitment = rec
+  ) |>
+  ggtern(
+    aes(x = Growth, y = Survival, z = Recruitment, color = shade_sylvics)
+  ) +
+  geom_point() +
+  facet_grid(
+    comp ~ clim
+  ) +
+  scale_color_manual(
+    values = c("#20bc45", "#87bc45", "#edbf33", "#ea5545", "#ba0000")
+  ) +
+  theme_showarrows() +
+  theme(
+    legend.position = 'top',
+    tern.axis.title = element_text(size = rel(0)),
+    tern.axis.text = element_text(size = rel(0.9))
+  ) +
+  labs(color = NULL)
+```
+
+The ternary plots above show the raw importance data from the random forest, which can be challenging to interpret.
+The key message is that variance in $\lambda$ is primarily explained by the recruitment and survival demographic models.
+Furthermore, certain conditions appear to shift the importance from recruitment to the survival model.
+In @fig-recVsMort, we explore the correlation between the importance of recruitment and survival under different covariate conditions.
+
+```{r recVsMort,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-recVsMort
+#| fig-width: 8
+#| fig-height: 4
+#| fig-cap: "Correlation between the survival and recruitment relative importance across the 32 species, climate and competition conditions. Species points are grouped by a Multivariate Normal Density function with probability of 90%."
+
+outRF_pars |>
+  group_by(species_id, comp, clim, rep, parvr) |>
+  slice_head(n = 1) |>
+  select(!c(par, imp, rep)) |>
+  group_by(species_id, comp, clim, parvr) |>
+  reframe(
+    R2 = mean(R2),
+    impvr = mean(impvr)
+  ) |>
+  pivot_wider(
+    names_from = parvr,
+    values_from = impvr
+  ) |>
+  left_join(
+    spIds,
+    by = c('species_id' = 'species_id_old')
+  ) |>
+  mutate(
+    clim = factor(clim, levels = c('cold', 'center', 'hot')),
+    comp = paste0(comp, ' competition'),
+    comp = factor(comp, levels = c('low competition', 'high competition'))
+  ) ->
+p1_dt
+
+p1_dt |>
+  ggplot() +
+  aes(mort, rec, fill = clim, color = clim) +
+  facet_wrap(~comp) +
+  geom_hdr(
+    aes(color = NULL),
+    probs = .9, alpha = .4,
+    method = 'mvnorm'
+  ) +
+  geom_point() +
+  # geom_text_repel(
+  #   data = p1_dt |> filter(rec < 0.2),
+  #   aes(x = mort, y = rec, label = species_name),
+  #   alpha = 0.8,
+  #   size = 2,
+  #   fontface = 'italic'
+  # ) +
+  theme_classic() +
+  scale_fill_manual(values = c('#91bfdb', '#99d594', '#fc8d59')) +
+  scale_color_manual(values = c('#91bfdb', '#99d594', '#fc8d59')) +
+  labs(
+    x = 'Survival importance',
+    y = 'Recruitment importance',
+    fill = 'Temperature\nrange',
+    color = 'Temperature\nrange'
+  )
+```
+
+We observe that at low competition, for most species, variations in $\lambda$ are primarily explained by recruitment.
+This pattern slightly diminishes as we move from the hot range to the center and up to the cold temperature range.
+At high competition intensity, we can observe an overall shift toward the survival model, especially at the cold temperature range.
+
+## Covariance importance
+
+Similar to assessing parameter importance, we also used the random forest approach to evaluate the importance of covariates.
+For simplicity, we used the same output of the simulations as previously explained, shifting the explanatory variables from parameters to covariates.^[This analysis could be expanded to include more marginal conditions beyond just cold, center, and hot temperatures and low and high competition. However, this would exponentially increase the number of simulations.]
+The @fig-climVsComp shows the distribution of relative importance between climate and competition covariates for each species.
+
+```{r climVsComp,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-climVsComp
+#| fig-width: 8
+#| fig-height: 4
+#| fig-cap: "Distribution of relative importance between climate and competition covariates according to Random Forest, the respective $R^2$. The more species are to the right of the panel, the more climate is important relative to competition. Species are classified by their general growth trait following @burns1990silvics."
+
+outRF_cov |>
+  filter(par == 'clim') |>
+  left_join(
+    spIds,
+    by = c('species_id' = 'species_id_old')
+  ) |>
+  group_by(species_name) |>
+  mutate(
+    R2_mean = mean(R2),
+    imp_mean = mean(imp)
+  ) |>
+  slice_head(n = 1) |>
+  ggplot() +
+  aes(imp, R2) +
+  aes(color = shade_sylvics) +
+  geom_point() +
+  geom_text_repel(
+    aes(label = species_name),
+    alpha = 0.8,
+    size = 2.3,
+    fontface = 'italic'
+  ) +
+  scale_color_manual(
+    values = c("#20bc45", "#87bc45", "#edbf33", "#ea5545", "#ba0000")
+  ) +
+  theme_classic() +
+  geom_hline(yintercept = 0.6, alpha = 0.4, linetype = 2) +
+  labs(
+    y = expression(R^2),
+    x = 'Climate vs competition relative importance',
+    color = 'Shade tolerance'
+  )
+```

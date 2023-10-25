@@ -42,6 +42,7 @@ book:
       chapters:
       - ipm_description.qmd
       - guide_IPM.qmd
+      - sens_analysis.qmd
       - coex.qmd
     - references.qmd
 
