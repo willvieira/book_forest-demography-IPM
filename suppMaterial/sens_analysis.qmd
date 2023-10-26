@@ -158,7 +158,7 @@ This variation possibily reflects the uncertainty in the parameters across speci
 #| label: fig-rfr2
 #| fig-width: 6
 #| fig-height: 5
-#| fig-cap: "Distribution of $R^2$ ffrom 20 random forest replications across different climate and competition conditions."
+#| fig-cap: "Distribution of $R^2$ from 20 random forest replications across different climate and competition conditions."
 
 outRF_pars |>
   left_join(
@@ -194,7 +194,7 @@ Thus, we omitted this model and concentrated on the growth, survival, and recrui
 ```{r ternaryLambda,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-ternaryLambda
 #| fig-width: 8
-#| fig-height: 7
+#| fig-height: 6
 #| fig-cap: "Ternary plot decribing the distribution of importance among the growth, survival, and recruitment models. Species are classified by their general growth trait following @burns1990silvics."
 
 outRF_pars |>
@@ -352,3 +352,16 @@ outRF_cov |>
     color = 'Shade tolerance'
   )
 ```
+
+## Notes on Conspecific and Heterospecific Competition Effects
+
+In the preceding discussion, we did not specify whether we were considering conspecific or heterospecific competition.
+For all the results presented in this chapter, the *high competition* condition was applied at the heterospecific level, while conspecific competition was set to a very low proportion.
+This choice is based on the common invasion growth rate metric, or the population growth rate when rare, an important measure for quantifying population persistence [@lewontin1969].
+
+Additionally, we performed the sensitivity analysis with the same conditions, except for changing the high competition from heterospecific to conspecific individuals.
+We observed that nearly all the variation in $\lambda$, previously attributed to the growth model, shifted to the recruitment model.
+Also, the importance attributed to the survival model for certain species at the center and hot temperature conditions, shifted toward the recruitment model.
+Although we observed this shift, the overall patterns remained similar to those discussed earlier.
+The only exeption was for the distribution of relative importance between climate and competition [@fig-climVsComp], where many species had an increase in the importance of competition relative to climate.
+These observed differences primarily arise from the high sensitivity of $\lambda$ to the $\phi$ parameter.
