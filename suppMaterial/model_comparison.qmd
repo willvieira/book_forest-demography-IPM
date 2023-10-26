@@ -173,7 +173,7 @@ sigma_plot |>
   ) ->
 p
 
-tooltip_css <- "background-color:#fc8d59;padding:5px;border-radius:3px;font-style:italic;"
+tooltip_css <- "background-color:#fc8d59;padding:5px;border-radius:3px;font-style:italic;font-size:10px"
 
 girafe(
   ggobj = p,
