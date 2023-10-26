@@ -1,8 +1,8 @@
 # Climate effect {#sec-parsClimate}
 
 In this section I discuss the climate effect on both growth and survival vital rates.
-We employ the bioclimatic variables of mean annual temperature (MAT) and annual precipitation (MAP), averaging these variables over specific time intervals spanning two measurement periods.
-The effect of these two variables on growth and survival is modeled using a unimodal function characterized by two key parameters: the optimal climate, representing the climatic conditions where growth and survival reach their peak, and the climate breadth, which quantifies the rate of change in the climate's impact as one moves away from this optimal point.
+We employ the bioclimatic variables of mean annual temperature (MAT) and mean annual precipitation (MAP), averaging these variables over specific time intervals spanning two measurement periods.
+The effect of these two variables on growth, survival, and recruitment is modeled using a unimodal function characterized by two key parameters: the optimal climate, representing the climatic conditions where growth and survival reach their peak, and the climate breadth, which quantifies the rate of change in the climate's impact as one moves away from this optimal point.
 
 ```{r,include=FALSE,echo=FALSE}
 Echo=FALSE
@@ -117,17 +117,17 @@ treeData <- readRDS(file.path(data_path, 'treeData.RDS')) |>
 
 ## Optimal climate
 
-@fig-matDist and @fig-mapDist show the distribution of the optimal climate parameter, meaning the climate location where growth and survival are at its maximum, across the 31 tree species.
-The parameters mean and their uncertunity are displayed with the dot interval for growth (green) and survival (yellow).
-The density plot in gray is the distribution of the climate variable among all observed trees across space and time.
+@fig-matDist and @fig-mapDist show the distribution of the optimal climate parameter, meaning the climate location where the vital rate is at its maximum, across the 31 tree species.
+The parameters mean and their uncertunity are displayed with the dot interval for growth (green), recruitment (yellow), and survival (brown).
+The density plot in light gray is the distribution of the climate variable among all observed trees across space and time.
 
-#### Annual mean temperature
+#### Mean annual temperature
 
 ```{r climate_optClim,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-matDist
 #| fig-width: 8.5
 #| fig-height: 6
-#| fig-cap: "Distribution for the optimal annual mean temperature for growth (green) and survival (yellow). The density plot in gray is the distribution of the annual mean temperature among all observed trees across space and time."
+#| fig-cap: "Distribution for the optimal annual mean temperature for growth (green), recruitment (yellow), and survival (brown). The density plot in gray is the distribution of the annual mean temperature among all observed trees across space and time."
 
 treeData |>
   left_join(
@@ -179,19 +179,19 @@ treeData |>
   ) +
   labs(
     color = 'Optimal climate',
-    x = expression(paste("Annual mean temperature (", degree, "C)")),
+    x = expression(paste("Mean annual temperature (", degree, "C)")),
     y = ''
   )
 ```
 
-#### Annual precipitation
+#### Mean annual precipitation
 
 ```{r climate_optPrec,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-mapDist
 #| fig-width: 8.5
 #| fig-height: 6
-#| fig-cap: "Distribution for the optimal annual precipitation for growth (green) and survival (yellow). The density plot in gray is the distribution of annual precipitation variable among all observed trees across space and time."
-#| 
+#| fig-cap: "Distribution for the optimal mean annual precipitation for growth (green), recruitment (yellow), and survival (brown). The density plot in gray is the distribution of annual precipitation variable among all observed trees across space and time."
+
 treeData |>
   left_join(
     spIds,
@@ -257,7 +257,7 @@ In other words, when climate breadth is zero, the bell-shaped unimodal function 
 #| label: fig-climBreadth
 #| fig-width: 8.5
 #| fig-height: 6
-#| fig-cap: "Annual mean temperature and annual precipitation effect size across growth (green) and survival (yellow) vital rates. The higher the value the stronger is the negative effect of climate when moving from the optimal climate."
+#| fig-cap: "Mean annual temperature and mean annual precipitation effect size across the growth (green), recruitment (yellow), and survival (brown) vital rates. The higher the value the stronger is the negative effect of climate when moving from the optimal climate."
 
 pars_growth |>
   mutate(temp_growth = tau_temp,
@@ -296,8 +296,8 @@ pars_growth |>
   mutate(
     clim = case_match(
       clim,
-      "temp" ~ "Annual mean temperature",
-      "prec" ~ "Annual precipitation"
+      "temp" ~ "Mean annual temperature",
+      "prec" ~ "Mean annual precipitation"
     )
   ) |>
   ggplot() +
@@ -320,7 +320,7 @@ pars_growth |>
 #| label: fig-climBreadthSumm
 #| fig-width: 6.5
 #| fig-height: 5
-#| fig-cap: "Annual mean temperature and annual precipitation effect size across growth (green) and survival (yellow) vital rates. The higher the value the stronger is the negative effect of climate when moving from the optimal climate."
+#| fig-cap: "Mean annual temperature and mean annual precipitation effect size across the growth (green), recruitment (yellow), and survival (brown) vital rates. The higher the value the stronger is the negative effect of climate when moving from the optimal climate."
 
 pars_growth |>
   mutate(temp_growth = tau_temp,
@@ -359,8 +359,14 @@ pars_growth |>
   mutate(
     clim = case_match(
       clim,
-      "temp" ~ "Annual mean temperature",
-      "prec" ~ "Annual precipitation"
+      "temp" ~ "Mean annual temperature",
+      "prec" ~ "Mean annual precipitation"
+    ),
+    vr = case_match(
+      vr,
+      'growth' ~ 'Growth',
+      'recruit' ~ 'Recruitment',
+      'survival' ~ 'Survival'
     )
   ) |>
   ggplot() +
@@ -368,13 +374,14 @@ pars_growth |>
   aes(fill = clim) +
   geom_boxplot(alpha = 0.8) +
   theme_classic() +
-  # scale_color_manual(
-  #   values = c('#5ab4ac', '#d8b365')
-  # ) +
+  scale_fill_manual(
+    values = c('#386cb0', '#fdc086')
+  ) +
   ylab(expression(tau^-1)) +
   xlab('') +
   theme(axis.text.y = element_text(face = "italic")) +
-  labs(color = 'Climate')
+  labs(fill = '') +
+  theme(legend.position = 'bottom')
 ```
 
 
@@ -473,8 +480,8 @@ pars_growth |>
     by = c('species_id' = 'species_id_old')
   ) |>
   mutate(
-    clim = case_match(clim, 'temp' ~ 'Annual mean temperature',
-                            'prec' ~ 'Annual precipitation')
+    clim = case_match(clim, 'temp' ~ 'Mean annual temperature',
+                            'prec' ~ 'Mean annual precipitation')
   ) |>
   ggplot() +
   aes(x = clim_value, y = value) +
@@ -488,7 +495,7 @@ pars_growth |>
   theme_classic() +
   xlab('Mean optimal climate relative to species range') +
   ylab(expression( tau^-1)) +
-  labs(color = 'Vital rate') +
+  labs(color = '') +
   theme(legend.position = 'top')
 ```
 
@@ -576,8 +583,8 @@ pars_growth |>
     by = c('species_id' = 'species_id_old')
   ) |>
   mutate(
-    clim = case_match(clim, 'temp' ~ 'Annual mean temperature',
-                            'prec' ~ 'Annual precipitation')
+    clim = case_match(clim, 'temp' ~ 'Mean annual temperature',
+                            'prec' ~ 'Mean annual precipitation')
   ) |>
   ggplot() +
   aes(clim_val, value) +
@@ -594,7 +601,7 @@ pars_growth |>
   theme_classic() +
   xlab('Climate range') +
   ylab(expression(tau^-1)) +
-  labs(color = 'Vital rate') +
+  labs(color = '') +
   theme(legend.position = 'top')
 ```
 
@@ -665,7 +672,7 @@ recruitment_borderEffect
 #| label: fig-climEffectSize
 #| fig-width: 9
 #| fig-height: 11
-#| fig-cap: "Annual mean temperature and annual precipitation effect size on growth and survival vital rates between the minimum and maximum observed climate condition. Note that the effect size ranges from 0 (no effect) to 1 (maximum negative effect), and the effect at the lower climate condition were converted to negative for visual clarity."
+#| fig-cap: "Mean annual temperature and mean annual precipitation effect size on growth, recruitment, and survival vital rates between the minimum and maximum observed climate condition. Note that the effect size ranges from 0 (no effect) to 1 (maximum negative effect), and the effect at the lower climate condition were converted to negative for visual clarity."
 
 # fig overall performance across climate and vital rates
 growth_borderEffect |>
@@ -733,7 +740,7 @@ growth_borderEffect |>
 #| label: fig-climEffectSizeSunn
 #| fig-width: 6.5
 #| fig-height: 5
-#| fig-cap: "Summary between the species of the climate effect size on growth and survival between the minimum and maximum observed climate condition."
+#| fig-cap: "Summary between the species of the climate effect size for each vital rate between the minimum and maximum observed climate condition."
 
 growth_borderEffect |>
   pivot_longer(
@@ -761,7 +768,7 @@ growth_borderEffect |>
       bind_cols(vr = 'recruitment')
   ) |>
   mutate(
-    clim = case_match(clim, 'temp' ~ 'Annual mean temperature', 'prec' ~ 'Annual precipitation'),
+    clim = case_match(clim, 'temp' ~ 'Mean annual temperature', 'prec' ~ 'Mean annual precipitation'),
     range = case_match(range, 'max' ~ 'Upper limit', 'min' ~ 'Lower limit')
   ) |>
   ggplot() +
@@ -776,7 +783,7 @@ growth_borderEffect |>
   geom_hline(yintercept = 0, alpha = 0.8) +
   xlab('') +
   ylab('Effect size at climate ranges') +
-  labs(fill = 'Vital rate')
+  labs(fill = '')
 ```
 
 In @fig-latVsEffect we compare the climate effect at the lower observed range with the average latitude distribution among all observations of the species.
