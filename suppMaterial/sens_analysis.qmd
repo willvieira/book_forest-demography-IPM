@@ -249,7 +249,7 @@ In @fig-recVsMort, we explore the correlation between the importance of recruitm
 #| label: fig-recVsMort
 #| fig-width: 8
 #| fig-height: 4
-#| fig-cap: "Correlation between the survival and recruitment relative importance across the 32 species, climate and competition conditions. Species points are grouped by a Multivariate Normal Density function with probability of 90%."
+#| fig-cap: "Correlation between the survival and recruitment relative importance across the 31 species, climate and competition conditions. Species points are grouped by a Multivariate Normal Density function with probability of 90%."
 
 outRF_pars |>
   group_by(species_id, comp, clim, rep, parvr) |>

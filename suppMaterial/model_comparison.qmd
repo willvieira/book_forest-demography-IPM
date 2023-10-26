@@ -118,7 +118,7 @@ sigma_plot
 #| label: fig-sigma_plot
 #| fig-width: 8
 #| fig-height: 4
-#| fig-cap: "Boxplot shows the change in the posterior distribution of the parameter $\\sigma_{plot}$ across the 32 tree species as models become more complex. For each growth, survival, and recrutiment vital rate, the simplest model (plot random effects only) increase in complexity with the addition of fixed size, competition, and climate covariates. Each colored dot represents the species' average posterior distribution."
+#| fig-cap: "Boxplot shows the change in the posterior distribution of the parameter $\\sigma_{plot}$ across the 31 tree species as models become more complex. For each growth, survival, and recrutiment vital rate, the simplest model (plot random effects only) increase in complexity with the addition of fixed size, competition, and climate covariates. Each colored dot represents the species' average posterior distribution."
 
 # sigma_plot |>
 #   left_join(
@@ -286,7 +286,7 @@ MSE
 #| label: fig-R2
 #| fig-width: 6
 #| fig-height: 4
-#| fig-cap: "Posterior distribution of pseudo $R^2$ across the 32 tree species between the different models. For each growth, survival, and recrutiment vital rate, the simplest model (plot random effects only) increase in complexity with the addition of fixed competition and climate covariates. Each colored dot represents the species' average posterior distribution."
+#| fig-cap: "Posterior distribution of pseudo $R^2$ across the 31 tree species between the different models. For each growth, survival, and recrutiment vital rate, the simplest model (plot random effects only) increase in complexity with the addition of fixed competition and climate covariates. Each colored dot represents the species' average posterior distribution."
 
 # R2 |>
 #   left_join(
@@ -340,7 +340,7 @@ R2 |>
 #| label: fig-MSE
 #| fig-width: 6
 #| fig-height: 4
-#| fig-cap: "Posterior distribution of Mean Squared Error (MSE) across the 32 tree species as models become more complex."
+#| fig-cap: "Posterior distribution of Mean Squared Error (MSE) across the 31 tree species as models become more complex."
 
 # MSE |>
 #   left_join(
@@ -433,7 +433,7 @@ acc
 #| label: fig-Acc
 #| fig-width: 8
 #| fig-height: 4
-#| fig-cap: "Comparing the posterior distribution of sensitivity, specificity, and accuracy across the 32 tree species as models become more complex. Each colored dot represents the species' average posterior distribution."
+#| fig-cap: "Comparing the posterior distribution of sensitivity, specificity, and accuracy across the 31 tree species as models become more complex. Each colored dot represents the species' average posterior distribution."
 
 # acc |>
 #   left_join(
@@ -542,7 +542,7 @@ loo_tb
 #| label: fig-loo
 #| fig-width: 8
 #| fig-height: 6
-#| fig-cap: "Boxplot shows the LOO-CV compare between the competing models based on the difference in the expected log pointwise predictive density (ELPD_diff) across the 32 tree species. The sd_diff is the standard error of the ELPD difference between the model and the reference model (ELPD_diff equal to zero)."
+#| fig-cap: "Boxplot shows the LOO-CV compare between the competing models based on the difference in the expected log pointwise predictive density (ELPD_diff) across the 31 tree species. The sd_diff is the standard error of the ELPD difference between the model and the reference model (ELPD_diff equal to zero)."
 
 loo_tb |>
   select(species_id, vital_rate, model, elpd_diff, se_diff) |>
@@ -652,7 +652,7 @@ loo_mort
 #| label: fig-loo_mort
 #| fig-width: 8
 #| fig-height: 6
-#| fig-cap: "Boxplot shows the LOO-CV compare between the competing models based on the difference in the expected log pointwise predictive density (ELPD_diff) across the 32 tree species. The sd_diff is the standard error of the ELPD difference between the model and the reference model (ELPD_diff equal to zero)."
+#| fig-cap: "Boxplot shows the LOO-CV compare between the competing models based on the difference in the expected log pointwise predictive density (ELPD_diff) across the 31 tree species. The sd_diff is the standard error of the ELPD difference between the model and the reference model (ELPD_diff equal to zero)."
 
 readRDS(file.path('data', 'loo_mortSize.RDS')) |>
   select(species_id, vital_rate, model, elpd_diff, se_diff) |>

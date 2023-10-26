@@ -117,7 +117,7 @@ treeData <- readRDS(file.path(data_path, 'treeData.RDS')) |>
 
 ## Optimal climate
 
-@fig-matDist and @fig-mapDist show the distribution of the optimal climate parameter, meaning the climate location where growth and survival are at its maximum, across the 32 tree species.
+@fig-matDist and @fig-mapDist show the distribution of the optimal climate parameter, meaning the climate location where growth and survival are at its maximum, across the 31 tree species.
 The parameters mean and their uncertunity are displayed with the dot interval for growth (green) and survival (yellow).
 The density plot in gray is the distribution of the climate variable among all observed trees across space and time.
 

@@ -73,7 +73,7 @@ treeData <- readRDS(file.path(data_path, 'treeData.RDS')) |>
 #### Optimal size
 
 The optimal size parameter for the survival vital rate represents the size in which survival reach its peak.
-In @fig-survOpt we show the posterior distribution of optimal size for survival across the 32 forest species along with the density distribution of observed size in the dataset.
+In @fig-survOpt we show the posterior distribution of optimal size for survival across the 31 forest species along with the density distribution of observed size in the dataset.
 Species are ordered by the average observed size in dataset.
 The second panel shows how the optimal size for survival relates to the shade tolerance of the species, where the optimal survival size increases when species are more intolerant.
 

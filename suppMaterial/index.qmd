@@ -1,6 +1,6 @@
 # Preface {.unnumbered}
 
-In this book, I present my methods for quantifying the impact of competition and climate on the dynamics of 32 North American forest trees.
+In this book, I present my methods for quantifying the impact of competition and climate on the dynamics of 31 North American forest trees.
 While I try my best to make this approach as transparent as possible, it is very likely that I will miss certain steps.
 In such cases, you can find the missing information within the accompanying code.
 If navigating my code was not enough to solve your question, feel free to reach out via email.

@@ -1,7 +1,7 @@
 # A guide to use the forest-IPM code
 
 The `forest-IPM` code is available in this GitHub repository: <https://github.com/willvieira/forest-IPM>.
-This repository contains a collection of `R` functions designed for implementing the vital rates and Kernel functions, as well as the necessary data parameters for the 32 fitted species.
+This repository contains a collection of `R` functions designed for implementing the vital rates and Kernel functions, as well as the necessary data parameters for the 31 fitted species.
 Below, I'll provide a brief overview of how to load and execute these functions and outline the type of results you can expect from the model.
 
 Before we begin, we need to access the set of parameters for each species-demographic model.

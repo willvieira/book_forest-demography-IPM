@@ -38,7 +38,7 @@ The intervals between measurements varied from 1 to 40 years, with a median inte
 #| label: fig-plotCoverage
 #| fig-width: 9
 #| fig-height: 7
-#| fig-cap: "Spatial (top left) and temporal (top right) coverage of the dataset incorporating data from the USA and Quebec. The top right panel shows the distribution of observations per class of latitude for the 32 species used in this study."
+#| fig-cap: "Spatial (top left) and temporal (top right) coverage of the dataset incorporating data from the USA and Quebec. The top right panel shows the distribution of observations per class of latitude for the 31 species used in this study."
 
 treeData |>
 	filter(species_id %in% spIds$species_id_old) |>
@@ -180,10 +180,13 @@ ggarrange(
 ```
 
 These datasets provide individual-level information on the diameter at breast height (dbh) and the status (dead or alive) of over 200 species.
-From this pool, we selected the 32 most abundant species as listed in @tbl-tabSpecies.
-This selection comprises 9 conifer species and 23 hardwood species.
-We ensured an even distribution of species across the continuous shade tolerance trait, with 3 species classified as very intolerant, 9 as intolerant, 8 as intermediate, 9 as tolerant, and 5 as very tolerant [@burns1990silvics].
-While our analysis focuses on these 32 selected species, we retained the data for the remaining species for potential future exploration and analysis.
+From this pool, we selected the 31 most abundant species as listed in @tbl-tabSpecies.
+This selection comprises 9 conifer species and 21 hardwood species.
+We ensured an even distribution of species across the continuous shade tolerance trait, with 3 species classified as very intolerant, 9 as intolerant, 8 as intermediate, 8 as tolerant, and 5 as very tolerant [@burns1990silvics].
+While our analysis focuses on these 31 selected species, we retained the data for the remaining species for potential future exploration and analysis.
+Note that we initially included the *Ostrya virginiana* species in our analysis.
+However, we encountered substantial challenges with several parameters in the growth, survival, and recruitment models, which had very large confidence intervals.
+As a result, we made the decision to remove this species from our analysis, even though the fit files are still accessible for potential future investigations.
 
 ```{r,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: tbl-tabSpecies
