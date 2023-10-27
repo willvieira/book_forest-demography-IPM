@@ -15,10 +15,6 @@ library(ggdensity)
 ```
 
 ```{r loadSimData,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
-base_url <- 'https://github.com/willvieira/forest-IPM/raw/master/simulations/sensAnalysis_v3/output_processed/'
-for(Var in c('lambdas', 'outRF_cov', 'outRF_pars'))
-  assign(Var, readRDS(gzcon(url(paste0(base_url, Var, '.RDS')))))
-
 data_path <- readLines('_data.path')
 
 ## Species if info
@@ -40,6 +36,15 @@ mutate(
                                               'climax'))
 ) |>
 filter(sp_to_analyze)
+
+base_url <- 'https://github.com/willvieira/forest-IPM/raw/master/simulations/sensAnalysis_v3/output_processed/'
+for(Var in c('lambdas', 'outRF_cov', 'outRF_pars')) {
+  assign(
+    Var,
+    readRDS(gzcon(url(paste0(base_url, Var, '.RDS')))) |>
+      filter(species_id %in% spIds$species_id_old)
+  )
+}
 ```
 
 Here, we conducted a global sensitivity analysis (GSA) of the population growth rate ($\lambda$) with respect to demographic models.
@@ -62,7 +67,7 @@ We quantified the variability in population growth rate in function of the param
 Specifically, we quantified the variability $\lambda$ for different climate conditions, ranging from cold to the center and up to the hot mean annual temperatures experienced by each species.
 Furthermore, we combined the climate conditions with a low and high competition intensity.
 We defined the temperature ranges for each species using the 1st, 50th, and 99th percentiles.
-Low competition was defined as a population size of `N=0.1`, while high competition was set at the 99th percentile of plot basal area.
+Low competition was defined as a population size of $N = 0.1$, while high competition was set at the 99th percentile of plot basal area.
 Precipitation was kept at optimal conditions, computed based on the average optimal precipitation parameters among growth, survival, and recruitment models. 
 
 For each species, climate, and competition condition, we computed $\lambda$ 500 times using different draws from the posterior distribution, setting plot random effects to zero.
