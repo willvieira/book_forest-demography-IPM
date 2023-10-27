@@ -1,0 +1,229 @@
+# Conditional effect of covariates {#sec-margin-lambda}
+
+In this chapter, we assessed the conditional effects of each covariate on the population growth rate ($\lambda$) for each individual species.
+Specifically, we quantified how $\lambda$ varies with changes in competition intensity for both conspecific and heterospecific individuals.
+Furthermore, we examined how $\lambda$ changes in response to variations in mean annual temperature and mean annual precipitation, spanning the range from the minimum to maximum observed values in the dataset.
+This analysis is similar with the sensitivity analysis discussed in @sec-sensAnalysis.
+However, due to the larger number of conditions for each covariate, we performed this analysis with a reduced number of replicates, using only 50 replicates from the posterior distribution of the parameters.
+
+For the competition effect analysis, we maintained temperature and precipitation at the optimal conditions defined by the average of the optimal climate conditions among the growth, survival, and recruitment models.
+When assessing the effect of conspecific competition, heterospecific competition was set to null.
+Conversely, when evaluating the effect of heterospecific competition, conspecific competition was defined to a small population size of $N = 0.1$.
+
+We evaluated the climate effect under two competition conditions: low competition, where conspecific population size was set to $N = 0.1$, and high conspecific competition, where population size was established at the 99th percentile distribution of plot basal area experienced by the species in the dataset.
+When analyzing temperature, precipitation was held at its optimal condition, and vice versa.
+
+```{r,include=FALSE,echo=FALSE}
+Echo=FALSE
+Eval=TRUE
+Cache=TRUE
+Warng=FALSE
+Msg=FALSE
+library(tidyverse)
+library(ggdist)
+library(ggpubr)
+library(ggrepel)
+library(ggiraph)
+```
+
+```{r loadPars,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+data_path <- readLines('_data.path')
+pars_path <- file.path(data_path, 'output_sim_processed')
+
+## Species if info
+spIds <- read_csv(
+  file.path(
+    data_path, 'species_id.csv'
+  )
+) |>
+mutate(
+  shade = factor(shade, levels = c('tolerant', 'intermediate', 'intolerant')),
+  shade_sylvics = factor(shade_sylvics, levels = c('very-tolerant',
+                                            'tolerant',
+                                            'intermediate',
+                                            'intolerant',
+                                            'very-intolerant'
+                                            )),
+  succession = factor(succession, levels = c('pioneer',
+                                              'intermediate',
+                                              'climax'))
+) |>
+filter(sp_to_analyze)
+
+file_url <- 'https://github.com/willvieira/forest-IPM/raw/master/simulations/marginal_lambda/output_processed/lambdas.RDS'
+
+lambdas <- readRDS(gzcon(url(file_url))) |>
+  filter(species_id %in% spIds$species_id_old)
+```
+
+## Competition effect
+
+```{r lambdaComp,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-lambdaComp
+#| fig-width: 8
+#| fig-height: 4.5
+#| fig-cap: "The Average and 90% confidence intervals values for the population growth rate ($\\lambda$) as a function of conspecific (left panel) and heterospecific (right panel) competition intensity."
+
+lambdas |>
+  filter(sim == 'competition') |>
+  # return comp value back to numeric as climate sim got out
+  mutate(comp = as.numeric(comp)) |>
+  mutate(
+    lambda = log(lambda),
+    var = case_match(
+      var,
+      'cons' ~ 'Conspecific',
+      'het' ~ 'Heterospecific'
+    )
+  ) |>
+  left_join(
+    spIds,
+    by = c('species_id' = 'species_id_old')
+  ) |>
+  group_by(species_name, var, comp) |>
+  reframe(
+    mean_lambda = mean(lambda),
+    sd_lambda = sd(lambda),
+    ci_9 = mean_lambda + qt( c(0.9), n() - 1) * sd_lambda,
+    ci_1 = mean_lambda + qt( c(0.1), n() - 1) * sd_lambda
+  ) |> 
+  ggplot() +
+  aes(comp, mean_lambda) +
+  geom_ribbon_interactive(aes(ymin = ci_1, ymax = ci_9), alpha = 0.3,color=NA) +
+  geom_line_interactive() +
+  aes(tooltip = species_name, data_id = species_name) +
+  facet_wrap(~var) +
+  geom_hline(yintercept = 0, linetype = 2, alpha = 0.5) +
+  theme_classic() +
+  labs(
+    x = 'Plot basal area (m2/ha)',
+    y = expression('ln('~lambda~')')
+  ) +
+  theme(legend.position = 'none') ->
+p1
+
+tooltip_css <- "background-color:#fc8d59;padding:5px;border-radius:3px;font-style:italic;"
+
+girafe(
+  ggobj = p1,
+  options = list(
+    opts_tooltip(css = tooltip_css, opacity = 1),
+    opts_hover_inv(css = "opacity:0.1;"),
+    opts_hover(css = "stroke-width:2.5px;"),
+    opts_sizing(width = 1),
+    opts_toolbar(position = 'top', saveaspng = FALSE),
+    opts_zoom(max = 5)
+  )
+)
+```
+
+
+## Climate effect
+
+```{r lambdaClimData,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+lambdas |>
+  filter(species_id %in% spIds$species_id_old) |>
+  filter(sim == 'climate') |>
+  mutate(
+    var = case_match(
+      var,
+      'temp' ~ 'Temperature',
+      'prec' ~ 'Precipitation'
+    ),
+    comp = case_match(
+      comp,
+      'high' ~ 'High competition',
+      'low' ~ 'Low competition'
+    ),
+    comp = factor(comp, levels = c('Low competition', 'High competition'))
+  ) |>
+  left_join(
+    spIds,
+    by = c('species_id' = 'species_id_old')
+  ) |>
+  group_by(species_name, var, comp, clim) |>
+  reframe(
+    mean_lambda = mean(lambda),
+    sd_lambda = sd(lambda),
+    ci_9 = mean_lambda + qt( c(0.9), n() - 1) * sd_lambda,
+    ci_1 = mean_lambda + qt( c(0.1), n() - 1) * sd_lambda
+  ) ->
+clim_dt
+```
+
+
+### Mean annual temperature
+
+```{r lambdaTempplot,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-lambdaTempplot
+#| fig-width: 8
+#| fig-height: 4.5
+#| fig-cap: "The Average and 90% confidence intervals values for the population growth rate ($\\lambda$) as a function of normalized mean annual temperature for low (left panel) and high (right panel) competition intensity."
+
+clim_dt |>
+  filter(var == 'Temperature') |>
+  ggplot() +
+  aes(clim, mean_lambda) +
+  geom_ribbon_interactive(aes(ymin = ci_1, ymax = ci_9), alpha = 0.3,color=NA) +
+  geom_line_interactive() +
+  aes(tooltip = species_name, data_id = species_name) +
+  facet_grid(~comp) +
+  geom_hline(yintercept = 1, linetype = 2, alpha = 0.5) +
+  theme_classic() +
+  labs(
+    x = 'Mean annual temperature (scaled)',
+    y = expression('ln('~lambda~')')
+  ) +
+  theme(legend.position = 'none') ->
+p_temp
+
+girafe(
+  ggobj = p_temp,
+  options = list(
+    opts_tooltip(css = tooltip_css, opacity = 1),
+    opts_hover_inv(css = "opacity:0.1;"),
+    opts_hover(css = "stroke-width:2.5px;"),
+    opts_sizing(width = 1),
+    opts_toolbar(position = 'top', saveaspng = FALSE),
+    opts_zoom(max = 5)
+  )
+)
+```
+
+### Mean annual precipitation
+
+```{r lambdaPrec,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-lambdaPrec
+#| fig-width: 8
+#| fig-height: 4.5
+#| fig-cap: "The Average and 90% confidence intervals values for the population growth rate ($\\lambda$) as a function of normalized mean annual precipitation for low (left panel) and high (right panel) competition intensity."
+
+clim_dt |>
+  filter(var == 'Precipitation') |>
+  ggplot() +
+  aes(clim, mean_lambda) +
+  geom_ribbon_interactive(aes(ymin = ci_1, ymax = ci_9), alpha = 0.3,color=NA) +
+  geom_line_interactive() +
+  aes(tooltip = species_name, data_id = species_name) +
+  facet_grid(~comp) +
+  geom_hline(yintercept = 1, linetype = 2, alpha = 0.5) +
+  theme_classic() +
+  labs(
+    x = 'Mean annual precipitation (scaled)',
+    y = expression('ln('~lambda~')')
+  ) +
+  theme(legend.position = 'none') ->
+p_prec
+
+girafe(
+  ggobj = p_prec,
+  options = list(
+    opts_tooltip(css = tooltip_css, opacity = 1),
+    opts_hover_inv(css = "opacity:0.1;"),
+    opts_hover(css = "stroke-width:2.5px;"),
+    opts_sizing(width = 1),
+    opts_toolbar(position = 'top', saveaspng = FALSE),
+    opts_zoom(max = 5)
+  )
+)
+```

@@ -43,6 +43,7 @@ book:
       - ipm_description.qmd
       - guide_IPM.qmd
       - sens_analysis.qmd
+      - conditional_lambda.qmd
       - coex.qmd
     - references.qmd
 
@@ -57,14 +58,14 @@ website:
 format:
   html:
     theme: cosmo
-  pdf:
-    documentclass: scrreprt
-    geometry:
-      - top=20mm
-      - left=25mm
-      - right=15mm
-      - bottom=20mm
-  docx:
-    toc: false
+  # pdf:
+  #   documentclass: scrreprt
+  #   geometry:
+  #     - top=20mm
+  #     - left=25mm
+  #     - right=15mm
+  #     - bottom=20mm
+  # docx:
+  #   toc: false
 
 number-depth: 1
