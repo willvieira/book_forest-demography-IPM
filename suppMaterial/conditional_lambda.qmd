@@ -54,6 +54,27 @@ file_url <- 'https://github.com/willvieira/forest-IPM/raw/master/simulations/mar
 
 lambdas <- readRDS(gzcon(url(file_url))) |>
   filter(species_id %in% spIds$species_id_old)
+
+# load data to unscale climate variables and function to scale climate back to original range
+clim_scaleRange <- readRDS(file.path(data_path, 'climate_scaleRange.RDS')) |>
+  bind_cols()
+
+unscaleClim <- function(
+  value,
+  # if value is temp or prec
+  clim,
+  # temp and prec range are vectors of format [min, max]
+  temp_rg = clim_scaleRange$bio_01_mean,
+  prec_rg = clim_scaleRange$bio_12_mean
+) {
+  if(clim == 'temp') {
+    return( value * (temp_rg[2] - temp_rg[1]) + temp_rg[1] )
+  }else if(clim == 'prec') {
+    return( value * (prec_rg[2] - prec_rg[1]) + prec_rg[1] )
+  } else{
+    stop('Clim must be either `temp` or `prec` character.')
+  }
+}
 ```
 
 ## Competition effect
@@ -158,10 +179,13 @@ clim_dt
 #| label: fig-lambdaTempplot
 #| fig-width: 8
 #| fig-height: 4.5
-#| fig-cap: "The Average and 90% confidence intervals values for the population growth rate ($\\lambda$) as a function of normalized mean annual temperature for low (left panel) and high (right panel) competition intensity."
+#| fig-cap: "The Average and 90% confidence intervals values for the population growth rate ($\\lambda$) as a function of mean annual temperature for low (left panel) and high (right panel) competition intensity."
 
 clim_dt |>
   filter(var == 'Temperature') |>
+  mutate(
+    clim = unscaleClim(clim, 'temp')
+  ) |>
   ggplot() +
   aes(clim, mean_lambda) +
   geom_ribbon_interactive(aes(ymin = ci_1, ymax = ci_9), alpha = 0.3,color=NA) +
@@ -171,7 +195,7 @@ clim_dt |>
   geom_hline(yintercept = 1, linetype = 2, alpha = 0.5) +
   theme_classic() +
   labs(
-    x = 'Mean annual temperature (scaled)',
+    x = 'Mean annual temperature',
     y = expression('ln('~lambda~')')
   ) +
   theme(legend.position = 'none') ->
@@ -196,10 +220,13 @@ girafe(
 #| label: fig-lambdaPrec
 #| fig-width: 8
 #| fig-height: 4.5
-#| fig-cap: "The Average and 90% confidence intervals values for the population growth rate ($\\lambda$) as a function of normalized mean annual precipitation for low (left panel) and high (right panel) competition intensity."
+#| fig-cap: "The Average and 90% confidence intervals values for the population growth rate ($\\lambda$) as a function of mean annual precipitation for low (left panel) and high (right panel) competition intensity."
 
 clim_dt |>
   filter(var == 'Precipitation') |>
+  mutate(
+    clim = unscaleClim(clim, 'prec')
+  ) |>
   ggplot() +
   aes(clim, mean_lambda) +
   geom_ribbon_interactive(aes(ymin = ci_1, ymax = ci_9), alpha = 0.3,color=NA) +
@@ -209,7 +236,7 @@ clim_dt |>
   geom_hline(yintercept = 1, linetype = 2, alpha = 0.5) +
   theme_classic() +
   labs(
-    x = 'Mean annual precipitation (scaled)',
+    x = 'Mean annual precipitation',
     y = expression('ln('~lambda~')')
   ) +
   theme(legend.position = 'none') ->
