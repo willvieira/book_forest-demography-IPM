@@ -45,6 +45,30 @@ for(Var in c('lambdas', 'outRF_cov', 'outRF_pars')) {
       filter(species_id %in% spIds$species_id_old)
   )
 }
+
+# I wrongly swept the column names between hot and cold temperatures
+# So here it's the code that fix it, while I keep all the remaining code and data as it is
+lambdas |>
+  mutate(
+    clim = case_match(
+      clim,
+      'cold' ~ 'hot',
+      'hot' ~ 'cold',
+      'center' ~ 'center'
+    )
+  ) ->
+lambdas
+
+outRF_pars |>
+  mutate(
+    clim = case_match(
+      clim,
+      'cold' ~ 'hot',
+      'hot' ~ 'cold',
+      'center' ~ 'center'
+    )
+  ) ->
+outRF_pars
 ```
 
 Here, we conducted a global sensitivity analysis (GSA) of the population growth rate ($\lambda$) with respect to demographic models.
@@ -312,8 +336,8 @@ p1_dt |>
 ```
 
 We observe that at low competition, for most species, variations in $\lambda$ are primarily explained by recruitment.
-This pattern slightly diminishes as we move from the hot range to the center and up to the cold temperature range.
-At high competition intensity, we can observe an overall shift toward the survival model, especially at the cold temperature range.
+This pattern slightly diminishes as we move from the cold range to the center and up to the hot temperature range.
+At high competition intensity, we can observe an overall shift toward the survival model, especially at the hot temperature range.
 
 ## Covariance importance
 
@@ -369,7 +393,7 @@ This choice is based on the common invasion growth rate metric, or the populatio
 
 Additionally, we performed the sensitivity analysis with the same conditions, except for changing the high competition from heterospecific to conspecific individuals.
 We observed that nearly all the variation in $\lambda$, previously attributed to the growth model, shifted to the recruitment model.
-Also, the importance attributed to the survival model for certain species at the center and hot temperature conditions, shifted toward the recruitment model.
+Also, the importance attributed to the survival model for certain species at the center and cold temperature conditions, shifted toward the recruitment model.
 Although we observed this shift, the overall patterns remained similar to those discussed earlier.
 The only exeption was for the distribution of relative importance between climate and competition [@fig-climVsComp], where many species had an increase in the importance of competition relative to climate.
 These observed differences primarily arise from the high sensitivity of $\lambda$ to the $\phi$ parameter.
