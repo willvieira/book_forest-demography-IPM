@@ -48,7 +48,7 @@ for(Var in c('lambdas', 'outRF_cov', 'outRF_pars')) {
 ```
 
 Here, we conducted a global sensitivity analysis (GSA) of the population growth rate ($\lambda$) with respect to demographic models.
-GSA uses various methods to decompose the total variance of an outcome into contributions from parameters or input variables.
+Sensitivity analysis uses various methods to decompose the total variance of an outcome into contributions from parameters or input variables.
 In structured population models, sensitivity analyses involve computing partial derivatives of $\lambda$ with respect to individual parameters, following @Caswell1978 as:
 
 $$
@@ -56,9 +56,11 @@ $$
 $$
 
 where theta represents a vector of $i$ parameters.
-However, because of the high dimensionality of IPM due to a large number of parameters, these methods can quickly become computationally expensive.
-To address this, we leveraged the efficiency of non-parametric models such as random forests for variable importance classification [@antoniadis2021].
+However, most of the methods quantify the local sensitivity each parameter is evaluated separately while holding all others constant [@Saltelli2019].
+This approach can overlook the obscure parameter interactions that are often common in complex models.
+Furthermore, because of the high dimensionality of IPM due to a large number of parameters, these methods can quickly become computationally expensive.
 
+To address this, we leveraged the efficiency of non-parametric models such as random forests for variable importance classification [@antoniadis2021].
 This approach not only offers speed but also suits our study as it allows us to quantify both sources of variability in $\lambda$.
 It accounts for the sensitivity of $\lambda$ to each parameter and considers the uncertainty associated with the parameters.
 Therefore, a specific parameter may have higher importance because either $\lambda$ is more sensitive to it or because the parameter is more uncertain.
@@ -90,10 +92,10 @@ lambdas |>
     by = c('species_id' = 'species_id_old')
   ) |>
   mutate(
-    `Temperature\ncondition` = factor(clim, levels = c('cold', 'center', 'hot')),
-    `Competition` = comp
+    Temperature = factor(clim, levels = c('cold', 'center', 'hot')),
+    Competition = comp
   ) |>
-  ggplot(aes(log(lambda), color = `Temperature\ncondition`, linetype = Competition)) +
+  ggplot(aes(log(lambda), color = Temperature, linetype = Competition)) +
     geom_density(linewidth = .5) +
     facet_wrap(~species_name, scales = 'free') +
     geom_vline(xintercept = 0, alpha = 0.7, linetype = 2) +
@@ -101,7 +103,8 @@ lambdas |>
     scale_color_manual(values = c('#91bfdb', '#99d594', '#fc8d59')) +
     labs(
       x = expression('ln('~lambda~')'),
-      y = ''
+      y = '',
+      color = 'Temperature\nrange'
     ) +
     theme(
       axis.text.y = element_blank(),
@@ -124,10 +127,10 @@ The @fig-lambdaSumm presents the distribution of the average and standard deviat
 
 lambdas |>
   mutate(
-    `Temperature\ncondition` = factor(clim, levels = c('cold', 'center', 'hot')),
+    Temperature = factor(clim, levels = c('cold', 'center', 'hot')),
     Competition = comp
   ) |>
-  group_by(species_id, Competition, `Temperature\ncondition`) |>
+  group_by(species_id, Competition, Temperature) |>
   reframe(
     `mean lambda` = mean(log(lambda)),
     `sd lambda` = sd(log(lambda))
@@ -135,14 +138,14 @@ lambdas |>
   pivot_longer(
     cols = c(`mean lambda`, `sd lambda`)
   ) |>
-  ggplot(aes(Competition, value, fill = `Temperature\ncondition`)) +
+  ggplot(aes(Competition, value, fill = Temperature)) +
     geom_boxplot() +
     facet_wrap(~name, scales = 'free') +
     scale_fill_manual(values = c('#91bfdb', '#99d594', '#fc8d59')) +
-    theme_minimal() +
+    theme_classic() +
     xlab('Competition intensity') +
     ylab('') +
-    labs(fill = 'Temperature')
+    labs(fill = 'Temperature\nrange')
 ```
 
 ## Demographic model importance
@@ -200,7 +203,7 @@ Thus, we omitted this model and concentrated on the growth, survival, and recrui
 #| label: fig-ternaryLambda
 #| fig-width: 8
 #| fig-height: 6
-#| fig-cap: "Ternary plot decribing the distribution of importance among the growth, survival, and recruitment models. Species are classified by their general growth trait following @burns1990silvics."
+#| fig-cap: "Ternary plot decribing the distribution of importance among the growth, survival, and recruitment models. Color represetns the level of shade tolerance [@burns1990silvics]."
 
 outRF_pars |>
   group_by(species_id, comp, clim, rep, parvr) |>
@@ -322,7 +325,7 @@ The @fig-climVsComp shows the distribution of relative importance between climat
 #| label: fig-climVsComp
 #| fig-width: 8
 #| fig-height: 4
-#| fig-cap: "Distribution of relative importance between climate and competition covariates according to Random Forest, the respective $R^2$. The more species are to the right of the panel, the more climate is important relative to competition. Species are classified by their general growth trait following @burns1990silvics."
+#| fig-cap: "Distribution of relative importance between climate and competition covariates according to Random Forest, the respective $R^2$. The more species are to the right of the panel, the more climate is important relative to competition. Color represetns the level of shade tolerance [@burns1990silvics]."
 
 outRF_cov |>
   filter(par == 'clim') |>
