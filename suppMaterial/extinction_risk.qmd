@@ -1,0 +1,339 @@
+# Extinction risk {#sec-ExtRisk}
+
+```{r,include=FALSE,echo=FALSE}
+Echo=FALSE
+Eval=TRUE
+Cache=TRUE
+Warng=FALSE
+Msg=FALSE
+library(tidyverse)
+library(ggdist)
+library(ggpubr)
+library(ggrepel)
+```
+
+In this section, we discuss the concept and application of extinction risk as derived from the stochastic population growth rate in the IPM.
+The inherent demographic and environmental stochasticity introduces variance into the population growth rate ($\lambda$), and the strength of this variance directly influences the risk of extinction, especially for populations with lower performance or density [@Holt2005].
+To illustrate the concept, consider two populations with equal mean growth rates but varying standard deviations.
+Extinction risk can be defined as the area under the distribution for $\lambda < 1$ [@fig-lambda_sigma].
+
+```{r re_sigma,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-lambda_sigma
+#| fig-width: 6
+#| fig-height: 4
+#| fig-cap: "Distribution of 2000 draws of population growth rate $\\lambda$ with a mean of 1.05 and low (green) and high (yellow) standard deviations. The vertical dashed line represents the threshold between viable and non-viable populations."
+
+# generate random population growth rates
+set.seed(0.0)
+expand_grid(
+    mean = c(1.05),
+    sd = c(0.05, 0.2)
+  ) |>
+  group_by(sd) |>
+  expand_grid(draw = 1:2000) |>
+  mutate(
+    lambda = rnorm(n(), mean, sd)
+  ) |>
+  ggplot() +
+  aes(lambda) +
+  aes(fill = factor(sd)) +
+  geom_density(alpha = 0.7, color = 'transparent') +
+  geom_vline(xintercept = 1, linetype = 2) +
+  scale_fill_manual(
+    values = c('#5ab4ac', '#d8b365')
+  ) +
+  theme_classic() +
+  labs(
+    x = expression(lambda),
+    y = '',
+    fill = expression('sd('~lambda~')')
+    # subtitle = expression('Distribution of 2000 draws of'~lambda~'~'~plain(N(1.05, sd)))
+  ) +
+  scale_x_continuous(breaks = seq(0.5, 1.5, 0.5)) +
+  theme(
+    axis.ticks.y = element_blank(),
+    axis.text.y = element_blank()
+  )
+
+```
+
+We measure extinction risk using the cumulative distribution function ($F(\lambda)$), integrating the estimated density function ($f(\lambda)$) from negative infinity to the threshold of 1, as follows: 
+
+$$
+ F(\lambda) = \int_{-\infty}^1 f(\lambda)d\lambda
+$$
+
+@fig-lambda_sigma2 illustrates the relationship between $\lambda$ uncertainty and extinction risk.
+The higher the uncertainty around $\lambda$, the more blurred the mean difference between two populations becomes.
+Interestingly, increasing uncertainty tends to reduce extinction risk when the population growth rate is below 1.
+
+```{r re_sigma,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-lambda_sigma2
+#| fig-width: 6
+#| fig-height: 4
+#| fig-cap: "Cumulative density function $F(\\lambda)$ defines extinction risk as a function of the uncertainty of $\\lambda$ for different population growth rates. The smooth lines represent 2000 replications for varying mean ($\\lambda$) and standard deviation ($\\sigma^2$)."
+
+set.seed(0.0)
+expand_grid(
+    mean = c(.6, 0.9, 1, 1.1, 1.4),
+    sd = seq(0.15, 2, 0.01)
+  ) |>
+  mutate(group = row_number()) |>
+  group_by(group) |>
+  expand_grid(draw = 1:2000) |>
+  mutate(
+    lambda = rnorm(n(), mean, sd)
+  ) ->
+random_lambdas
+
+
+# function to get area under the curve from threshold
+area_thr <- function(x, threshold = 1, normalized = TRUE) {
+  dd = density(x)
+  den_weight =  dd$y
+  if(normalized) {
+    return( sum( (den_weight/sum(den_weight))[dd$x >= threshold] ) )
+  }else{
+    return( sum( den_weight[dd$x >= threshold] ) )
+  }
+}
+
+random_lambdas |>
+  group_by(mean, sd) |>
+  reframe(ext = 1 - area_thr(lambda)) |>
+  ggplot() +
+  aes(sd, ext) +
+  aes(color = factor(mean)) +
+  geom_smooth() +
+  scale_colour_viridis_d() +
+  theme_classic() +
+  labs(
+    x = expression(sigma^2),
+    y = expression('Extinction risk '~F(lambda)),
+    color = expression(bar(lambda))
+  )
+
+# # using the normal distribution Z-score
+# expand_grid(
+#     mean = seq(0.9, 1.1, 0.001),
+#     sd = seq(0.05, 2.5, 0.001)
+#   ) |>
+#   mutate(prop_above = 1 - pnorm((1-mean)/sd)) |>
+#   ggplot() +
+#   aes(mean, sd) +
+#   aes(fill = prop_above) +
+#   geom_raster() +
+#   scale_fill_gradient2(midpoint = 0.5) +
+#   theme_classic()
+```
+
+
+## Effect of demographic and environmental stochasticity
+
+```{r loadSim,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+lambdas <- readRDS(gzcon(url('https://github.com/willvieira/forest-IPM/raw/master/simulations/uncertainty_sim/output_processed/lambdas.RDS')))
+```
+
+In this section, we investigate how increasing the uncertainty of parameters and covariates affects the risk of extinction due to stochasticity.
+We selected two species, *Quercus prinus* and *Quercus rubra*, that had an average $\lambda$ close to 1, as well as looked sensitive to both competition and climate covariates.
+We set these species to conditions with population growth rates that were the closest to 1 but with different average values (lower for *Q. rubra* and higher for *Q. prinus*) for comparison [@fig-lambdaDistsp].
+
+```{r lambdaDistsp,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-lambdaDistsp
+#| fig-width: 6
+#| fig-height: 4
+#| fig-cap: "Population growth rate under demographic stochasticity from the 500 posterior distributions."
+
+lambdas |>
+  filter(noise_size == 'noise1') |>
+  ggplot() +
+  aes(log(lambda), species_name) +
+  aes(fill = species_name) +
+  stat_halfeye() +
+  geom_vline(xintercept = 0, linetype = 2, alpha = 0.4) +
+  theme_classic() +
+  scale_fill_manual(
+    values = c('#d8b365', '#5ab4ac')
+  ) +
+  labs(
+    x = expression('ln('~lambda~')'),
+    y = NULL
+  ) +
+  theme(
+    legend.position = 'none',
+    axis.text.y = element_text(face = 'italic')
+  )
+
+```
+
+We used the same 500 parameter draws from the posterior distribution as defined in the sensitivity analysis section (@sec-sensAnalysis).
+We ran four simulation sets to assess the cummulative effect of demographic, environemental, and environmentally induced competition stochasticity.
+We conducted four sets of simulations to understand the cumulative impact of demographic, environmental, and environmentally induced competition stochasticity.
+First, we quantified extinction risk under demographic stochasticity using the posterior parameter distribution while keeping the covariates at their mean conditions, effectively simulating zero noise from the covariates.
+Subsequently, we introduced environmental stochasticity along with demographic stochasticity by adding noise to the mean temperature conditions.
+Similarly, we introduced noise to the mean basal area of heterospecific individuals while keeping temperature constant at the mean.
+Finally, we added all sources of variability together, encompassing demographic, environmental, and environmentally induced competition stochasticity. 
+For temperature, we increased the standard deviation (SD) from 0.1 to 1.5, and for basal area, SD increased from 1 to 8.
+
+@fig-lambdaVsNoise shows the changes in $\lambda$ variability with increased stochasticity of covariates.
+The panels illustrate the effect of climate stochasticity, competition stochasticity, and both factors combined.
+
+```{r lambdaVsNoise,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-lambdaVsNoise
+#| fig-width: 8
+#| fig-height: 4
+#| fig-cap: "Distribution of population growth rate for different noise intensities applied to the temperature and basal area abundance covariates. We have omitted the values of $\\sigma$ as they differ between the covariates. However, the noise increases from left to right."
+
+lambdas |>
+  filter(lambda > quantile(lambda, 0.001)) |>
+  ggplot() +
+  aes(noise_size, log(lambda)) +
+  aes(fill = species_name) +
+  facet_wrap(~sim) +
+  stat_slab(alpha = 0.6) +
+  geom_hline(yintercept = 0, alpha = 0.4, linetype = 2) +
+  scale_fill_manual(
+    values = c('#d8b365', '#5ab4ac')
+  ) +
+  theme_classic() +
+  labs(
+    y = expression('ln('~lambda~')'),
+    x = expression('Noise intensity ('~sigma~')'),
+    fill = ''
+  ) +
+  theme(
+    legend.text = element_text(face = 'italic'),
+    axis.text.x = element_blank(),
+    panel.grid.major.x = element_line(color = rgb(0, 0, 0, 0.1)),
+    legend.position = 'top'
+  )
+```
+
+Both @fig-lambdaVsNoise and @fig-sdVsNoise highlight that increased noise around the average covariate conditions leads to greater variability in $\lambda$.
+It is important to note that the y-scale on the panels in @fig-sdVsNoise is standardized, showing a higher $\lambda$ variability for *Q. rubra* compared to *Q. prinus*.
+This suggests that climate and competition play more significant roles as predictors for all vital rates of *Q. rubra* compared to *Q. prinus*.
+In summary, greater variability in covariates is likely to increase the variability in $\lambda$, proportional to the covariate sensitivity.
+
+```{r sdVsNoise,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-sdVsNoise
+#| fig-width: 8
+#| fig-height: 4
+#| fig-cap: "Correlation between $\\lambda$ standard deviation and stochasticity intensity. The axis values of $\\sigma$ have been omitted as they differ between the covariates. However, the noise increases from left to right. The line represents a smoothed approximation from the point data."
+
+lambdas |>
+  group_by(species_name, sim, noise_size) |>
+  reframe(
+    lambda_mean = mean(lambda),
+    lambda_sd = sd(lambda)
+  ) |>
+  # pivot_longer(cols = contains('lambda')) |>
+  ggplot() +
+  aes(noise_size, lambda_sd) +
+  aes(group = sim, color = sim) +
+  # geom_path(linewidth = .8, alpha = 0.3) +
+  # geom_smooth(level = NA, alpha = 0) +
+  geom_point(size = 2) +
+  stat_smooth(geom = 'line', alpha = 0.4, size = 1) +
+  facet_wrap(~species_name, scales = 'free') +
+  scale_color_manual(
+    values = c('#7fc97f', '#fb8072', '#fdc086')
+  ) +
+  theme_classic() +
+  labs(
+    y = expression(sigma[lambda]),
+    x = expression('Noise intensity ('~sigma~')'),
+    color = NULL
+  ) +
+  theme(
+    strip.text= element_text(face = 'italic'),
+    strip.background = element_blank(),
+    axis.text.x = element_blank(),
+    legend.position = 'top'
+  )
+```
+
+Once we determine the uncertainty in $\lambda$, we can calculate population-level extinction risk using the cumulative distribution function $F(\lambda)$.
+@fig-noiseVsExt illustrates how extinction risk increases for *Q. prinus* and decreases for *Q. rubra* with increased stochasticity of covariates.
+
+```{r noiseVsExt,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-noiseVsExt
+#| fig-width: 8
+#| fig-height: 4
+#| fig-cap: "Correlation between extinction risk and stochasticity intensity. The axis values of $\\sigma$ have been omitted as they differ between the covariates. However, the noise increases from left to right. The line represents a smoothed approximation from the point data."
+
+# function to get area under the curve from threshold
+area_thr <- function(x, threshold = 1, normalized = TRUE) {
+  dd = density(x)
+  den_weight =  dd$y
+  if(normalized) {
+    return( sum( (den_weight/sum(den_weight))[dd$x < threshold] ) )
+  }else{
+    return( sum( den_weight[dd$x < threshold] ) )
+  }
+}
+
+lambdas |>
+  # filter(species_name != 'Picea mariana') |>
+  group_by(species_name, sim, noise_size) |>
+  reframe(A = area_thr(lambda)) |>
+  ggplot() +
+  aes(noise_size, A) +
+  aes(group = sim, color = sim) +
+  # geom_path(linewidth = .8, alpha = 0.3) +
+  # geom_smooth(level = NA, alpha = 0) +
+  geom_point(size = 2) +
+  stat_smooth(geom = 'line', alpha = 0.4, size = 1) +
+  facet_wrap(~species_name, scales = 'free') +
+  scale_color_manual(
+    values = c('#7fc97f', '#fb8072', '#fdc086')
+  ) +
+  theme_classic() +
+  labs(
+    y = 'Extinction risk',
+    x = expression('Noise intensity ('~sigma~')'),
+    color = NULL
+  ) +
+  theme(
+    strip.text= element_text(face = 'italic'),
+    strip.background = element_blank(),
+    axis.text.x = element_blank(),
+    legend.position = 'top'
+  )
+```
+
+
+```{r sigmaVsExt,echo=Echo,eval=FALSE,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-sigmaVsExt
+#| fig-width: 8
+#| fig-height: 4
+#| fig-cap: ""
+
+lambdas |>
+  group_by(species_name, sim, noise_size) |>
+  reframe(
+    lambda_mean = mean(lambda),
+    lambda_sd = sd(lambda),
+    A = area_thr(lambda)
+  ) |>
+  ggplot() +
+  aes(lambda_sd, A) +
+  aes(color = sim) +
+  stat_smooth(geom = 'line', alpha = 0.4, size = 1) +
+  geom_point(size = 2) +
+  facet_wrap(~species_name, scales = 'free') +
+  scale_color_manual(
+    values = c('#7fc97f', '#fb8072', '#fdc086')
+  ) +
+  theme_classic() +
+  labs(
+    y = 'Extinction risk',
+    x = expression(sigma[lambda]),
+    color = NULL
+  ) +
+  theme(
+    strip.text= element_text(face = 'italic'),
+    strip.background = element_blank(),
+    legend.position = 'top'
+  )
+```
+
