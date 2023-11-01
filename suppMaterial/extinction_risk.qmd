@@ -92,15 +92,15 @@ area_thr <- function(x, threshold = 1, normalized = TRUE) {
   dd = density(x)
   den_weight =  dd$y
   if(normalized) {
-    return( sum( (den_weight/sum(den_weight))[dd$x >= threshold] ) )
+    return( sum( (den_weight/sum(den_weight))[dd$x < threshold] ) )
   }else{
-    return( sum( den_weight[dd$x >= threshold] ) )
+    return( sum( den_weight[dd$x < threshold] ) )
   }
 }
 
 random_lambdas |>
   group_by(mean, sd) |>
-  reframe(ext = 1 - area_thr(lambda)) |>
+  reframe(ext = area_thr(lambda)) |>
   ggplot() +
   aes(sd, ext) +
   aes(color = factor(mean)) +
@@ -260,17 +260,6 @@ Once we determine the uncertainty in $\lambda$, we can calculate population-leve
 #| fig-width: 8
 #| fig-height: 4
 #| fig-cap: "Correlation between extinction risk and stochasticity intensity. The axis values of $\\sigma$ have been omitted as they differ between the covariates. However, the noise increases from left to right. The line represents a smoothed approximation from the point data."
-
-# function to get area under the curve from threshold
-area_thr <- function(x, threshold = 1, normalized = TRUE) {
-  dd = density(x)
-  den_weight =  dd$y
-  if(normalized) {
-    return( sum( (den_weight/sum(den_weight))[dd$x < threshold] ) )
-  }else{
-    return( sum( den_weight[dd$x < threshold] ) )
-  }
-}
 
 lambdas |>
   # filter(species_name != 'Picea mariana') |>
