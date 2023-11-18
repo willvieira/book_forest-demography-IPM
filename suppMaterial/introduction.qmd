@@ -1,0 +1,36 @@
+# Introduction {#sec-introduction}
+
+Climate warming poses a pressing challenge for several species, particularly for trees that are failing to to follow temperature warming [@Sittaro2017].
+Understanding the mechanisms governing species distribution is crucial for comprehending how they will repond to novel conditions arising from climate change.
+The niche theory predicts that a species thrives within a specific set of environmental conditions that allows it to have positive growth rate [@Hutchinson1957].
+Assuming geographic distribution is a manifestation of individual performance, bottom-up demographic range models incorporate environmental factors influencing growth, survival, and recruitment, and allows one to predict species distribution [@maguire1973niche; @holt2009; @Schurr2012].
+And this thing is what I tried to build duing my thesis.
+
+Here, I use this book as a lab notebook intending to share all the details related to the model construction so it can be easly replicated and extended others.
+The initial chapter cover the dataset description, the selected tree species, variables, and their computation methods.
+
+This book unfolds in three separated sections.
+The first one describes each of the growth, suvival, and recruitment demographic model.
+In first chapter of this section (@sec-demo_model_description), we elucidate the ecological rationale behind each demographic model and their mathematical formulation.
+The following chapter (@sec-mixed_cov) details how we improved the base models by partitioning the variance between random and fixed effects.
+Here we describe the ecological meaning behind the non-linear functions linking the climate and competition covariates to each of the demographic models.
+To finish this section, we describe the technical details of the model fit in @sec-model-fit, the comparison between the models in @sec-model_comparison, and the practical information of how and where the model parameters are stored in @sec-parameters.
+
+In the second section evaluates the fit of these models for 31 forest tree species using the selected model in @sec-model_comparison.
+It begins by discussing the model parameters and their goodness of fit by comparing posterior distributions with trait observations from the literature.
+We start by evaluating the intercept parameters (@sec-parsIntercept), followed by the spatial random effects applied at the plot level (@sec-parsRandomEffects).
+We then discuss the effect of competition (@sec-parsComp) and climate (@sec-parsClimate) covariates.
+Subsequently, we employ two approaches to gauge the effect size of each covariate.
+Specifically, we first compute the conditional effect of each covariate at the lower (1% quantile) and upper (99% quantile) distribution of the covariate (@sec-effectSize).
+This metric allows one to quantify the range of the intensity effect a species experienced from the covariate.
+Finally, we computed the average marginal effect of each covariate across the dataset (@sec-averageMarginalEffect).
+This approach uses perturbation analysis to quantify the effect of each covariate on each observed measurement.
+This allows one to compare the marginal effect among species and demographic models.
+
+The final section details the integration of growth, survival, and recruitment models into an Integral Projection Model (IPM).
+We start by describing the mathematical formulation of the IPM and its numerical approximation (@sec-ipm_description).
+The second chapter (@sec-ipm_guide) is a practical guide detailing the use of the IPM code.
+The following chapter describes the sensitivity analysis for the IPM to the demographic model parameters (@sec-sensAnalysis).
+There, we use a random forest algorithm to rank the relative importance of each parameter in changing the intrinsic population growth rate.
+The following two chapters describe the conditional (@sec-cond-lambda) and marginal (@sec-margin-lambda) effects of each covariate.
+Finally, we discuss the concept of extinction risk derived from the uncertainty around the population growth rate.
