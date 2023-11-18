@@ -39,20 +39,11 @@ The final likelihood growth model accounting for individual variability is defin
 $$
 \begin{align*}
 &dbh_{i,t + \Delta t} \sim N(\mu, \sigma) \\
-&\mu = z_{i,t + \Delta t}|dbh_{i,t}, \Gamma, \zeta_{\infty}
+&\mu = dbh_{i,t} \times e^{-\Gamma \Delta t} + \zeta_{\infty} (1- e^{-\Gamma \Delta t})
 \end{align*}
 $$
 
 Where $N$ is the normal distribution and $dbh_i$ is the observed size of an individual at two consecutive measurements.
-The prior distribution of the parameters are defined as follows:
-
-$$
-\begin{align*}
-&\Gamma \sim N(-3.5, 1) \\
-&\zeta_{\infty} \sim N(1000, 80) \\
-&\sigma \sim N(0, 1.5)
-\end{align*}
-$$
 
 ```{r,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-VBModel
@@ -150,10 +141,7 @@ Here, $M_i$ represents the individual's status (alive/dead) and $p_i$ the mortal
 The mortality probability is calculated based on the annual survival rate ($\psi$) and the time interval between census ($\Delta t$):
 
 $$
-\begin{align*}
-&p_i = 1 - \psi^{\Delta t} \\
-&\psi \sim N(5, 1)
-\end{align*}
+p_i = 1 - \psi^{\Delta t}
 $$
 
 The rationale of this model is that the survival probability ($1 - p_i$) increases with the longevity parameter $\psi$ but it is compenseted exponentially with the increase in time $\Delta t$ (@fig-mortModel).
