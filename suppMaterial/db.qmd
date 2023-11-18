@@ -25,15 +25,15 @@ spIds <- read_csv(file.path(data_path, 'species_id.csv')) |>
 	filter(sp_to_analyze)
 ```
 
-In this chapter, I will describe the different data sources and the data preparation procedures used to create a tidy dataset for our analysis.
-Our focus is on open inventory data from eastern North America, and we use two primary datasets: the Forest Inventory and Analysis (FIA) dataset in the United States [@OConnell2007] and the Forest Inventory of the Canadian province of Québec [@Naturelles2016].
-For the FIA dataset, we used data from 37 out of the 50 states: Alabama, Arkansas, Connecticut, Delaware, Florida, Georgia, Illinois, Indiana, Iowa, Kansas, Kentucky, Louisiana, Maine, Maryland, Massachusetts, Michigan, Minnesota, Mississippi, Missouri, Nebraska, New Hampshire, New Jersey, New York, North Carolina, North Dakota, Ohio, Oklahoma, Pennsylvania, Rhode Island, South Carolina, South Dakota, Tennessee, Texas, Vermont, Virginia, West Virginia, and Wisconsi.
+In this chapter, we outline the two data sources and the steps taken to organize a create a tidy dataset for our analysis.
+We focus in two open inventory data from eastern North America: the Forest Inventory and Analysis (FIA) dataset in the United States [@OConnell2007] and the Forest Inventory of Québec [@Naturelles2016].
+From the FIA dataset, we utilized information collected from 37 states out of the total 50: Alabama, Arkansas, Connecticut, Delaware, Florida, Georgia, Illinois, Indiana, Iowa, Kansas, Kentucky, Louisiana, Maine, Maryland, Massachusetts, Michigan, Minnesota, Mississippi, Missouri, Nebraska, New Hampshire, New Jersey, New York, North Carolina, North Dakota, Ohio, Oklahoma, Pennsylvania, Rhode Island, South Carolina, South Dakota, Tennessee, Texas, Vermont, Virginia, West Virginia, and Wisconsin.
 
-At the plot level, we retained plots that had been sampled at least twice and excluded harvested plots to focus on natural dynamics.
-Specifically for the FIA, we selected surveys conducted using the modern, standardized methodology that began in 1999.
-After applying these filters, our final dataset comprised nearly 26 000 plots, covering the latitude range from 26° to 53° (@fig-plotCoverage).
-Each plot in the dataset was measured between 1970 and 2021, with observation frequencies per plot ranging from 2 to 7 and an average of 3 measurements per plot.
-The intervals between measurements varied from 1 to 40 years, with a median interval of 7 years (@fig-plotCoverage).
+At the plot level, we retained plots that had been sampled at least twice, excluding those that had undergone harvesting to focus solely on natural dynamics.
+Specifically, for the FIA dataset, we selected surveys conducted using the modern standardized methodology implemented since 1999.
+Post the application of these filters, our final dataset encompassed nearly 26,000 plots, spanning a latitude range from 26° to 53° (@fig-plotCoverage).
+Each plot within the dataset was measured between 1970 and 2021, with observation frequencies ranging from 2 to 7 times and an average of 3 measurements per plot.
+The time intervals between measurements varied from 1 to 40 years, with a median interval of 7 years (@fig-plotCoverage).
 
 ```{r,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-plotCoverage
@@ -180,8 +180,8 @@ ggarrange(
 )
 ```
 
-These datasets provide individual-level information on the diameter at breast height (dbh) and the status (dead or alive) of over 200 species.
-From this pool, we selected the 31 most abundant species as listed in @tbl-tabSpecies.
+These datasets provide individual-level information on the diameter at breast height (dbh) and the status (dead or alive) of more than 200 species.
+From this pool, we selected the 31 most abundant species (@tbl-tabSpecies).
 This selection comprises 9 conifer species and 21 hardwood species.
 We ensured an even distribution of species across the continuous shade tolerance trait, with 3 species classified as very intolerant, 9 as intolerant, 8 as intermediate, 8 as tolerant, and 5 as very tolerant [@burns1990silvics].
 While our analysis focuses on these 31 selected species, we retained the data for the remaining species for potential future exploration and analysis.
