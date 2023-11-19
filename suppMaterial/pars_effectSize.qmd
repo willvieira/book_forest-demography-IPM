@@ -1,18 +1,20 @@
 # Conditional effect of covariates {#sec-effectSize}
 
 In this section, we quantify the relative effect size of each covariate (competition conspecific, competition heterospecific, temperature, and precipitation) on the intercept of each vital rate function.
-Because of the non-linearity of the functions, we evaluate the condition effect of the covariate at the extreme observed values of the covariate-species combination.
-For instance, the conditional effect of annual mean temperature on the growth rate of species $x$ is evaluated at both the minimum and maximum annual mean temperature that species $x$ was observed.
-We define the minimum and maximum range of each covariate-species combination using the 1% and 99% quantile distribution, respectively.
+Because of the non-linearity of the functions, we evaluate the condition effect of each covariate at the lower and upper observed values of the covariate-species combination.
+For instance, the conditional effect of annual mean temperature on the growth rate of species $x$ is evaluated at both the 1th and 99th quantile of annual mean temperature that species $x$ was observed.
+Here I define conditional effect size, or simply effect size, as the relative reduction of the intercept parameter.
+This means that when we compare the conditional effect size between species, those effects do not account for the intercept value, nor it accounts for the other covariates.
+Conditional effect size are values between 0 and 1, where 0 means no effect on the intercept.
 
-The idea behind measuring the conditional effect of the covariate at extreme conditions is to assess the maximum effect observed by each species for the specific covariate.
-While this metric allows us to identify the maximum observed effect size of the covariate, it does not account for the total distribution of observed covariates.
-For instance, the distribution of observed temperature for a specific species can be highly concentrated at the average, then while the conditional effect of temperature is relatively high at the extreme, it is not representative of the total population.
+The idea behind measuring the conditional effect of the covariate at lower and upper observed conditions is to assess the range of effects observed by each species for the specific covariate.
+While this metric allows us to identify the range observed effect size of the covariate, it does not account for the total distribution of observed covariates.
+For instance, the distribution of observed temperature for a specific species can be highly concentrated at the average, then while the conditional effect of temperature is relatively high at the lower border, it is not representative of the total population.
 In the next chapter (@sec-averageMarginalEffect), we discuss the marginal effect of each covariate averaged across all observations, what we call the Average Marginal Effect.
 This metric better accounts for the total observed distribution of the covariates and gives more weight to locations where data is concentrated.
 
-In this chapter, we first compute the conditional effect size at extreme range conditions for each covariate-species combination.
-Second, we visualize the conditioanl effect size under harsh conditions by selecting the strongest effect size between the maximum and minimum range conditions for each covariate-species combination.
+In this chapter, we first compute the conditional effect size at lower and upper range conditions for each covariate-species combination.
+Second, we visualize the conditioanl effect size under the harsh conditions by selecting the strongest effect size between the lower and upper conditions.
 Finally, we split each species-specific population into the lower, center, or upper range position following the latitude distribution of each plot ID, where the range is defined as plots having their latitude lower or upper than the 10% or 90% latitude quantile distribution, respectively.
 
 ```{r,include=FALSE,echo=FALSE}
@@ -224,7 +226,10 @@ growht_borderEffect |>
 #| fig-height: 4
 #| fig-cap: "Effect size of each covariate affecting growth at the lower (1% quantile) and upper (99% quantile) observed range of the covariate. Values close to zero mean that the covariate had no effect on the intercept of the species."
 
-growht_borderEffect |> 
+growht_borderEffect |>
+  group_by(species_id) |>
+  mutate(across(contains('_'), mean)) |>
+  slice_head(n = 1) |>
   pivot_longer(
       cols = !c(species_id, iter),
       names_to = c('var', 'range'),
@@ -284,6 +289,9 @@ survival_borderEffect
 
 # ig effects on survival
 survival_borderEffect |>
+  group_by(species_id) |>
+  mutate(across(contains('_'), mean)) |>
+  slice_head(n = 1) |>
   pivot_longer(
       cols = !c(species_id, iter),
       names_to = c('var', 'range'),
@@ -345,7 +353,10 @@ pars_rec |>
   ) ->
 rec_borderEffect
 
-rec_borderEffect |> 
+rec_borderEffect |>
+  group_by(species_id) |>
+  mutate(across(contains('_'), mean)) |>
+  slice_head(n = 1) |>
   pivot_longer(
     cols = !c(species_id, iter),
     names_to = c('var', 'range'),
@@ -388,6 +399,9 @@ Harsh condition is defined here as the extreme observed covariate with the large
 #| fig-cap: "Effect size of each covariate affecting growth at the lower (1% quantile) and upper (99% quantile) observed range of the covariate. Values close to zero mean that the covariate had no effect on the intercept of the species."
 
 growht_borderEffect |>
+  group_by(species_id) |>
+  mutate(across(contains('_'), mean)) |>
+  slice_head(n = 1) |>
   pivot_longer(
     cols = !c(species_id, iter),
     names_to = c('var', 'range'),
@@ -403,6 +417,9 @@ growht_borderEffect |>
   bind_cols(vr = 'growth') |>
   bind_rows(
     survival_borderEffect |>
+      group_by(species_id) |>
+      mutate(across(contains('_'), mean)) |>
+      slice_head(n = 1) |>
       pivot_longer(
         cols = !c(species_id, iter),
         names_to = c('var', 'range'),
@@ -419,6 +436,9 @@ growht_borderEffect |>
   ) |>
   bind_rows(
     rec_borderEffect |>
+      group_by(species_id) |>
+      mutate(across(contains('_'), mean)) |>
+      slice_head(n = 1) |>
       pivot_longer(
         cols = !c(species_id, iter),
         names_to = c('var', 'range'),
@@ -453,7 +473,6 @@ growht_borderEffect |>
     values = c('#7fc97f', '#beaed4', '#ffff99', '#386cb0', '#fdc086')
   ) +
   theme_classic() +
-  geom_hline(yintercept = 0, alpha = 0.8) +
   xlab('') +
   ylab('Effect size') +
   labs(fill = '')
@@ -462,17 +481,19 @@ growht_borderEffect |>
 
 ## Effect size at harsh condition grouped by range position
 
+Now, we using the effect size from the harsh condition (the lower or upper covariate quantile), we divide the effect size between three regions using the mean annual temperature (MAT) gradient: cold range (MAT < 10%), hot range (MAT > 90%), and the center otherwise.
+
 ```{r effSz_harshCondRangeData,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 
 # function to determine if a plot is at lower, center, or upper border
 # given how much of the tail we consider border (prob arg) [0-0.5]
-which_border <- function(lat, prob = 0.1, naRm = TRUE) {
-  lat_range = quantile(lat, probs = c(prob, 1 - prob), na.rm = naRm)
+which_border <- function(temp, prob = 0.1, naRm = TRUE) {
+  temp_range = quantile(temp, probs = c(prob, 1 - prob), na.rm = naRm)
   # output vector with 'center' class
-  out_pos = rep('c', length(lat))
+  out_pos = rep('Center', length(temp))
   # lower border
-  out_pos[lat < lat_range[1]] = 'l'
-  out_pos[lat > lat_range[2]] = 'u'
+  out_pos[temp < temp_range[1]] = 'Cold'
+  out_pos[temp > temp_range[2]] = 'Hot'
   
   return(out_pos)
 }
@@ -488,7 +509,7 @@ treeData |>
   slice_head(n = 1) |>
   group_by(species_id) |>
   mutate(
-    border_cl = which_border(latitude, prob = 0.1)
+    border_cl = which_border(bio_01_mean, prob = 0.1)
   ) |>
   select(species_id, plot_id, border_cl) ->
 plotBorder_class
@@ -536,7 +557,7 @@ pars_growth |>
   group_by(species_id) |>
   mutate(iter = row_number()) |>
   group_by(species_id, iter) |>
-  expand_grid(border_cl = c('l', 'c', 'u')) |>
+  expand_grid(border_cl = c('Cold', 'Center', 'Hot')) |>
   ungroup() |>
   left_join(sp_range) |>
   mutate(
@@ -558,7 +579,7 @@ pars_survival |>
   group_by(species_id) |>
   mutate(iter = row_number()) |>
   group_by(species_id, iter) |>
-  expand_grid(border_cl = c('l', 'c', 'u')) |>
+  expand_grid(border_cl = c('Cold', 'Center', 'Hot')) |>
   ungroup() |>
   left_join(sp_range) |>
   mutate(
@@ -578,7 +599,7 @@ pars_rec |>
   group_by(species_id) |>
   mutate(iter = row_number()) |>
   group_by(species_id, iter) |>
-  expand_grid(border_cl = c('l', 'c', 'u')) |>
+  expand_grid(border_cl = c('Cold', 'Center', 'Hot')) |>
   ungroup() |>
   left_join(sp_range) |>
   mutate(
@@ -596,6 +617,9 @@ rec_effect
 
 # merge the mort, growth, and rec vital rates
 growth_effect |>
+  group_by(species_id, border_cl) |>
+  mutate(across(contains('_'), mean)) |>
+  slice_head(n = 1) |>
   pivot_longer(
     cols = !c(species_id, iter, border_cl),
     names_to = c('var', 'range'),
@@ -604,6 +628,9 @@ growth_effect |>
   bind_cols(vr = 'growth') |>
   bind_rows(
     survival_effect |>
+      group_by(species_id, border_cl) |>
+      mutate(across(contains('_'), mean)) |>
+      slice_head(n = 1) |>
       pivot_longer(
         cols = !c(species_id, iter, border_cl),
         names_to = c('var', 'range'),
@@ -613,6 +640,9 @@ growth_effect |>
   ) |>
   bind_rows(
     rec_effect |>
+      group_by(species_id, border_cl) |>
+      mutate(across(contains('_'), mean)) |>
+      slice_head(n = 1) |>
       pivot_longer(
         cols = !c(species_id, iter, border_cl),
         names_to = c('var', 'range'),
@@ -653,21 +683,14 @@ all_effect |>
       'tBAsp' ~ 'Total conspecific\nbasal area',
       'tBA' ~ 'Total adult\nbasal area'
     ),
-    border_cl = case_match(
-      border_cl,
-      'l' ~ 'lower border',
-      'c' ~ 'center',
-      'u' ~ 'upper border'
-    ),
-    border_cl = factor(border_cl, levels = c('lower border', 'center', 'upper border'))
+    border_cl = factor(border_cl, levels = c('Cold', 'Center', 'Hot'))
   ) |>
   ggplot() +
-  aes(var, -harsh_eff) +
+  aes(var, harsh_eff) +
   aes(fill = border_cl) +
   # facet_wrap(~vr) +
   geom_boxplot() +
   theme_classic() +
-  geom_hline(yintercept = 0, alpha = 0.8) +
   scale_fill_manual(values = c('#91bfdb', '#99d594', '#fc8d59')) +
   xlab('') +
   ylab('Effect size') +
@@ -697,22 +720,15 @@ all_effect |>
       'tBAsp' ~ 'Total conspecific\nbasal area',
       'tBA' ~ 'Total adult\nbasal area'
     ),
-    border_cl = case_match(
-      border_cl,
-      'l' ~ 'lower border',
-      'c' ~ 'center',
-      'u' ~ 'upper border'
-    ),
-    border_cl = factor(border_cl, levels = c('lower border', 'center', 'upper border'))
+    border_cl = factor(border_cl, levels = c('Cold', 'Center', 'Hot'))
   ) |>
   ggplot() +
-  aes(var, -harsh_eff) +
+  aes(var, harsh_eff) +
   aes(fill = border_cl) +
   # facet_wrap(~vr) +
   geom_boxplot() +
   theme_classic() +
   scale_fill_manual(values = c('#91bfdb', '#99d594', '#fc8d59')) +
-  geom_hline(yintercept = 0, alpha = 0.8) +
   xlab('') +
   ylab('Effect size') +
   labs(fill = '') +
@@ -743,22 +759,15 @@ all_effect |>
       'tBAsp' ~ 'Total conspecific\nbasal area',
       'tBA' ~ 'Total adult\nbasal area'
     ),
-    border_cl = case_match(
-      border_cl,
-      'l' ~ 'lower border',
-      'c' ~ 'center',
-      'u' ~ 'upper border'
-    ),
-    border_cl = factor(border_cl, levels = c('lower border', 'center', 'upper border'))
+    border_cl = factor(border_cl, levels = c('Cold', 'Center', 'Hot'))
   ) |>
   ggplot() +
-  aes(var, -harsh_eff) +
+  aes(var, harsh_eff) +
   aes(fill = border_cl) +
   # facet_wrap(~vr) +
   geom_boxplot() +
   theme_classic() +
   scale_fill_manual(values = c('#91bfdb', '#99d594', '#fc8d59')) +
-  geom_hline(yintercept = 0, alpha = 0.8) +
   xlab('') +
   ylab('Effect size') +
   labs(fill = '') +

@@ -324,28 +324,31 @@ pars_growth |>
 #| fig-cap: "Mean annual temperature and mean annual precipitation effect size across the growth (green), recruitment (yellow), and survival (brown) vital rates. The higher the value the stronger is the negative effect of climate when moving from the optimal climate."
 
 pars_growth |>
-  mutate(temp_growth = tau_temp,
-          prec_growth = tau_prec) |>
   group_by(species_id) |>
-  mutate(iter = 1:n()) |>
-  select(species_id, iter, contains('growth')) |>
+  reframe(
+    temp_growth = mean(tau_temp),
+    prec_growth = mean(tau_prec)
+  ) |>
+  select(species_id, contains('growth')) |>
   ungroup() |>
   left_join(
     pars_survival |>
-      mutate(temp_survival = tau_temp,
-            prec_survival = tau_prec) |>
       group_by(species_id) |>
-      mutate(iter = 1:n()) |>
-      select(species_id, iter, contains('survival')) |>
+      reframe(
+        temp_survival = mean(tau_temp),
+        prec_survival = mean(tau_prec)
+      ) |>
+      select(species_id, contains('survival')) |>
       ungroup()
   ) |>
   left_join(
     pars_recruit |>
-      mutate(temp_recruit = tau_temp,
-            prec_recruit = tau_prec) |>
       group_by(species_id) |>
-      mutate(iter = 1:n()) |>
-      select(species_id, iter, contains('recruit')) |>
+      reframe(
+        temp_recruit = mean(tau_temp),
+        prec_recruit = mean(tau_prec)
+      ) |>
+      select(species_id, contains('recruit')) |>
       ungroup()
   ) |>
   pivot_longer(
@@ -772,6 +775,8 @@ growth_borderEffect |>
     clim = case_match(clim, 'temp' ~ 'Mean annual temperature', 'prec' ~ 'Mean annual precipitation'),
     range = case_match(range, 'max' ~ 'Upper limit', 'min' ~ 'Lower limit')
   ) |>
+  group_by(species_id, vr, clim, range) |>
+  reframe(value = mean(value)) |>
   ggplot() +
   aes(range, -value) +
   aes(fill = vr) +
