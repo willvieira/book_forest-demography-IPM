@@ -1,4 +1,4 @@
-# Model fit
+# Model fit {#sec-model-fit}
 
 We assessed the growth, survival, and recruitment rates by examining transitions between two measurements.
 While we fitted the growth and survival functions at the individual level, recruitment was evaluated at the plot level.

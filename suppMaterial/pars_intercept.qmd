@@ -1,6 +1,8 @@
 # Intercept {#sec-parsIntercept}
 
-Distribution of intercept for the growth, survival, and recruitment models.
+In this chapter we evaluate the intercept of the growth, survival, and recruitment models.
+We use trait information extracted from the literature to compare the average estimation for each demographic model.
+The traits of growth classes, maximum observed size, maximum observed age, and the shade tolerance are extracted from @burns1990silvics, while the seed mass comes from @diaz2022.
 
 ```{r,include=FALSE,echo=FALSE}
 Echo=FALSE
@@ -207,7 +209,7 @@ pars_growth |>
 
 ## Mortality probability
 
-Similar to the growth rate, the surival model has a temporal component in which survival probability ($logit~\psi$) decreases exponently with time.
+Similar to the growth rate, the surival model has a temporal component in which survival probability ($\psi$) decreases exponently with time.
 So we computed the 10 years average mortality probability as the intercept for the survival model.
 
 ```{r intcerpt_survival,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
@@ -308,9 +310,10 @@ The ingrowth model comprises two intercept components: the annual ingrowth rate 
 In the context of the survival submodel for the ingrowth rate, we computed the 10 years survival probability of ingrowth individuals just like in the survival model.
 
 ```{r intcerpt_ingrowth,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
-#| fig-width: 8.5
+#| label: fig-intcerpt_ingrowth
+#| fig-width: 8.5 
 #| fig-height: 5.5
-#| fig-cap: "Intercept of the ingrwoth model for the number of individuals that ingress the population per year per m$^2$. Species are classified by their successional status."
+#| fig-cap: "Intercept of the ingrwoth model for the number of individuals that ingress the population per year per m$^2$. Species are classified by their successional status following @burns1990silvics."
 
 # Fig 3: m ingrowth in function of species and shade tolerance
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -321,13 +324,13 @@ In the context of the survival submodel for the ingrowth rate, we computed the 1
       by = c('species_id' = 'species_id_old')
     ) |>
     ggplot() +
-    aes(exp(mPop_log), fct_reorder(species_name, exp(mPop_log))) +
+    aes(mPop_log, fct_reorder(species_name, exp(mPop_log))) +
     aes(color = succession) +
     stat_pointinterval() +
     ylab('') +
-    xlab('Annual ingrowth rate per m²') +
+    xlab('Annual ingrowth rate per m² (log)') +
     scale_color_manual(
-      values = c('#f7fcb9', '#addd8e', '#31a354')
+      values = c('#c2e699', '#fb6a4a', '#cb181d')
       # values = c("#87bc45", "#edbf33", "#ea5545")
       # values = c("#20bc45", "#87bc45", "#edbf33", "#ea5545", "#ba0000")
     ) +
@@ -346,17 +349,17 @@ In the context of the survival submodel for the ingrowth rate, we computed the 1
     ) |>
     filter(!is.na(succession)) |>
     ggplot() +
-    aes(log(sm), exp(mPop_log), color = succession) +
+    aes(log(sm), mPop_log, color = succession) +
     stat_pointinterval() +
     scale_color_manual(
-      values = c('#f7fcb9', '#addd8e', '#31a354')
+      values = c('#fcae91', '#fb6a4a', '#cb181d')
       # values = c("#87bc45", "#edbf33", "#ea5545")
       # values = c("#20bc45", "#87bc45", "#edbf33", "#ea5545", "#ba0000")
     ) +
     theme_classic() +
     labs(
       x = 'Seed mass (ln g)',
-      y = 'Annual ingrowth rate per m²',
+      y = 'Annual ingrowth rate per m² (log)',
       color = ''
     ) +
     theme(legend.position = 'top') ->
@@ -366,9 +369,10 @@ In the context of the survival submodel for the ingrowth rate, we computed the 1
 ```
 
 ```{r intcerpt_ingP,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-intcerpt_ingP
 #| fig-width: 8.5
 #| fig-height: 5.5
-#| fig-cap: "Intercept of the annual survival probability for the ingrwoth model. Species are classified by their shade tolerance trait following @burns1990silvics"
+#| fig-cap: "Intercept of the annual survival probability for the ingrwoth model. Species are classified by their shade tolerance trait following @burns1990silvics."
 
 pars_rec |>
   mutate(p = exp(-exp(p_log))^10) |>

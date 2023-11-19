@@ -1,10 +1,10 @@
 # Competition effect {#sec-parsComp}
 
-In this section I discuss the competition effect on the growth, survival, and recruitment vital rates.
-For all vital rates, competition for light increases linearly with density at the plot level following a general $\beta$ parameter meaning the density dependence effect.
-As we have the size measurement of each adult individual for the growth and survival models, we used the total basal area of individuals larger than the focal individual as a competition index.
-Furthermore, we split the total basal area effect between conspecific and heterospecific individuals larger than the focal individual.
-As the recruitment model does not have individual information, we simply used the total basal area of all alive adults.
+In this section, we discuss the effect of competition on the growth, survival, and recruitment vital rates.
+For all three demographic functions, competition for light increases linearly with the plot density, determined by the $\beta$ parameter, indicating the density-dependent effect.
+Assuming that light represents the most limiting resource for trees, we define that the influence of individuals smaller than the focal tree is negligible. 
+Consequently, we used the total basal area of individuals larger than the focal tree as a measure of competition.
+Furthermore, we divided the impact of total basal area into contributions from conspecific and heterospecific individuals larger than the focal individual.
 
 ```{r,include=FALSE,echo=FALSE}
 Echo=FALSE
@@ -97,8 +97,6 @@ treeData <- readRDS(file.path(data_path, 'treeData.RDS')) |>
 
 ## Conspecific and heterospecific effect
 
-Using the basal area of conspecific and heterospecific larger individuals than the focal individual.
-
 #### Growth
 
 ```{r comp_compGrowth,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
@@ -123,7 +121,7 @@ pars_growth |>
   stat_pointinterval() +
   geom_vline(xintercept = 0, alpha = 0.7) +
   ylab('') +
-  xlab('Density dependence effect') +
+  xlab(expression('Density dependence effect ('~beta~')')) +
   scale_color_manual(
     values = c('#ef8a62', '#67a9cf')
   ) +
@@ -160,7 +158,7 @@ pars_growth |>
     values = c('#ef8a62', '#67a9cf')
   ) +
   xlab('') +
-  ylab('Density dependence effect') +
+  ylab(expression('Density dependence effect ('~beta~')')) +
   theme_classic() +
   theme(legend.position = 'top') +
   labs(fill = '') ->
@@ -194,7 +192,7 @@ pars_survival |>
   stat_pointinterval() +
   geom_vline(xintercept = 0, alpha = 0.7) +
   ylab('') +
-  xlab('Density dependence effect') +
+  xlab(expression('Density dependence effect ('~beta~')')) +
   scale_color_manual(
     values = c('#ef8a62', '#67a9cf')
   ) +
@@ -232,7 +230,7 @@ pars_survival |>
     values = c('#ef8a62', '#67a9cf')
   ) +
   xlab('') +
-  ylab('Density dependence effect') +
+  ylab(expression('Density dependence effect ('~beta~')')) +
   theme_classic() +
   theme(legend.position = 'top') +
   labs(fill = '') ->
@@ -248,7 +246,7 @@ ggarrange(p1, p2, ncol = 2)
 #| label: fig-compGrowthVsSurv
 #| fig-width: 8.5
 #| fig-height: 5
-#| fig-cap: "Conspecific and heterospecific density dependence between growth and survival."
+#| fig-cap: "Correlation between growth and survival density dependence parameters."
 
 pars_growth |>
   mutate(
@@ -293,17 +291,18 @@ pars_growth |>
   ggplot() +
   aes(growth, mort) +
   # aes(color = shade_sylvics) +
-  facet_wrap(~comp, scales = 'free') +
+  facet_wrap(~comp) +
   geom_point(alpha = 0.1, size = 0.1) +
   geom_abline(intercept = 0, slope = 1, alpha = 0.5) +
-  xlab('Growth density dependence') +
-  ylab('Survival density dependence') +
+  xlab(expression('Growth density dependence effect ('~beta~')')) +
+  ylab(expression('Survival density dependence effect ('~beta~')')) +
   scale_color_manual(
     # values = c("#87bc45", "#edbf33", "#ea5545")
     values = c("#20bc45", "#87bc45", "#edbf33", "#ea5545", "#ba0000")
   ) +
   theme_classic() +
-  labs(color = '')
+  labs(color = '') +
+  tune::coord_obs_pred()
 ```
 
 
@@ -326,7 +325,7 @@ pars_rec |>
   stat_pointinterval() +
   geom_vline(xintercept = 0, alpha = 0.7) +
   ylab('') +
-  xlab('Density dependence effect') +
+  xlab(expression('Density dependence effect ('~beta~')')) +
   # scale_color_manual(
   #   values = c("#87bc45", "#edbf33", "#ea5545")
   # ) +
@@ -353,7 +352,7 @@ pars_rec |>
     values = c("#20bc45", "#87bc45", "#edbf33", "#ea5545", "#ba0000")
   ) +
   xlab('') +
-  ylab('Density dependence effect') +
+  ylab(expression('Density dependence effect ('~beta~')')) +
   theme_classic() +
   theme(legend.position = 'none') +
   labs(fill = '') ->

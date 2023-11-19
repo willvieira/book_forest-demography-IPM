@@ -2,7 +2,7 @@
 
 In this section I discuss the plot random effects that affect the growth, survival, and recruitment intercepts.
 Random effects were used to control for unknown variances that are grouped within the plot level.
-For each vital rate and species, the variance among plots was defined by the parameter $\sigma^2_{plot}$ where random effects were generated with $N(0, \sigma^2_{plot})$.
+For each vital rate and species, the variance among plots was defined by the parameter $\sigma_{plot}$ where random effects were generated with $N(0, \sigma_{plot})$.
 
 ```{r,include=FALSE,echo=FALSE}
 Echo=FALSE
@@ -125,7 +125,7 @@ pars_all |>
   aes(fill = vr) +
   ggridges::geom_density_ridges2(color = NA, alpha = 0.7) +
   theme_classic() +
-  xlab(expression(sigma[plot]^2)) +
+  xlab(expression(sigma[plot])) +
   scale_fill_manual(
     values = c('#5ab4ac', '#8856a7', '#d8b365')
   ) +
@@ -150,7 +150,7 @@ pars_all |>
   ) +
   theme(legend.position = 'none') +
   xlab('') +
-  ylab(expression(sigma[plot]^2)) ->
+  ylab(expression(sigma[plot])) ->
 p2
 
 ggarrange(p1, p2, ncol = 2)
@@ -160,7 +160,7 @@ ggarrange(p1, p2, ncol = 2)
 
 ## Intercept + random effects
 
-To better understand how plots variation affect growth, survival, and recruitment, the following figures show the distribution of the intercept for each vital rate along with the distribution of a randomly generated offset for plots based on their $\sigma^2_{plot}$ parameters.
+To better understand how plots variation affect growth, survival, and recruitment, the following figures show the distribution of the intercept for each vital rate along with the distribution of a randomly generated offset for plots based on their $\sigma_{plot}$ parameters.
 
 
 #### Growth
