@@ -12,8 +12,8 @@ library(ggpubr)
 library(MetBrewer)
 ```
 
-In this study, our main objective is to assess how climate and competition affect the demographic rates of tree species, and hence shaping their range distribution.
-Climate, typically characterized by temperature and precipitation, is widely assumed as an important factor affecting vital rates and has been the focus of recent studies [@Csergo2017; @lesquin2021; @Kunstler2021; @Guyennon2023].
+In this study, our main objective is to assess how climate and competition affect the demographic rates of tree species, and hence shape their range distribution.
+Climate, typically characterized by temperature and precipitation, is widely assumed as an important factor affecting vital rates and has been the focus of recent studies for tree species [@Csergo2017; @lesquin2021; @Kunstler2021; @Guyennon2023].
 Climate also exerts an indirect influence by shaping species composition, which in turn, impacts the variation in demographic rates through species interactions.
 indeed, competition for light has been shown as a principal driver in the demographic rates of forest trees [@Zhang2015; @lesquin2021].
 
@@ -34,8 +34,8 @@ Finally, we complete the model by incorporating the climate component, wherein w
 
 It's worth noting that, due to the use of structured population models, the demographic models should vary as a function of the size trait.
 The von Bertalanffy growth model implicitly incorporates the size effect within the model.
-For survival, we initially included individual size as a covariate, following a lognormal distribution, to capture the potential higher mortality rates for small individuals (due to competition) and very large individuals (due to senescence).
-However, all models incorporating the size covariate performed worse compared to the baseline model with plot random effects only (more details in @sec-model_comparison).
+For survival, we initially included individual size as a covariate, following a lognormal distribution to capture the potential higher mortality rates for small individuals (due to competition) and very large individuals (due to senescence).
+However, all models incorporating the size covariate performed worse compared to the baseline model (we discuss the details in @sec-model_comparison).
 Therefore, we chose not to include the size covariate in the survival model.
 Additionally, due to the unavailability of data for the regeneration process, we used an ingrowth rate model that is independent of size.
 Consequently, only the growth model varies as a function of individual size.
@@ -46,11 +46,11 @@ We account for the shared variance among individuals within the same plot in eac
 In the context of each species-demographic model combination, we draw plot random effects ($\alpha_j$) from a normal distribution with a mean of zero, defined as:
 
 $$
-  \alpha_{j} \sim N(0, \sigma^2)
+  \alpha_{j} \sim N(0, \sigma)
 $$
 
-where $\sigma^2$ represents the variance among all plots $j$.
-Note that both parameters, $\alpha_j$ and $\sigma^2$, are species and demographic model-specific.
+where $\sigma$ represents the variance among all plots $j$.
+Note that both parameters, $\alpha_j$ and $\sigma$, are species and demographic model-specific.
 These plot random effects ($\alpha_j$) serve to adjust the intercept parameters ($I$) within each demographic model as follows:
 
 $$
@@ -144,11 +144,11 @@ ggarrange(
 In the survival model, the intercept longevity ($\psi$) varies as a log-normal function of individual dbh as follows:
 
 $$
-  \psi + \frac{ ln(\frac{DBH}{\upsilon}) }{\sigma^{\upsilon}}
+  \psi + \frac{ ln(\frac{dbh}{\upsilon}) }{\sigma_{\upsilon}}
 $$
 
 
-Here, $\upsilon$ determines the size at which survival is at its optimal and $\sigma^{\upsilon}$ quantifies the extent of survival decrease from the optimal size.
+Here, $\upsilon$ determines the size at which survival is at its optimal and $\sigma_{\upsilon}$ quantifies the extent of survival decrease from the optimal size.
 A higher parameter value corresponds to a reduced effect of size on the survival probability (@fig-sizeEffect).
 
 ## Competition effect
@@ -163,11 +163,11 @@ Both the growth ($\Gamma$) and longevity ($\psi$) intercept parameters decrease 
 This negative effect of BAL on growth and longevity is driven by two parameters that describe the effect of conspecific ($\beta$) and heterospecfic ($\theta$) competition:
 
 $$
-  \Gamma + \beta^{\Gamma} \times (BAL_{cons} + \theta^{\Gamma} \times BAL_{het})
+  \Gamma + \beta_{\Gamma} \times (BAL_{cons} + \theta_{\Gamma} \times BAL_{het})
 $$
 
 $$
-  \psi + \beta^{\psi} \times (BAL_{cons} + \theta^{\psi} \times BAL_{het})
+  \psi + \beta_{\psi} \times (BAL_{cons} + \theta_{\psi} \times BAL_{het})
 $$
 
 When $\theta < 1$, it means that conspecific competition is stronger than heterospecific competition.
@@ -225,7 +225,7 @@ Conspecific BAL, or simply the total conspecific plot basal area (as recruitment
 This effect is characterized by an optimal basal area for ingrowth at $\delta^{\phi}$ and an increased effect controlled by the parameter $\sigma^{\phi}$:
 
 $$
-  \phi - \left(\frac{BAL_{cons} - \delta^{\phi}}{\sigma^{\phi}}\right)^2
+  \phi - \left(\frac{BAL_{cons} - \delta_{\phi}}{\sigma_{\phi}}\right)^2
 $$
 
 The underlying concept of this equation is that ingrowth rate should increase with conspecific density, but only up to a certain point determined by $\delta^{\phi}$.
@@ -259,9 +259,9 @@ tibble(
   scale_color_manual(
     values = met.brewer('Juarez', 3),
     labels = c(
-      expression(delta^phi~'='~'5;'~sigma^phi~'='~'10'),
-      expression(delta^phi~'='~'40;'~sigma^phi~'='~'10'),
-      expression(delta^phi~'='~'40;'~sigma^phi~'='~'30')
+      expression(delta[phi]~'='~'5;'~sigma[phi]~'='~'10'),
+      expression(delta[phi]~'='~'40;'~sigma[phi]~'='~'10'),
+      expression(delta[phi]~'='~'40;'~sigma[phi]~'='~'30')
     )
   ) +
   theme_classic() +
@@ -311,7 +311,7 @@ ggarrange(
 Finally, the annual survival probability reduces exponentially with the total basal area of the plot, where there is no distinction between conspecific and heterospecific competition:
 
 $$
-  \rho + \beta^{\rho} \times (BAL_{cons} +  BAL_{het})
+  \rho + \beta_{\rho} \times (BAL_{cons} +  BAL_{het})
 $$
 
 
@@ -322,15 +322,15 @@ Instead, we opted for the mean annual temperature (MAT) and mean annual precipit
 Each demographic function varies in function of a bell-shaped curve determined by an optimal climate condition ($\xi$) and a climate breadth parameter ($\sigma$) as follows:
 
 $$
-  \Gamma + \left(\frac{MAT - \xi^{\Gamma}_{MAT}}{\sigma^{\Gamma}_{MAT}}\right)^2 + \left(\frac{MAP - \xi^{\Gamma}_{MAP}}{\sigma^{\Gamma}_{MA{P}}}\right)^2
+  \Gamma + \left(\frac{MAT - \xi_{\Gamma, MAT}}{\sigma_{\Gamma, MAT}}\right)^2 + \left(\frac{MAP - \xi_{\Gamma, MAP}}{\sigma_{\Gamma, MAP}}\right)^2
 $$
 
 $$
-  \psi + \left(\frac{MAT - \xi^{\psi}_{MAT}}{\sigma^{\psi}_{MAT}}\right)^2 + \left(\frac{MAP - \xi^{\psi}_{MAP}}{\sigma^{\psi}_{MA{P}}}\right)^2
+  \psi + \left(\frac{MAT - \xi_{MAT}}{\sigma_{\psi, MAT}}\right)^2 + \left(\frac{MAP - \xi_{\psi, MAP}}{\sigma_{\psi, MAP}}\right)^2
 $$
 
 $$
-  \phi + \left(\frac{MAT - \xi^{\phi}_{MAT}}{\sigma^{\phi}_{MAT}}\right)^2 + \left(\frac{MAP - \xi^{\phi}_{MAP}}{\sigma^{\phi}_{MA{P}}}\right)^2
+  \phi + \left(\frac{MAT - \xi_{\psi, MAT}}{\sigma_{\psi, MAT}}\right)^2 + \left(\frac{MAP - \xi_{\psi, MAP}}{\sigma_{\psi, MAP}}\right)^2
 $$
 
 The climate breadth parameter ($\sigma$) influences the strength of the specific climate variable's effect on each demographic model (@fig-CovClim).
