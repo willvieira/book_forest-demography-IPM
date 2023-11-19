@@ -136,6 +136,11 @@ pars_growth |>
 p1
 
 pars_growth |>
+  group_by(species_id) |>
+  reframe(
+    r = mean(r),
+    Lmax = mean(Lmax)
+  ) |>
   mutate(
     size_t0 = 127,
     deltaTime = 10,
@@ -242,6 +247,8 @@ pars_mort |>
 p1
 
 pars_mort |>
+  group_by(species_id) |>
+  reframe(psi = mean(psi)) |>
   mutate(psi = 1 - (1/(1+exp(-psi))^10)) |>
   left_join(
     spIds,
@@ -398,6 +405,10 @@ pars_rec |>
 p1
 
 pars_rec |>
+  group_by(species_id) |>
+  reframe(
+    p_log = mean(p_log)
+  ) |>
   left_join(
     spIds,
     by = c('species_id' = 'species_id_old')

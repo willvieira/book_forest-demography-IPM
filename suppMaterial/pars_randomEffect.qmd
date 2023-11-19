@@ -113,7 +113,7 @@ treeData <- readRDS(file.path(data_path, 'treeData.RDS')) |>
 #| label: fig-reSigma
 #| fig-width: 8.5
 #| fig-height: 6
-#| fig-cap: "Posterior distribution of variance in plot random effects across species and vital rates."
+#| fig-cap: "Posterior distribution of variance in plot random effects across species and vital rates. Note that the parameter is in the scale of the intercept, so it is not comparable between demographic models."
 
 pars_all |>
   left_join(
