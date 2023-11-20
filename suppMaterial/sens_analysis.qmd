@@ -172,7 +172,7 @@ lambdas |>
     labs(fill = 'Temperature\nrange')
 ```
 
-## Demographic model importance
+## Importance of demographic models
 
 Random forest is a non-parametric classification or regression model that enables ranking the importance of each input variable in explaining the variance of the response variable.
 We used the permutation method for ranking variable importance [@breiman2001].
@@ -301,7 +301,7 @@ outRF_pars |>
     by = c('species_id' = 'species_id_old')
   ) |>
   mutate(
-    clim = factor(clim, levels = c('cold', 'center', 'hot')),
+    clim = factor(clim, levels = c('hot', 'center', 'cold')),
     comp = paste0(comp, ' competition'),
     comp = factor(comp, levels = c('low competition', 'high competition'))
   ) ->
@@ -339,7 +339,7 @@ We observe that at low competition, for most species, variations in $\lambda$ ar
 This pattern slightly diminishes as we move from the cold range to the center and up to the hot temperature range.
 At high competition intensity, we can observe an overall shift toward the survival model, especially at the hot temperature range.
 
-## Covariance importance
+## Importance of covariates 
 
 Similar to assessing parameter importance, we also used the random forest approach to evaluate the importance of covariates.
 For simplicity, we used the same output of the simulations as previously explained, shifting the explanatory variables from parameters to covariates.^[This analysis could be expanded to include more marginal conditions beyond just cold, center, and hot temperatures and low and high competition. However, this would exponentially increase the number of simulations.]
