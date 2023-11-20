@@ -1,0 +1,2 @@
+# Marginal effect of covariates {#sec-margin-lambda}
+

@@ -44,8 +44,8 @@ book:
       - guide_IPM.qmd
       - sens_analysis.qmd
       - conditional_lambda.qmd
+      - marginal_lambda.qmd
       - extinction_risk.qmd
-      - coex.qmd
     - references.qmd
 
 bibliography: references.bib
