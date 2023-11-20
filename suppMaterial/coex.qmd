@@ -1,0 +1,63 @@
+# Coexistence {#sec-coex}
+
+Calculate invasion growth rate ($\lambda$) for pair of competing species in two different conditions:
+
+- Invasion growth rate without competition: $\lambda_{i,N_j = 0}$ 
+- Invasion growth rate with competing species at equilibrium: $\lambda_{i,N_j^\ast}$ 
+
+Both lambdas are then used to calculate the sensitivity ($S_i$) of the invading species $i$ to the resident species $j$:
+
+$$
+S_i = \frac{\lambda_{i,N_j = 0} - \lambda_{i,N_j^\ast}}{\lambda_{i,N_j = 0}}
+$$
+
+With the sensitivity of both species ($S_i$ and $S_j$) to the other, we can finally compute the two coexistence metrics: niche difference (ND) and relative fitness difference (RFD) following @Narwani2013 and @Carroll2011:
+
+$$
+ND = 1 - \sqrt{S_i S_j}
+$$
+
+$$
+RFD = \sqrt{\frac{S_i}{S_j}}
+$$
+
+Note that both ND and RFD can be computed with total population size ($N^\ast$) or total biomass ($BA^\ast$) instead of the invasion growth rate. Also note that both ND and RFD are in function of temperature and precipitation set to the optima value of the resident species $j$. Finally, they are also dependent on plot random effects that are defined to zero for the moment.
+
+## Sensitivity
+
+Sensitivity of invader species i over resident speciesj at equilibrium within its optimal environment.
+
+#### Population growth rate ($\lambda$)
+
+![](figs/sens_lambda.png)
+
+#### Adult basal area
+
+![](figs/sens_ba.png)
+
+Using BA among the three metrics (reason to be described), next figure shows the distribution of BA sensitivity across species and their shade tolerance.
+
+![](figs/sens_BA_sum.png)
+
+## Average conspecific and heterospecific competition
+
+#### $\alpha_{ii}$
+
+Using the carrying capacity ($K = BA_{i,N_j = 0}$) to define $\alpha_{ii} = 1/K$:
+
+![](figs/a_ii.png)
+
+#### $\alpha_{ij}$
+
+![](figs/a_ij.png)
+
+
+## Coexistence metrics
+
+#### Niche difference and Relative Fitness difference
+
+![](figs/ND_RFD.png)
+
+#### Relative Fitness difference
+
+![](figs/RFD_summ.png)
