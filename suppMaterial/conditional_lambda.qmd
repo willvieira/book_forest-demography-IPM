@@ -1,4 +1,4 @@
-# Conditional effect of covariates {#sec-margin-lambda}
+# Conditional effect of covariates {#sec-cond-lambda}
 
 In this chapter, we assessed the conditional effects of each covariate on the population growth rate ($\lambda$) for each individual species.
 Specifically, we quantified how $\lambda$ varies with changes in competition intensity for both conspecific and heterospecific individuals.
