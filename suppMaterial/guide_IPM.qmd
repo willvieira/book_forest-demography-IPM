@@ -1,4 +1,4 @@
-# A guide to use the forest-IPM code
+# A guide to use the forest-IPM code {#sec-ipm_guide}
 
 The `forest-IPM` code is available in this GitHub repository: <https://github.com/willvieira/forest-IPM>.
 This repository contains a collection of `R` functions designed for implementing the vital rates and Kernel functions, as well as the necessary data parameters for the 31 fitted species.
@@ -217,19 +217,38 @@ For each time iteration, we saved the size ($z$) distribution of the focal speci
 We can visualize how each of these measures envolved with time for this species-specific conditions.
 In @fig-guideLambda and  @fig-guideSizeDist we can visualize how $\lambda$ and the size density distribution envolve over time.
 
-```{r}
+```{r,warning=FALSE,message=FALSE}
 #| code-fold: true
 #| label: fig-guideLambda
-#| fig-cap: "Population growth rate over time."
+#| fig-cap: "Population size (left panel) and population growth rate (right panel) over time."
 
-lambdas |>
-  enframe(name = 'Time') |>
+ntmat |>
+  as_tibble() |>
+  pivot_longer(cols = everything(), values_to = 'Density') |>
+  mutate(Time = parse_number(name)) |>
+  group_by(Time) |>
+  reframe(N = sum(Density)) |>
+  left_join(
+    lambdas |>
+      enframe(name = 'Time') |>
+      rename(lambda = value)
+  ) |>
+  pivot_longer(cols = c(N, lambda)) |>
+  mutate(
+    name = factor(name, levels = c('N', 'lambda'), labels = c(expression(textstyle('Population size')), expression(lambda)))
+  ) |>
   ggplot() +
   aes(Time, value) +
-  geom_path(linewidth = 2) +
+  facet_wrap(
+    ~name,
+    scales = 'free_y',
+    labeller = label_parsed
+  ) +
+  geom_path(linewidth = 1.2) +
   theme_classic() +
-  geom_hline(yintercept = 1, alpha = 0.2) +
-  ylab(expression(lambda))
+  labs(
+    y = NULL
+  )
 ```
 
 ```{r}
