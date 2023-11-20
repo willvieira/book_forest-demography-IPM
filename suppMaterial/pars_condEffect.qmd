@@ -5,26 +5,32 @@ We employ the Average Marginal Effect (AME) to summarize the overall effect size
 For instance, we can use the AME to measure the relative effect of competition and climate on the survival function.
 In practice, the AME is estimated using partial derivatives.
 This involves evaluating the model's output when one covariate is perturbed while keeping the others constant.
-We perturbed each covariate with a small increase of size $h$ that was dependent on the covariate distribution.
-We perturbed each covariate by a small increment denoted as $h$ which varies depending on the distribution of the covariate.
-For each covariate $x$, the perturbation size $h_x$ was estimated as follows:
+To perturb each covariate $x$, we begin by normalizing it within the range of $[0-1]$ using all observations across the 31 species as follows:
 
 $$
-  h_x = \mid \overline{x} \mid + p * p
+  x' = \frac{x - \text{min}(x)}{\text{max}(x) - \text{min}(x)}
 $$
 
-Where $\overline{x}$ is the average of $x$ across all observations in the dataset and $p$ is the perturbation size set to 0.0001.
-For each covariate, the final AME is estimated as follows:
+where $x'$ is the normalized vector of values for the covariate $x$.
+We then increase the normalized values by a pertrubation size $p$, before transforming it back to the original scale:
 
 $$
-  AME = \frac{1}{n} \sum_{i=1}^n \frac{\mid f(x_i + h, z_i, \theta) - f(x_i, z_i, \theta) \mid}{h_x}
+\begin{align*}
+x_{\epsilon} = (x' + p) (\text{max}(x) -\text{min}(x)) + \text{min(x)} \\
+h = x_{\epsilon} - x
+\end{align*}
 $$
 
-Where $f$ denotes one of the growth, survival, or recruitment vital rates, $x$ represents the perturbed covariate, $z$ the other covariates kept at the original value, and $\theta$ are the parameters.
-The AME preserves the same scale as the output of the function $f$.
-This approach is useful because it captures the locally linearized effect of each observation.
-Furthermore, the average effect across the observed dataset accounts for the heterogeneity in the distribution of each covariate.
-Furthermore, calculating the average effect across the observed dataset captures the heterogeneity in the distribution of each covariate, weighting the metric towards the regions where the observation is more abundant.
+Where $x_{\epsilon}$ is the perturbed covariate in its original scale and $p$ is the perturbation size set to 0.01.
+For each covariate $x$, the average marginal effect (AME) across all observations $i$ is estimated as follows:
+
+$$
+  AME = \frac{1}{n} \sum_{i=1}^n \frac{\mid f(x_i + h, z_i, \theta) - f(x_i, z_i, \theta) \mid}{h}
+$$
+
+Where $f$ denotes one of the growth, survival, or recruitment demographic models, $z$ the remaining covariates retained at their original values, and $\theta$ the collection of parameters.
+This approach is valuable because it captures the locally linearized effect of each observation. 
+Furthermore, computing the average effect across the observed dataset takes into account the diversity in the distribution of each covariate, giving more weight to regions where observations are more prevalent.
 
 ```{r,include=FALSE,echo=FALSE}
 Echo=FALSE
@@ -72,31 +78,6 @@ filter(sp_to_analyze)
 
 # climate range used to scale and unscale climate variables
 climate_range = readRDS(file.path(data_path, 'climate_scaleRange.RDS'))
-
-# functions to scale OR unscale climate variables
-scale_clim <- function(
-  value, # climate value
-  clim, # either 'temp' or 'prec' climate variables
-  direction # either 'scale' or 'unscale'
-){
-  if(clim == 'temp') {
-    clim_rg = climate_range[['bio_01_mean']]
-  }else if(clim == 'prec') {
-    clim_rg = climate_range[['bio_12_mean']]
-  }else{
-    stop('`clim` argument must be either `temp` or `prec`.')
-  }
-  min_v = clim_rg[1]
-  max_v = clim_rg[2]
-
-  if(direction == 'scale') {
-    return( (value - min_v)/(max_v - min_v) )
-  }else if(direction == 'unscale') {
-    return( value * (max_v - min_v) + min_v )
-  }else {
-    stop('`direction` argument must be either `scale` or `unscale`.')
-  }
-}
 
 # dataset
 treeData <- readRDS(file.path(data_path, 'treeData.RDS')) |>
@@ -173,11 +154,13 @@ getPars_sp <- function(
 ){
   fixed_or_random = ifelse(randomEffects, 'parameters_randomEffects/', 'output_sim_processed/')
 
+  addressPars_rf = '../data/'
+  
   if(randomEffects) {
     colNames = system(
       paste0(
         'perl -nle "print && exit if $. == 1" ',
-        addressPars, fixed_or_random, vitalRate, '_', sp, '.csv'
+        addressPars_rf, fixed_or_random, vitalRate, '_', sp, '.csv'
       ),
       intern = TRUE
     )
@@ -185,7 +168,7 @@ getPars_sp <- function(
     vals = system(
       paste0(
         'perl -nle "print && exit if $. == ', rowID + 1, '" ',
-        addressPars, fixed_or_random, vitalRate, '_', sp, '.csv'
+        addressPars_rf, fixed_or_random, vitalRate, '_', sp, '.csv'
       ),
       intern = TRUE
     )
@@ -273,11 +256,12 @@ rec_f <- function(deltaYear_plot, plot_size, BA_adult_sp, BA_adult, temp, prec, 
 # this is so ungly, sorry if anyone wants to read this
 marginEffect <- function(
   Sp, # species id
-  rowID, # posterior draw (1:8000)
+  rowID, # posterior draw (1:4000)
   vitalRate,
   dataset,
   randomEffects = TRUE, # if false, random effects is set to zero
-  at_range = 0.1 # quantile probability to classify plot at latitude ranges (if NULL all plots)
+  at_range = 0.1, # quantile probability to classify plot at latitude ranges (if NULL all plots)
+  pertub = 0.01
 ){
   # focal species data
   if(vitalRate == 'recruit') {
@@ -335,6 +319,7 @@ marginEffect <- function(
   if(!randomEffects)
     parsRandom_sp$plot_re = 0
 
+  # Covariate perturbation
   if(vitalRate == 'recruit') {
     td_sp |>
       # add parameters
@@ -343,14 +328,13 @@ marginEffect <- function(
       drop_na() |>
         mutate(
         # perturbation in covariate
-        # plot = cov_perturbation(plot_re),
-        ba_sp = cov_perturbation(BA_adult_sp),
-        ba_tot = cov_perturbation(BA_adult),
-        temp_nonScl = cov_perturbation(bio_01_mean),
-        prec_nonScl = cov_perturbation(bio_12_mean),
-        # scale perturbed climate variables
-        temp = scale_clim(temp_nonScl, clim = 'temp', direction = 'scale'),
-        prec = scale_clim(prec_nonScl, clim = 'prec', direction = 'scale')
+        ba_sp = scale_vars(BAsp_scl + pertub, cov = 'BAsp', 'unscale'),
+        ba_tot = scale_vars(BAtot_scl + pertub, cov = 'BAtot', 'unscale'),
+        temp = bio_01_mean_scl + pertub,
+        prec = bio_12_mean_scl + pertub,
+        # compute natural scale for perturbed climate variables
+        temp_nonScl = scale_vars(temp, cov = 'temp', 'unscale'),
+        prec_nonScl = scale_vars(prec, cov = 'prec', 'unscale')
       ) ->
     td_sp
   }else{
@@ -362,31 +346,29 @@ marginEffect <- function(
       drop_na() |>
       mutate(
         # perturbation in  covariate
-        # plot = cov_perturbation(plot_re),
-        ba_con = cov_perturbation(BA_comp_sp),
-        ba_het = cov_perturbation(BA_comp_inter), 
-        temp_nonScl = cov_perturbation(bio_01_mean),
-        prec_nonScl = cov_perturbation(bio_12_mean),
-        # scale perturbed climate variables
-        temp = scale_clim(temp_nonScl, clim = 'temp', direction = 'scale'),
-        prec = scale_clim(prec_nonScl, clim = 'prec', direction = 'scale')
+        ba_con = scale_vars(BAcon_scl + pertub, cov = 'BAcon', 'unscale'),
+        ba_het = scale_vars(BAhet_scl + pertub, cov = 'BAhet', 'unscale'),
+        temp = bio_01_mean_scl + pertub,
+        prec = bio_12_mean_scl + pertub,
+        # compute natural scale for perturbed climate variables
+        temp_nonScl = scale_vars(temp, cov = 'temp', 'unscale'),
+        prec_nonScl = scale_vars(prec, cov = 'prec', 'unscale')
       ) ->
     td_sp
   }
 
+  # Compute demographic model for natural and perturbed covariate and get their difference
   if(vitalRate == 'growth') {
     td_sp |>
       mutate(
         # base line growth
         y = growth_f(dbh0, deltaTime, BA_comp_sp, BA_comp_inter, bio_01_mean_scl, bio_12_mean_scl, r, plot_re, Lmax, Beta, theta, optimal_temp, tau_temp, optimal_prec, tau_prec),
         # growth for each perturbed covariate
-        # y_plot = growth_f(dbh0, deltaTime, BA_comp_sp, BA_comp_inter, bio_01_mean_scl, bio_12_mean_scl, r, plot, Lmax, Beta, theta, optimal_temp, tau_temp, optimal_prec, tau_prec),
         y_bacon = growth_f(dbh0, deltaTime, ba_con, BA_comp_inter, bio_01_mean_scl, bio_12_mean_scl, r, plot_re, Lmax, Beta, theta, optimal_temp, tau_temp, optimal_prec, tau_prec),
         y_bahet = growth_f(dbh0, deltaTime, BA_comp_sp, ba_het, bio_01_mean_scl, bio_12_mean_scl, r, plot_re, Lmax, Beta, theta, optimal_temp, tau_temp, optimal_prec, tau_prec),
         y_temp = growth_f(dbh0, deltaTime, BA_comp_sp, BA_comp_inter, temp, bio_12_mean_scl, r, plot_re, Lmax, Beta, theta, optimal_temp, tau_temp, optimal_prec, tau_prec),
         y_prec = growth_f(dbh0, deltaTime, BA_comp_sp, BA_comp_inter, bio_01_mean_scl, prec, r, plot_re, Lmax, Beta, theta, optimal_temp, tau_temp, optimal_prec, tau_prec),
         # compute absolute deviation from perturbation
-        # ydiff_plot = abs(y_plot - y)/(plot - plot_re),
         ydiff_bacon = abs(y_bacon - y)/(ba_con - BA_comp_sp),
         ydiff_bahet = abs(y_bahet - y)/(ba_het - BA_comp_inter),
         ydiff_temp = abs(y_temp - y)/(temp_nonScl - bio_01_mean),
@@ -401,13 +383,11 @@ marginEffect <- function(
         # base line mortality
         y = mort_f(dbh0, deltaTime, BA_comp_sp, BA_comp_inter, bio_01_mean_scl, bio_12_mean_scl, psi, plot_re, Beta, theta, optimal_temp, tau_temp, optimal_prec, tau_prec),
         # growth for each perturbed covariate
-        # y_plot = mort_f(dbh0, deltaTime, BA_comp_sp, BA_comp_inter, bio_01_mean_scl, bio_12_mean_scl, psi, plot, Beta, theta, optimal_temp, tau_temp, optimal_prec, tau_prec),
         y_bacon = mort_f(dbh0, deltaTime, ba_con, BA_comp_inter, bio_01_mean_scl, bio_12_mean_scl, psi, plot_re, Beta, theta, optimal_temp, tau_temp, optimal_prec, tau_prec),
         y_bahet = mort_f(dbh0, deltaTime, BA_comp_sp, ba_het, bio_01_mean_scl, bio_12_mean_scl, psi, plot_re, Beta, theta, optimal_temp, tau_temp, optimal_prec, tau_prec),
         y_temp = mort_f(dbh0, deltaTime, BA_comp_sp, BA_comp_inter, temp, bio_12_mean_scl, psi, plot_re, Beta, theta, optimal_temp, tau_temp, optimal_prec, tau_prec),
         y_prec = mort_f(dbh0, deltaTime, BA_comp_sp, BA_comp_inter, bio_01_mean_scl, prec, psi, plot_re, Beta, theta, optimal_temp, tau_temp, optimal_prec, tau_prec),
         # compute absolute deviation from perturbation
-        # ydiff_plot = abs(y_plot - y)/(plot - plot_re),
         ydiff_bacon = abs(y_bacon - y)/(ba_con - BA_comp_sp),
         ydiff_bahet = abs(y_bahet - y)/(ba_het - BA_comp_inter),
         ydiff_temp = abs(y_temp - y)/(temp_nonScl - bio_01_mean),
@@ -461,23 +441,86 @@ treeData[is.na(deltaTime), deltaTime := 0]
 treeData[deltaTime == 0, dbh0 := dbh]
 
 
+# scale variables so perturbation is at the same scale for all covariates
+cov_ranges <- append(
+  list(
+    'BAcon' = treeData[, range(BA_comp_sp, na.rm = TRUE)],
+    'BAhet' = treeData[, range(BA_comp_inter, na.rm = TRUE)],
+    'BAsp' = fec_dt[, range(BA_adult_sp, na.rm = TRUE)],
+    'BAtot' = fec_dt[, range(BA_adult, na.rm = TRUE)]
+  ),
+  setNames(
+    climate_range,
+    c('temp', 'prec')
+  )
+)
+
+# functions to scale OR unscale climate variables
+scale_vars <- function(
+  value, # covariate value
+  cov, # either 'BAcon', 'BAhet', 'BAsp', 'BAtot', 'temp', or 'prec'
+  direction, # either 'scale' or 'unscale'
+  range_dt = cov_ranges
+){
+  if(cov %in% c('BAcon', 'BAhet', 'BAsp', 'BAtot', 'temp', 'prec')){
+    cov_rg = range_dt[[cov]]
+  }else{
+    stop("`cov` must be one of 'BAcon', 'BAhet', 'BAsp', 'BAtot', 'temp', or 'prec' character.")
+  }
+
+  min_v = cov_rg[1]
+  max_v = cov_rg[2]
+
+  if(direction == 'scale') {
+    return( (value - min_v)/(max_v - min_v) )
+  }else if(direction == 'unscale') {
+    return( value * (max_v - min_v) + min_v )
+  }else {
+    stop('`direction` argument must be either `scale` or `unscale`.')
+  }
+}
+
+treeData |>
+  mutate(
+    BAcon_scl = scale_vars(BA_comp_sp, 'BAcon', direction = 'scale'),
+    BAhet_scl = scale_vars(BA_comp_inter, 'BAhet', direction = 'scale')
+  ) ->
+treeData
+
+fec_dt |>
+  mutate(
+    BAsp_scl = scale_vars(BA_adult_sp, 'BAsp', direction = 'scale'),
+    BAtot_scl = scale_vars(BA_adult, 'BAtot', direction = 'scale')
+  ) ->
+fec_dt
+
+
 # Compute marginal effect growth
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-sampled_rows <- sample(1:4000, 1000)
+sampled_rows <- sample(1:4000, 500)
 
 # Growth
-map_dfr(
-  spIds$species_id_old,
-  ~map2_dfr(
-    sampled_rows,
-    .x,
-    ~marginEffect(Sp = .y, rowID = .x, treeData, vitalRate = 'growth', randomEffects = TRUE, at_range = NULL) |>
-      bind_cols(species_id = .y)
-  ),
-  .progress = TRUE
- ) |>
- select(!plot_position) ->
+AME_growth <- list()
+for(sp in spIds$species_id_old) {
+    AME_growth[[sp]] <- map_dfr(
+      sampled_rows,
+      ~marginEffect(
+        Sp = sp,
+        rowID = .x,
+        dataset = treeData,
+        vitalRate = 'growth',
+        randomEffects = TRUE,
+        at_range = NULL,
+        pertub = 0.01
+      )
+    )
+  cat(' Species', which(sp == spIds$species_id_old), 'of 31\r')
+}
+
+AME_growth |>
+  bind_rows(.id = 'species_id') |>
+  select(!plot_position) ->
 AME_growth
 
 # map_dfr(
@@ -492,18 +535,27 @@ AME_growth
 #  ) ->
 # AME_growth_rg
 
-# Survival with random effects
-map_dfr(
-  spIds$species_id_old,
-  ~map2_dfr(
-    sampled_rows,
-    .x,
-    ~marginEffect(Sp = .y, rowID = .x, treeData, vitalRate = 'mort', randomEffects = TRUE, at_range = NULL) |>
-      bind_cols(species_id = .y)
-  ),
-  .progress = TRUE
- ) |>
- select(!plot_position) ->
+# Survival
+AME_mort <- list()
+for(sp in spIds$species_id_old) {
+    AME_mort[[sp]] <- map_dfr(
+      sampled_rows,
+      ~marginEffect(
+        Sp = sp,
+        rowID = .x,
+        dataset = treeData,
+        vitalRate = 'mort',
+        randomEffects = TRUE,
+        at_range = NULL,
+        pertub = 0.01
+      )
+    )
+  cat(' Species', which(sp == spIds$species_id_old), 'of 31\r')
+}
+
+AME_mort |>
+  bind_rows(.id = 'species_id') |>
+  select(!plot_position) ->
 AME_mort
 
 # map_dfr(
@@ -518,18 +570,27 @@ AME_mort
 #  ) ->
 # AME_mort_rg
 
-# Recruitment with random effects
-map_dfr(
-  spIds$species_id_old,
-  ~map2_dfr(
-    sampled_rows,
-    .x,
-    ~marginEffect(Sp = .y, rowID = .x, fec_dt, vitalRate = 'recruit', randomEffects = TRUE, at_range = NULL) |>
-      bind_cols(species_id = .y)
-  ),
-  .progress = TRUE
- ) |>
- select(!plot_position) ->
+# Recruitment
+AME_rec <- list()
+for(sp in spIds$species_id_old) {
+    AME_rec[[sp]] <- map_dfr(
+      sampled_rows,
+      ~marginEffect(
+        Sp = sp,
+        rowID = .x,
+        dataset = fec_dt,
+        vitalRate = 'recruit',
+        randomEffects = TRUE,
+        at_range = NULL,
+        pertub = 0.01
+      )
+    )
+  cat(' Species', which(sp == spIds$species_id_old), 'of 31\r')
+}
+
+AME_rec |>
+  bind_rows(.id = 'species_id') |>
+  select(!plot_position) ->
 AME_rec
 
 # map_dfr(
@@ -561,7 +622,7 @@ saveRDS(AME_rec, file.path('data', 'AME_rec.RDS'))
 #| label: fig-AMEall
 #| fig-width: 9
 #| fig-height: 8
-#| fig-cap: "Average Marginal effect of each covariate on the growth and survival vital rates. The larger the values, the stronger the marginal effect of the covariate across all observation for the species. Note that size (d.b.h.) is intrinsic to the growth equation model where annual growth rate reduces exponentialy with size reaching a growth rate of zero when size reaches $L_{\\infty}$, so the size AME is exactly ln(1) for all species."
+#| fig-cap: "Average Marginal effect of each covariate on the growth and survival vital rates. The larger the values, the stronger the marginal effect of the covariate across all observation for the species. Note that size (d.b.h.) is intrinsic to the growth equation model where annual growth rate reduces exponentialy with size reaching a growth rate of zero when size reaches $\\xi_{\\infty}$, so the size AME is exactly ln(1) for all species."
 
 AME_growth <- readRDS(file.path('data', 'AME_growth.RDS'))
 AME_mort <- readRDS(file.path('data', 'AME_mort.RDS'))
@@ -657,6 +718,8 @@ AME_growth |>
 
 ggarrange(
   AME_growth |>
+    group_by(species_id) |>
+    reframe(across(contains('ydiff'), mean)) |>
     pivot_longer(cols = !species_id) |>
     left_join(
       spIds,
@@ -688,6 +751,8 @@ ggarrange(
     ) +
     theme(legend.position = 'none'),
   AME_mort |>
+    group_by(species_id) |>
+    reframe(across(contains('ydiff'), mean)) |>
     pivot_longer(cols = !species_id) |>
     left_join(
       spIds,
@@ -718,6 +783,8 @@ ggarrange(
     ) +
     theme(legend.position = 'none'),
   AME_rec |>
+    group_by(species_id) |>
+    reframe(across(contains('ydiff'), mean)) |>
     pivot_longer(cols = !species_id) |>
     left_join(
       spIds,
@@ -761,15 +828,21 @@ ggarrange(
 #| fig-cap: "Average Marginal effect of the competition covariates grouped by species shade tolerance and their respective uncertainity. The larger the values, the stronger the marginal effect of the covariate across all observation for the species."
 
 AME_growth |>
+  group_by(species_id) |>
+  reframe(across(contains('ydiff'), mean)) |>
   pivot_longer(cols = !species_id) |>
   bind_cols(vr = 'Growth') |>
   bind_rows(
     AME_mort |>
+      group_by(species_id) |>
+      reframe(across(contains('ydiff'), mean)) |>
       pivot_longer(cols = !species_id) |>
       bind_cols(vr = 'Survival') 
   ) |>
   bind_rows(
     AME_rec |>
+      group_by(species_id) |>
+      reframe(across(contains('ydiff'), mean)) |>
       pivot_longer(cols = !species_id) |>
       bind_cols(vr = 'Recruitment') 
   ) |>
@@ -816,7 +889,7 @@ AME_growth |>
 ```
 
 
-### AME of temperature in the growth function over the latitude gradient
+### AME of temperature given the median latitude distribution of the species
 
 ```{r plot_AME_growthVsLatitude,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-AMEsummTemp
