@@ -325,8 +325,8 @@ p1_dt |>
   #   fontface = 'italic'
   # ) +
   theme_classic() +
-  scale_fill_manual(values = c('#91bfdb', '#99d594', '#fc8d59')) +
-  scale_color_manual(values = c('#91bfdb', '#99d594', '#fc8d59')) +
+  scale_fill_manual(values = c('#fc8d59', '#99d594', '#91bfdb')) +
+  scale_color_manual(values = c('#fc8d59', '#99d594', '#91bfdb')) +
   labs(
     x = 'Survival importance',
     y = 'Recruitment importance',
