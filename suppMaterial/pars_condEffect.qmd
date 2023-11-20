@@ -16,8 +16,8 @@ We then increase the normalized values by a pertrubation size $p$, before transf
 
 $$
 \begin{align*}
-x_{\epsilon} = (x' + p) (\text{max}(x) -\text{min}(x)) + \text{min(x)} \\
-h = x_{\epsilon} - x
+&x_{\epsilon} = (x' + p) (\text{max}(x) -\text{min}(x)) + \text{min(x)} \\
+&h = x_{\epsilon} - x
 \end{align*}
 $$
 
