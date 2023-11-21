@@ -2,8 +2,8 @@ project:
   type: book
 
 book:
-  title: "Supplementary material"
-  subtitle: "Competition and climate effect on the dynamics of North American forest trees: from individuals to population"
+  title: "Lab notebook"
+  subtitle: "The effect of competition and climate on the dynamics of North American forest trees: from individuals to population"
   author:
     - name: Willian Vieira
       orcid: 0000-0003-0283-4570
@@ -16,7 +16,7 @@ book:
       orcid: 0000-0002-4498-7076
 
   search: true
-  repo-url: "https://github.com/willvieira/ms_forest-demography-IPM/"
+  repo-url: "https://github.com/willvieira/docs_forest-demography-IPM/"
   repo-actions: [issue]
   # cover-image: cover.png
   chapters:

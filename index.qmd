@@ -23,5 +23,5 @@ data/
 Finally, if [Quarto](https://quarto.org/) and [LaTex](https://bookdown.org/yihui/rmarkdown-cookbook/install-latex.html) are installed, compile this document with:
 
 ```bash
-quarto render suppMaterial
+quarto render .
 ```
