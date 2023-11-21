@@ -17,7 +17,7 @@ Inside this file, specify the local path of the downloaded data.
 For instance, if you download the full content of the server into the folder `ms_forest-demography-IPM/data/`, the content of the `_data.path` file should be:
 
 ```
-../data/
+data/
 ```
 
 Finally, if [Quarto](https://quarto.org/) and [LaTex](https://bookdown.org/yihui/rmarkdown-cookbook/install-latex.html) are installed, compile this document with:

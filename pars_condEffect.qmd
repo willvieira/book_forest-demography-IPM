@@ -89,7 +89,7 @@ fec_dt <- readRDS(file.path(data_path, 'fec_dt.RDS')) |>
 
 ```{r ImportPlotRandomEffects,echo=Echo,eval=FALSE,cache=Cache,warning=Warng,message=Msg}
 # I set eval to FALSE so this is ran a single time only - keeping here just for documentation
-dir.create(file.path('..', 'data', 'parameters_randomEffects'), recursive = TRUE)
+dir.create(file.path('data', 'parameters_randomEffects'), recursive = TRUE)
 
 sample_draws = 4000
 
@@ -106,7 +106,7 @@ for(sp in spIds$species_id_old)
   pivot_wider(names_from = plot_id, values_from = value) |>
   select(!iter) |>
   write_csv(
-    file = paste0('../data/parameters_randomEffects/growth_', sp, '.csv')
+    file = paste0('data/parameters_randomEffects/growth_', sp, '.csv')
   )
 
   # survival
@@ -120,7 +120,7 @@ for(sp in spIds$species_id_old)
   pivot_wider(names_from = plot_id, values_from = value) |>
   select(!iter) |>
   write_csv(
-    file = paste0('../data/parameters_randomEffects/mort_', sp, '.csv')
+    file = paste0('data/parameters_randomEffects/mort_', sp, '.csv')
   )
 
 
@@ -135,7 +135,7 @@ for(sp in spIds$species_id_old)
   pivot_wider(names_from = plot_id, values_from = value) |>
   select(!iter) |>
   write_csv(
-    file = paste0('../data/parameters_randomEffects/recruit_', sp, '.csv')
+    file = paste0('data/parameters_randomEffects/recruit_', sp, '.csv')
   )
 
   cat('species', which(sp == spIds$species_id_old), 'of', nrow(spIds))
@@ -154,7 +154,7 @@ getPars_sp <- function(
 ){
   fixed_or_random = ifelse(randomEffects, 'parameters_randomEffects/', 'output_sim_processed/')
 
-  addressPars_rf = '../data/'
+  addressPars_rf = 'data/'
   
   if(randomEffects) {
     colNames = system(
