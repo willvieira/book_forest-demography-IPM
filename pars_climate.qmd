@@ -1,8 +1,8 @@
 # Climate effect {#sec-parsClimate}
 
-In this section, I discuss the climate effect on the growth, survival, and recruitment vital rates.
-We employ the bioclimatic variables of mean annual temperature (MAT) and mean annual precipitation (MAP), averaging these variables over the years covering the time intervals spanning two measurement periods.
-The effect of these two variables on growth, survival, and recruitment is modeled using a unimodal function characterized by two key parameters: the optimal climate ($\xi$), representing the climatic conditions where growth and survival reach their peak, and the climate breadth ($\sigma$), which quantifies the rate of change in the climate's impact as one moves away from this optimal point.
+In this section, I discuss the effect of climate on growth, survival, and recruitment vital rates.
+We employ the bioclimatic variables of mean annual temperature (MAT) and mean annual precipitation (MAP), averaging these variables over the years, covering the time intervals spanning two measurement periods.
+The effect of these two variables on growth, survival, and recruitment is modeled using an unimodal function characterized by two key parameters: the optimal climate ($\xi$), representing the climatic conditions where growth and survival reach their peak, and the climate breadth ($\sigma$), which quantifies the rate of change in the climate's impact as one moves away from this optimal point.
 In the fit process, we transformed the climate breadth parameters as $\sigma = \tau^{-1}$ for sampling efficiency.
 
 ```{r,include=FALSE,echo=FALSE}
@@ -119,7 +119,7 @@ treeData <- readRDS(file.path(data_path, 'treeData.RDS')) |>
 ## Optimal climate
 
 @fig-matDist and @fig-mapDist show the distribution of the optimal climate parameter, meaning the climate location where the vital rate is at its maximum, across the 31 tree species.
-The parameters mean and their uncertunity are displayed with the dot interval for growth (green), recruitment (yellow), and survival (brown).
+The parameter mean and their uncertainty are displayed with the dot interval for growth (green), recruitment (yellow), and survival (brown).
 The density plot in light gray is the distribution of the climate variable among all observed trees across space and time.
 
 #### Mean annual temperature
@@ -128,7 +128,7 @@ The density plot in light gray is the distribution of the climate variable among
 #| label: fig-matDist
 #| fig-width: 8.5
 #| fig-height: 7
-#| fig-cap: "Distribution for the optimal annual mean temperature ($\\xi_{MAT}$) for growth (green), recruitment (yellow), and survival (brown). The density plot in gray is the distribution of the annual mean temperature among all observed trees across space and time."
+#| fig-cap: "Distribution for the optimal annual mean temperature ($\\xi_{MAT}$) for growth (green), recruitment (yellow), and survival (brown). The gray density plot is the annual mean temperature distribution among all observed trees across space and time."
 
 treeData |>
   left_join(
@@ -172,7 +172,8 @@ treeData |>
   ) +
   theme_classic() +
   scale_color_manual(
-    values = c('#018571', '#dfc27d', '#a6611a')
+    values = c('#018571', '#dfc27d', '#a6611a'),
+    labels = c('Growth', 'Recruitment', 'Survival')
   ) +
   theme(
     axis.text.y = element_text(face = "italic"),
@@ -258,7 +259,7 @@ In other words, when climate breadth is zero, the bell-shaped unimodal function 
 #| label: fig-climBreadth
 #| fig-width: 8.5
 #| fig-height: 6
-#| fig-cap: "Mean annual temperature and mean annual precipitation effect size across the growth (green), recruitment (yellow), and survival (brown) vital rates. The higher the value the stronger is the negative effect of climate when moving from the optimal climate."
+#| fig-cap: "Mean annual temperature and mean annual precipitation effect size across the growth (green), recruitment (yellow), and survival (brown) vital rates. The higher the value, the stronger the negative effect of climate when moving from the optimal climate."
 
 pars_growth |>
   mutate(temp_growth = tau_temp,
@@ -321,7 +322,7 @@ pars_growth |>
 #| label: fig-climBreadthSumm
 #| fig-width: 8
 #| fig-height: 5
-#| fig-cap: "Mean annual temperature and mean annual precipitation effect size across the growth (green), recruitment (yellow), and survival (brown) vital rates. The higher the value the stronger is the negative effect of climate when moving from the optimal climate."
+#| fig-cap: "Mean annual temperature and mean annual precipitation effect size across the growth (green), recruitment (yellow), and survival (brown) vital rates. The higher the value, the stronger the negative effect of climate when moving from the optimal climate."
 
 pars_growth |>
   group_by(species_id) |>
@@ -392,7 +393,7 @@ pars_growth |>
 #### Climate breadth vs optimal climate
 
 We have seen with @fig-matDist and @fig-mapDist that the optimal temperature and precipitation are often at the border of the distribution. 
-In @fig-optClimVsTau we plot the correlation between the optimal climate's position in relation to its distribution (0 representing the lower limit and 1 indicating the upper limit) and the climate breadth parameter.
+In @fig-optClimVsTau, we plot the correlation between the optimal climate's position with its distribution (0 representing the lower limit and 1 indicating the upper limit) and the climate breadth parameter.
 
 ```{r climate_tauvsRangeSize,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-optClimVsTau
@@ -506,7 +507,7 @@ pars_growth |>
 
 #### Climate breadth vs observed climate range size
 
-In @fig-climRangeVsTau we plot the climate range size of a species with its climate breadth.
+In @fig-climRangeVsTau, we plot the climate range size of a species with its climate breadth.
 
 ```{r climate_tauvsRangeSize,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-climRangeVsTau
@@ -614,8 +615,8 @@ pars_growth |>
 
 To have an integral understanding of the climate effect across the range of the species, we computed the effect size of each climate variable on each vital rate for both the minimum and maximum observed climate conditions.
 Effect size ranges from zero (no effect) to 1 (maximum negative effect).
-We defined the minimum and maximum climate conditions for each species separately using the 0.1 and 99% quantile probability distributions.
-In @fig-climEffectSize, we changed the signal of the lower minimum condition to negative to better visualize both lower and upper ranges, but consider the absolute value.
+We defined each species' minimum and maximum climate conditions separately using the 0.1 and 99% quantile probability distributions.
+In @fig-climEffectSize, we changed the signal of the lower minimum condition to negative to better visualize both lower and upper ranges but consider the absolute value.
 
 ```{r climate_prepareRangePerform,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 
@@ -676,7 +677,7 @@ recruitment_borderEffect
 #| label: fig-climEffectSize
 #| fig-width: 9
 #| fig-height: 11
-#| fig-cap: "Mean annual temperature and mean annual precipitation effect size on growth, recruitment, and survival vital rates between the minimum and maximum observed climate condition. Note that the effect size ranges from 0 (no effect) to 1 (maximum negative effect), and the effect at the lower climate condition were converted to negative for visual clarity."
+#| fig-cap: "Mean annual temperature and mean annual precipitation effect size on growth, recruitment, and survival vital rates between the minimum and maximum observed climate condition. Note that the effect size ranges from 0 (no effect) to 1 (maximum negative effect), and the effect at the lower climate condition was converted to negative for visual clarity."
 
 # fig overall performance across climate and vital rates
 growth_borderEffect |>
@@ -793,8 +794,8 @@ growth_borderEffect |>
 ```
 
 <!-- 
-In @fig-latVsEffect we compare the climate effect at the lower observed range with the average latitude distribution among all observations of the species.
-We have tested multiple combinations of lower/upper and temperature/precipitation and this was the one there was a clear pattern: species that are more distributed towards the poles are the ones in which its growth rate is more affected by temperature at the lower border. -->
+In @fig-latVsEffect, we compare the climate effect at the lower observed range with the average latitude distribution among all observations of the species.
+We have tested multiple combinations of lower/upper and temperature/precipitation. This was the one where there was a clear pattern: species more distributed towards the poles are the ones whose growth rate is more affected by temperature at the lower border. -->
 
 ```{r climate_effctSizeRangeSize2,echo=Echo,eval=FALSE,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-latVsEffect
