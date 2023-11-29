@@ -334,7 +334,7 @@ plot_mean_ls[['growth']] |>
   correlate(quiet = TRUE) |>
   shave() |> # Remove the upper triangle
   rplot() +
-  scale_color_gradient2(limits = c(-1,1)) +
+  scale_color_gradient2(limits = c(-1,1), low = rgb(0.57, 0.75, .86, 1), high = rgb(0.99, 0.55, 0.35, 1)) +
   theme(
     legend.position = 'bottom',
     axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1, face = 'italic'),
@@ -362,7 +362,7 @@ plot_mean_ls[['mort']] |>
   correlate(quiet = TRUE) |>
   shave() |> # Remove the upper triangle
   rplot() +
-  scale_color_gradient2(limits = c(-1,1)) +
+  scale_color_gradient2(limits = c(-1,1), low = rgb(0.57, 0.75, .86, 1), high = rgb(0.99, 0.55, 0.35, 1)) +
   theme(
     legend.position = 'bottom',
     axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1, face = 'italic'),
@@ -390,7 +390,7 @@ plot_mean_ls[['recruit']] |>
   correlate(quiet = TRUE) |>
   shave() |> # Remove the upper triangle
   rplot() +
-  scale_color_gradient2(limits = c(-1,1)) +
+  scale_color_gradient2(limits = c(-1,1), low = rgb(0.57, 0.75, .86, 1), high = rgb(0.99, 0.55, 0.35, 1)) +
   theme(
     legend.position = 'bottom',
     axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1, face = 'italic'),
@@ -398,6 +398,45 @@ plot_mean_ls[['recruit']] |>
   )
 ```
 
+#### Distribution of correlation among species
+
+```{r allCoor,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| fig-width: 7
+#| fig-height: 4
+
+plot_mean_ls |>
+  map(
+    ~ .x |>
+      left_join(
+        spIds_new
+      ) |>
+      select(!species_id) |> 
+      pivot_wider(
+        names_from = species_name,
+        values_from = value
+      ) |>
+      select(!plot_id) |>
+      correlate(quiet = TRUE) |>
+      shave() |>
+      pivot_longer(cols = !term) |>
+      drop_na()
+  ) |>
+  bind_rows(.id = 'vr') |>
+  ggplot() +
+  aes(value) +
+  aes(fill = vr) +
+  geom_density(color = NA, alpha = 0.7) +
+  theme_classic() +
+  labs(
+    x = 'Correlation',
+    y = '',
+    fill = ''
+  ) +
+  scale_fill_manual(
+    values = c('#018571', '#a6611a', '#dfc27d'),
+    labels = c('Growth', 'Survival', 'Recruitment')
+  )
+```
 
 ## Spatial Distribution of Plot Random Effects
 
