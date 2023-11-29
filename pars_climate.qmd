@@ -235,7 +235,8 @@ treeData |>
   ) +
   theme_classic() +
   scale_color_manual(
-    values = c('#018571', '#dfc27d', '#a6611a')
+    values = c('#018571', '#dfc27d', '#a6611a'),
+    labels = c('Growth', 'Recruitment', 'Survival')
   ) +
   xlab('Annual Precipitation (mm)') +
   ylab('') +
@@ -309,12 +310,13 @@ pars_growth |>
   stat_pointinterval() +
   theme_classic() +
   scale_color_manual(
-    values = c('#018571', '#dfc27d', '#a6611a')
+    values = c('#018571', '#dfc27d', '#a6611a'),
+    labels = c('Growth', 'Recruitment', 'Survival')
   ) +
   xlab(expression(tau^-1)) +
   ylab('') +
   theme(axis.text.y = element_text(face = "italic")) +
-  labs(color = 'Vital rate')
+  labs(color = '')
 ```
 
 
