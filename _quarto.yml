@@ -58,7 +58,7 @@ website:
 
 format:
   html:
-    theme: cosmo
+    theme: [cosmo, mytheme.scss]
   # pdf:
   #   documentclass: scrreprt
   #   geometry:
