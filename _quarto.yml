@@ -16,7 +16,7 @@ book:
       orcid: 0000-0002-4498-7076
 
   search: true
-  repo-url: "https://github.com/willvieira/docs_forest-demography-IPM/"
+  repo-url: "https://github.com/willvieira/book_forest-demography-IPM/"
   repo-actions: [issue]
   # cover-image: cover.png
   chapters:
