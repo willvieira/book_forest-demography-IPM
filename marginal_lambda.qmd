@@ -128,7 +128,7 @@ The code used to perform these analysis are hosted at the [`forest-IPM`](https:/
 
 ## Results
 
-We show in @fig=ame the sensitivity of each species' population growth rate to conspecific and heterospecific competition, temperature, and precipitation.
+We show in @fig-ame the sensitivity of each species' population growth rate to conspecific and heterospecific competition, temperature, and precipitation.
 Among all species, $\lambda$ is more sensitive to temperature, followed by conspecific and heterospecific competition.
 
 ```{r fig-ame,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
