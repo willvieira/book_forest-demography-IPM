@@ -1,20 +1,20 @@
 # Preface {.unnumbered}
 
-In this book, I present my methods for quantifying the impact of competition and climate on the dynamics of 31 North American forest trees.
-While I try my best to make this approach as transparent as possible, it is very likely that I will miss certain steps.
+In this book, I present the methods for quantifying the effect of competition and climate on the demographic dynamics of 31 North American forest trees.
+While I try my best to make this approach as transparent as possible, I will likely miss specific steps.
 In such cases, you can find the missing information within the accompanying code.
-If navigating my code was not enough to solve your question, feel free to reach out via email.
+If navigating my code was not enough to answer your question, feel free to email me.
 
 This document is a dynamic report generated using R and [Quarto](https://quarto.org/).
 It is designed to ensure the reproducibility of the results, but note that some sections involve intensive computational processing.
-Rendering the entire document would require several days, particularly due to the Bayesian model fitting and sensitivity analysis of the IPM, which were executed on a cluster.
+Rendering the entire document would require several days, mainly due to the Bayesian model fitting and sensitivity analysis of the IPM, which were executed on a cluster.
 
-To facilitate reproducibility, I have included the code within this document, but certain code chunks have been disabled (using `eval=FALSE`).
-To replicate this vignette, you will need to download the complete dataset and parameters that stored in the ownCloud server: [(https://doc.ielab.usherbrooke.ca/s/83YSAiLAGeLm682](https://doc.ielab.usherbrooke.ca/s/83YSAiLAGeLm682).
+I have included the code within this document to facilitate reproducibility, but specific code chunks have been turned off (using `eval=FALSE`).
+To replicate this vignette, you will need to download the complete dataset and parameters that are stored in the ownCloud server: [(https://doc.ielab.usherbrooke.ca/s/83YSAiLAGeLm682](https://doc.ielab.usherbrooke.ca/s/83YSAiLAGeLm682).
 Note that the total size of the folder is approximately 40 GB.
 Once you have downloaded the parameters, create a file named `_data.path` and place it at the root of this project (`./suppMaterial/_data.path`).
 Inside this file, specify the local path of the downloaded data.
-For instance, if you download the full content of the server into the folder `ms_forest-demography-IPM/data/`, the content of the `_data.path` file should be:
+For instance, if you download the full content of the server into the folder `book_forest-demography-IPM/data/`, the content of the `_data.path` file should be:
 
 ```
 data/

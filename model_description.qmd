@@ -9,16 +9,16 @@ Msg=FALSE
 library(tidyverse)
 ```
 
-Our study characterizes the population dynamics of forest trees using three distinct functions or vital rates that determine the fate of each individual tree.
-The growth function describes how individual trees increase in size, while the survival function determines the probability to stay alive throughout their lifespan.
+Our study characterizes forest tree population dynamics using three functions or vital rates that determine each tree's fate.
+The growth function describes how individual trees increase in size, while the survival function determines the probability of staying alive throughout their lifespan.
 The recruitment model describes the number of individuals ingressing the population, identified by their size surpassing the 12.7 cm threshold.
 
-Because of trees are long-lived with a wide range of possible sizes among trees, these three vital rates should be size-dependent.
-However, due to a lack data regarding the recruitment process, we will define a general recruitment rate that remains independent of the distribution of size among individuals within a population.
+Because trees are long-lived with a wide range of possible sizes among trees, these three vital rates should be size-dependent.
+However, due to a lack of data regarding the recruitment process, we will define a general recruitment rate independent of the size distribution among individuals within a population.
 
-In this chapter, I will describe the concept and ecological interpretations underlying each of the three demographic models.
-My focus will primarily be on explaining the *intercept model*, reserving discussions on covariates and model fit for next chapters.
-All the model equations described bellow are species-dependent, but we omit the notation for the species for clarity.
+This chapter will describe the concept and ecological interpretations underlying the three demographic models.
+I will primarily explain the *intercept model*, reserving discussions on covariates and model fit for the following chapters.
+All the model equations described below are species-dependent, but we omit the notation for the species for clarity.
 
 ## Growth model
 
@@ -29,10 +29,10 @@ $$
   z_{i, t+\Delta t} = z_{i,t}  \times e^{-\Gamma \Delta t} + \zeta_{\infty} (1- e^{-\Gamma \Delta t})
 $$ {#eq-VBmodel}
 
-Where $\Delta t$ is the time interval between the initial and final size measurements, and $\Gamma$ represents a dimensionless growth rate coefficient.
+Where $\Delta t$ is the time interval between the initial and final size measurements, $\Gamma$ represents a dimensionless growth rate coefficient.
 $\zeta_{\infty}$ denotes the asymptotic size, which is the location at which growth approximates to zero.
 
-The rationale behind this equation is that growth rate exponentially decreases with size, converging to zero as size approaches $\zeta_{\infty}$ (@fig-VBModel).
+The rationale behind this equation is that the growth rate exponentially decreases with size, converging to zero as size approaches $\zeta_{\infty}$ (@fig-VBModel).
 This assumption is particularly valuable in the context of the Integral Projection Models (described in @sec-ipm_description), as it prevents eviction — where individuals are projected beyond the limits of the size distribution ($[L, U]$) defined by the Kernel.
 The final likelihood growth model accounting for individual variability is defined as follows: 
 
@@ -49,7 +49,7 @@ Where $N$ is the normal distribution and $dbh_i$ is the observed size of an indi
 #| label: fig-VBModel
 #| fig-width: 8.5
 #| fig-height: 5.5
-#| fig-cap: "Illustration of the evolution of size (upper panels) and growth rate (bottom panels) over time following the von Bertalanffy growth equation. The three panels of each row is set to describe the interaction of the two parameters governing the annual growth rate of an individual tree."
+#| fig-cap: "Illustration of the evolution of size (upper panels) and growth rate (bottom panels) over time following the von Bertalanffy growth equation. The three panels of each row are set to describe the interaction of the two parameters governing the annual growth rate of an individual tree."
 
 
 r <- exp(-c(5:3))
@@ -99,7 +99,7 @@ ggpubr::ggarrange(
       strip.background = element_blank(),
       strip.text = element_text(size = rel(0.9))
     ) +
-    scale_color_brewer() +
+    scale_color_brewer(palette = "Greens") +
     scale_y_continuous(labels = scales::number_format(accuracy = 0.1)),
     dt |>
     ggplot() +
@@ -120,7 +120,7 @@ ggpubr::ggarrange(
       strip.background = element_blank(),
       strip.text = element_blank()
     ) +
-    scale_color_brewer() +
+    scale_color_brewer(palette = "Greens") +
     scale_y_continuous(labels = scales::number_format(accuracy = 0.1)),
   nrow = 2,
   common.legend = TRUE,
@@ -144,7 +144,7 @@ $$
 p_i = 1 - \psi^{\Delta t}
 $$
 
-The rationale of this model is that the survival probability ($1 - p_i$) increases with the longevity parameter $\psi$ but it is compenseted exponentially with the increase in time $\Delta t$ (@fig-mortModel).
+The rationale of this model is that the survival probability ($1 - p_i$) increases with the longevity parameter $\psi$, but it is compensated exponentially with the increase in time $\Delta t$ (@fig-mortModel).
 
 ```{r,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-mortModel
@@ -159,7 +159,7 @@ tibble(
   mutate(long = 1/(1 + exp(-psi))^deltaYear) |>
   ggplot(aes(x = deltaYear,  y = long, color = factor(psi))) +
     geom_path(size = 1.2) +
-    scale_color_brewer() +
+    scale_color_brewer(palette = "Greens") +
     theme_classic() +
     labs(
       x = 'Time',
@@ -172,11 +172,11 @@ tibble(
 ## Recruitment model
 
 We opted to combine the data from both the U.S. and Quebec forest inventories to encompass a broader range of climatic conditions.
-However, due to inconsistent protocols in recording seedlings, saplings, and juveniles between these two datasets, we chose not to model their dynamics.
+However, we chose not to model their dynamics due to inconsistent protocols in recording seedlings, saplings, and juveniles between these two datasets.
 Instead, we quantified the recruitment rate ($I$) as the ingrowth of new individuals into the adult population, defined as those with a dbh exceeding 12.7 cm.
 
-Similar to growth and survival, the count of ingrowth individuals ($I$) reaching the 12.7 cm size threshold is dependent on the time interval between measurements.
-Therefore, we introduce two parameters that will control de potential number of recruited individuals.
+Similar to growth and survival, the count of ingrowth individuals ($I$) reaching the 12.7 cm size threshold depends on the time interval between measurements.
+Therefore, we introduce two parameters to control the potential number of recruited individuals.
 While the parameter $\phi$ determines the annual ingrowth rate per square meter, the parameter $\rho$ denotes the annual survival probability of each ingrowth individual:
 
 $$
@@ -184,9 +184,7 @@ $$
 $$
 
 Where $A$ represents the area of the plot in square meters.
-The rationale behind this model is that, between two measurements, new individuals enter the population annually at a rate of $\phi$, and their likelihood of surviving until the subsequent measurement ($\rho$) decline over time (@fig-recModel).
-
-The rationale behind this model is that, between two measurements, new individuals enter the population annually at a rate of $\phi$, and at every year, they survive to the next year given the probability $\rho$.
+The rationale behind this model is that, between two measurements, new individuals enter the population annually at a rate of $\phi$, and their likelihood of surviving until the subsequent measurement ($\rho$) declines over time (@fig-recModel).
 
 ```{r,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-recModel
@@ -220,7 +218,7 @@ expand_grid(
   aes(color = phi_label) +
   facet_wrap(~ rho_label) +
   geom_path(size = 1.2) +
-  scale_color_brewer() +
+  scale_color_brewer(palette = "Greens") +
   theme_classic() + 
   labs(
     x = 'Time',
@@ -233,14 +231,14 @@ expand_grid(
 ## Recruited size model
 
 In the recruitment process, we determined a submodel to predict the size distribution of recruited individuals ($z_I$).
-The time interval between two measures is included in the model in the form of a linear predictor, where the mean size of recruited individuals increase with time as follows:
-To account for the time interval between two measurements, we incorporated a linear predictor where the mean size of recruited individuals increases over time as follows:
+The time interval between two measures is included in the model in the form of a linear predictor, where the mean size of recruited individuals increases with time as follows:
+To account for the time interval between the two measurements, we incorporated a linear predictor where the mean size of recruited individuals increases over time as follows:
 
 $$
   z_{I} \sim TNormal(\Omega + \omicron \Delta t,~\sigma^{\Omega}, ~ \alpha, ~ \beta)
 $$
 
-Where TNormal is a truncated distribution with the lower and upper limits determined by the $\alpha$ and $\beta$ parameters, respectively.
+TNormal is a truncated distribution with the lower and upper limits determined by the $\alpha$ and $\beta$ parameters, respectively.
 In our study,  we have set $\alpha$ to 12.7 cm, aligning it with the ingrowth threshold, while $\beta$ is set to infinity to allow for an unbounded upper limit.
 
 <!-- 

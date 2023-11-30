@@ -1,8 +1,8 @@
 # A guide to use the forest-IPM code {#sec-ipm_guide}
 
 The `forest-IPM` code is available in this GitHub repository: <https://github.com/willvieira/forest-IPM>.
-This repository contains a collection of `R` functions designed for implementing the vital rates and Kernel functions, as well as the necessary data parameters for the 31 fitted species.
-Below, I'll provide a brief overview of how to load and execute these functions and outline the type of results you can expect from the model.
+This repository contains a collection of `R` functions designed for implementing the vital rates and Kernel functions and the necessary data parameters for the 31 fitted species.
+Below, I will briefly overview how to load and execute these functions and outline the results you can expect from the model.
 
 Before we begin, we need to access the set of parameters for each species-demographic model.
 As described in @sec-parameters, the parameters are stored in an ownCloud folder, which you can access through this link: [Parameter Dataset](https://doc.ielab.usherbrooke.ca/s/83YSAiLAGeLm682).
@@ -11,7 +11,7 @@ To do this, create a file named `_data.path` and place it at the root of your pr
 
 ## Loading the functions and parameters
 
-We start by sourcing the IPM specific functions directly from GitHub:
+We start by sourcing the IPM-specific functions directly from GitHub:
 
 ```{r loadRfunc}
 suppressPackageStartupMessages(library(tidyverse))
@@ -22,11 +22,11 @@ c('vital_rates.R', 'kernel.R', 'BasalArea_competition.R') |>
   walk(~source(paste0(baseURL, .x)))
 ```
 
-The first wrapper function if the `getPars_sp()` which loads species-specific parameters.
-The `sp` and `path` arguments are used for defining the species based on their ID, as outlined in @tbl-tabSpecies, and to specify the location path where these parameters are stored.
+The first wrapper function is the `getPars_sp()`, which loads species-specific parameters.
+The `sp` and `path` arguments define the species based on their ID, as outlined in @tbl-tabSpecies, and specify the location path where these parameters are stored.
 The `method` argument allows you to specify whether you wish to load the `mean` value or a `random` draw from the posterior distribution for each parameter.
 The `model` argument defines which specific model you want to download the parameters.
-However, the IPM function are currently available only for the complete model, so this argument should remain as `intcpt_plot_comp_clim`.
+However, the IPM functions are currently available only for the complete model, so this argument should remain `intcpt_plot_comp_clim`.
 
 ```{r loadPar}
 pars_abibal <- getPars_sp(
@@ -37,7 +37,7 @@ pars_abibal <- getPars_sp(
 )
 ```
 
-The `pars_abibal` object is a simple list for each vital rate with named vectors that represent the parameters associated with that particular vital rate.
+The `pars_abibal` object is a simple list for each vital rate with named vectors representing the parameters associated with that particular vital rate.
 
 ```{r}
 (pars_abibal)
@@ -45,13 +45,13 @@ The `pars_abibal` object is a simple list for each vital rate with named vectors
 
 ## Defining model conditions
 
-Let's start by establishing the initial community structured based on the size of *individuals*.
-Populations are characterized by density functions that describe the distribution of indivudals across the size range covered by the IPM ($[L, U]$).
+Let us establish the initial community structure based on the size of *individuals*.
+Populations are characterized by density functions that describe the distribution of individuals across the size range covered by the IPM ($[L, U]$).
 In this context, we set the lower threshold of the size distribution ($L$) to 127 mm in dbh, following the FIA protocol.
-As the von Bertalanffy growth model incorporates a parameter that determines the size at which growth rate converges to zero ($S_{\infty}$), we define the upper boundary of the size distribution to be the species-specific $S_{\infty}$.
-The `h` argument specifies the bin size in millimeters for the discretized kernel, while `N` represents the total population size, defined as $\int_L^{S_{\infty}} n(z) \mathrm{d}z$.
+As the von Bertalanffy growth model incorporates a parameter that determines the size at which the growth rate converges to zero ($\zeta_{\infty}$), we define the upper boundary of the size distribution to be the species-specific $\zeta_{\infty}$.
+The `h` argument specifies the bin size in millimeters for the discretized kernel, while `N` represents the total population size, defined as $\int_L^{\zeta_{\infty}} n(z) \mathrm{d}z$.
 Given that this approach generates distributions randomly, the `accuracy` threshold determines the acceptance of the brute force approximation of the integral to match the expected population size `N`.
-Finally, the `meanSize` and `sdSize` are the parameters in natural scale of the lognormal distribution used to random generate size distribution.
+Finally, the `meanSize` and `sdSize` are the parameters in the natural scale of the lognormal distribution used to generate random size distribution.
 
 ```{r startN}
 N_sp <- init_pop(
@@ -65,7 +65,7 @@ N_sp <- init_pop(
 )
 ```
 
-The `N_sp` object is also a list composed of the (i) species-specific meshpoints (needed internally to build the kernel), the density function describing the distribution of individuals, and the `h` bins size.
+The `N_sp` object is also a list composed of the (i) species-specific mesh points (needed internally to build the kernel), the density function describing the distribution of individuals, and the `h` bin size.
 
 ```{r printN}
 #| label: fig-sizeDist
@@ -87,15 +87,17 @@ N_sp |>
   )  
 ```
 
-Additionally, we need to create a second structured population vector for the heterospecific species. This vector will represent the size distribution of all species other than the focal species and will be used to compute the heterospecific competition effect.
+Additionally, we need to create a second structured population vector for the heterospecific species.
+This vector will represent the size distribution of all species other than the focal species and will be used to compute the heterospecific competition effect.
 
-While we could simply use the `init_pop()` function as described above, with similar parameters except for the `N`, which can take any desired value, we will now introduce a second approach. This alternative method allows us to approximate a continuous population vector based on observed dbh measurements.
-Given we already have an object from the `init_pop()` function, we just need to feed the `dbh_to_sizeDist()` function with the observed dbh values and the output of the `init_pop()` funciton as follows:
+While we could use the `init_pop()` function as described above, with similar parameters except for the `N`, which can take any desired value, we will introduce a second approach.
+This alternative method allows us to approximate a continuous population vector based on observed dbh measurements.
+Given that we already have an object from the `init_pop()` function, we need to feed the `dbh_to_sizeDist()` function with the observed dbh values and the output of the `init_pop()` function as follows:
 
 ```{r sizeComp}
 # generate random observed values of dbh
 obs_dbh <- runif(2, 127, 500)
-# createa acontinuous population vector based on observed dbh measurements
+# create a continuous population vector based on observed dbh measurements
 N_het <- dbh_to_sizeDist(
   dbh = obs_dbh,
   N_intra = N_sp
@@ -115,7 +117,7 @@ plot_random = rep(0, 3)   # plot random effects for c(growth, survival, and recr
 
 ## Run the IPM
 
-The main function of the forest IPM is the `mkKernel()`.
+The primary function of the forest IPM is the `mkKernel()`.
 
 ```{r kernel}
 K_abibal = mkKernel(
@@ -130,7 +132,7 @@ K_abibal = mkKernel(
 )
 ```
 
-The `K_abibal` object is again a list composed of the $P$, $F$, and $K$ matrices of dimension $z^2$ described in the equation 1 in @sec-ipm_description.
+The `K_abibal` object is a list of the $P$, $F$, and $K$ matrices of dimension $z^2$ as described in @eq-ipm2.
 This kernel object is the core output of the IPM model, serving as the foundation for projecting populations over time or calculating the asymptotic population growth rate ($\lambda$) and other metrics.
 
 We can extract the asymptotic population growth rate ($\lambda$) using the leading eigen value of the matrix $k$:
@@ -139,9 +141,9 @@ We can extract the asymptotic population growth rate ($\lambda$) using the leadi
 (max(Re(eigen(K_abibal$K)$values)))
 ```
 
-Given that our matrix is density-dependent, we can project the population vector over time by continuously updating the Kernel at each time step to account the evolving size distribution of individuals.
-In the following code, we demostrate a simple loop to trace the envolving population over time while assuming that there is only conspecific density-dependence (`N_het = 0`).
-Note that this code is slow and can take around 5-10 minutes to run due to the slow `eigen()` computation.
+Given that our matrix is density-dependent, we can project the population vector over time by continuously updating the Kernel at each time step to account for the evolving size distribution of individuals.
+In the following code, we demonstrate a simple loop to trace the evolving population over time while assuming that there is only conspecific density-dependence (`N_het = 0`).
+Note that this code is slow and can take 5-10 minutes to run due to the slow `eigen()` computation.
 
 ```{r runIPM,eval=FALSE}
 set.seed(0.0)
@@ -213,9 +215,9 @@ lambdas <- out$lambdas
 ntmat <- out$ntmat
 ```
 
-For each time iteration, we saved the size ($z$) distribution of the focal species, as well as the population growth rate ($\lambda$).
-We can visualize how each of these measures envolved with time for this species-specific conditions.
-In @fig-guideLambda and  @fig-guideSizeDist we can visualize how $\lambda$ and the size density distribution envolve over time.
+For each time iteration, we saved the focal species' size ($z$) distribution and the population growth rate ($\lambda$).
+We can visualize how each measure involved time for these species-specific conditions.
+In @fig-guideLambda and @fig-guideSizeDist, we can visualize how $\lambda$ and the size density distribution evolve.
 
 ```{r,warning=FALSE,message=FALSE}
 #| code-fold: true
@@ -254,7 +256,7 @@ ntmat |>
 ```{r}
 #| code-fold: true
 #| label: fig-guideSizeDist
-#| fig-cap: "Population size distribution envolving over time."
+#| fig-cap: "Population size distribution over time."
 
 suppressPackageStartupMessages(library(plotly))
 
@@ -285,7 +287,7 @@ ggplotly(p) |>
 
 ```
 
-We can also see how these two quantites interact over time.
+We can also see how these two quantities interact over time.
 
 ```{r}
 #| code-fold: true

@@ -54,23 +54,23 @@ We constructed the demographic models incrementally, starting from the simple in
 While the intercept-only model represents the most basic form, we opted to discard it and use the intercept model with random effects as the baseline or null model for comparison with more complex models.
 We ensured the convergence of all these model forms (described in @sec-mixed_cov), and comprehensive diagnostic details are available at [https://github.com/willvieira/TreesDemography](https://github.com/willvieira/TreesDemography).
 
-Our primary objective is to select the model that has learned most from the data.
+Our primary objective is to select the model that has learned the most from the data.
 We used complementary metrics to quantify the gain in information achieved by adding complexity to each demographic model.
 One intuitive metric involves assessing the reduction in variance attributed to likelihood and the variance associated with plot random effects.
 A greater reduction in their variance implies a greater information gain from model complexity.
-The next metrics are all derived from the idea of increasing predictive accuracy.
-Although our focus is on inference, measuring predictive power is crucial for quantifying the additional information gained from the inclusion of new covariates.
+The following metrics are all derived from the idea of increasing predictive accuracy.
+Although we focus on inference, measuring predictive power is crucial for quantifying the additional information gained from including new covariates.
 The first two classic measures of predictive accuracy are the mean squared error (MSE) and the pseudo $R^2$.
-Both these metrics are based on the linear relationship between observed and predicted demographic outputs.
-Finally, we used Leave-One-Out Cross-Validation (LOO-CV), a technique that uses the sampled data to estimate the model's out-of-sample predictive accuracy [@vehtari2017practical].
-LOO-CV allows us to assess both how well each individual model describes the observed data and to compare competing models to determine which one has learned the most from the data.
+We base these metrics on the linear relationship between observed and predicted demographic outputs.
+Finally, we used Leave-One-Out Cross-Validation (LOO-CV), which uses the sampled data to estimate the model's out-of-sample predictive accuracy [@vehtari2017practical].
+LOO-CV allows us to assess how well each model describes the observed data and compare competing models to determine which has learned the most from the data.
 
 ## Parameter variance
 
 This section describes how the variance attributed to plot random effects changes with increasing model complexity.
-As covariates are introduced, it's expected that part of the variance in demographic rates, initially attributed to random effects, shifts towards the covariate fixed effects.
+As we introduce covariates, it is expected that part of the variance in demographic rates, initially attributed to random effects, shifts towards the covariate fixed effects.
 Therefore, the larger the reduction in variance associated with plot random effects, the more significant the role of covariates in explaining demographic rates.
-The @fig-sigma_plot shows the change in $\sigma_{plot}$ with increased model complexity for growth, survival, and recruitment vital rates.
+The @fig-sigma_plot shows the $\sigma_{plot}$ change with increased model complexity for growth, survival, and recruitment vital rates.
 
 ```{r load_sigmaPlot,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 # load sigma plot parameter
@@ -119,7 +119,7 @@ sigma_plot
 #| label: fig-sigma_plot
 #| fig-width: 8
 #| fig-height: 4
-#| fig-cap: "Boxplot shows the change in the posterior distribution of the parameter $\\sigma_{plot}$ across the 31 tree species as models become more complex. For each growth, survival, and recrutiment vital rate, the simplest model (plot random effects only) increase in complexity with the addition of fixed size, competition, and climate covariates. Each colored dot represents the species' average posterior distribution."
+#| fig-cap: "Boxplot shows the change in the posterior distribution of the parameter $\\sigma_{plot}$ across the 31 tree species between the competing models. For each growth, survival, and recruitment vital rate, the simplest model (plot random effects only) increases in complexity with the addition of fixed size, competition, and climate covariates. Each colored dot represents the species' average posterior distribution."
 
 # sigma_plot |>
 #   left_join(
@@ -188,9 +188,9 @@ girafe(
 
 ## Model predictive accuracy
 
-To evaluate the predictive accuracy of growth and recruitment demographic rates, we used pseudo $R^2$ and MSE metrics derived from the comparison of observed and predicted values.
+We used pseudo $R^2$ and MSE metrics derived from comparing observed and predicted values to evaluate the predictive accuracy of growth and recruitment demographic rates.
 Higher $R^2$ values and lower MSE indicate better overall model accuracy.
-The @fig-R2 and @fig-MSE provide comparisons of the growth and recruitment models using $R^2$ and MSE, respectively.
+The @fig-R2 and @fig-MSE compare the growth and recruitment models using $R^2$ and MSE, respectively.
 
 ```{r load_R2MSE,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 # function to load R2
@@ -304,7 +304,7 @@ MSE
 #| label: fig-R2
 #| fig-width: 6
 #| fig-height: 4
-#| fig-cap: "Posterior distribution of pseudo $R^2$ across the 31 tree species between the different models. For each growth, survival, and recrutiment vital rate, the simplest model (plot random effects only) increase in complexity with the addition of fixed competition and climate covariates. Each colored dot represents the species' average posterior distribution."
+#| fig-cap: "Posterior distribution of pseudo $R^2$ across the 31 tree species between the competing models. For each growth, survival, and recruitment vital rate, the simplest model (plot random effects only) increases in complexity with the addition of fixed competition and climate covariates. Each colored dot represents the species' average posterior distribution."
 
 # R2 |>
 #   left_join(
@@ -438,11 +438,11 @@ girafe(
 )
 ```
 
-For the survival model, we used three complementary metrics to assess model predictions.
+We used three complementary metrics for the survival model to assess model predictions.
 While the accuracy of classification models is often evaluated through the fraction of correct predictions, this measure can be misleading for unbalanced datasets such as mortality, where dead events are rare.
 To address this issue, we calculated sensitivity, which measures the percentage of dead trees correctly identified as dead (true positives).
 We also computed specificity, which measures the percentage of live trees correctly identified as alive (true negatives).
-The combination of sensitivity and specificity allows us to calculate corrected accuracy, which considers the unbalanced accuracy predictions of positive and negative events (@fig-Acc).
+The combination of sensitivity and specificity allows us to calculate corrected accuracy, considering the unbalanced accuracy predictions of positive and negative events (@fig-Acc).
 
 ```{r load_acc,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 # Load accuracy
@@ -481,7 +481,7 @@ acc
 #| label: fig-Acc
 #| fig-width: 8
 #| fig-height: 4
-#| fig-cap: "Comparing the posterior distribution of sensitivity, specificity, and accuracy across the 31 tree species as models become more complex. Each colored dot represents the species' average posterior distribution."
+#| fig-cap: "Comparing the posterior distribution of sensitivity, specificity, and accuracy across the 31 tree species between the competing models. Each colored dot represents the species' average posterior distribution."
 
 # acc |>
 #   left_join(
@@ -542,9 +542,10 @@ girafe(
 
 ## Leave-one-out cross-validation
 
-The final evaluation of competing models is conducted using the LOO-CV metric, where models are compared based on the difference in the expected log pointwise predictive density (ELPD_diff).
-In cases involving multiple models comparision, the difference is calculated relative to the model with highest ELPD [@vehtari2017practical].
-Consequently, the model with ELPD_diff equal to zero is defined as the best model, while the other models performance are assessed based on their deviation from the reference model in pointwise predictive cross-validation.
+Finally, we evaluated the competing models using the LOO-CV metric, where models are compared based on the difference in the expected log pointwise predictive density (ELPD_diff).
+In cases involving multiple models, the difference is calculated relative to the model with highest ELPD [@vehtari2017practical].
+Consequently, the model with ELPD_diff equal to zero is defined as the best model.
+In contrast, the performance of the other models is assessed based on their deviation from the reference model in pointwise predictive cross-validation.
 Given the large number of observations in the dataset, we approximated LOO-CV using PSIS-LOO and subsampling.
 For each species, we approximated LOO-CV by sampling one-fifth of the total number of observations.
 
@@ -605,7 +606,7 @@ loo_tb
 #| label: fig-loo
 #| fig-width: 8
 #| fig-height: 6
-#| fig-cap: "Boxplot shows the LOO-CV compare between the competing models based on the difference in the expected log pointwise predictive density (ELPD_diff) across the 31 tree species. The sd_diff is the standard error of the ELPD difference between the model and the reference model (ELPD_diff equal to zero)."
+#| fig-cap: "Boxplot shows the LOO-CV compare between the competing models based on the expected log pointwise predictive density (ELPD_diff) difference across the 31 tree species. The sd_diff is the standard error of the ELPD difference between the model and the reference model (ELPD_diff equal to zero)."
 
 loo_tb |>
   left_join(
@@ -730,7 +731,7 @@ loo_mort
 #| label: fig-loo_mort
 #| fig-width: 8
 #| fig-height: 6
-#| fig-cap: "Boxplot shows the LOO-CV compare between the competing models based on the difference in the expected log pointwise predictive density (ELPD_diff) across the 31 tree species. The sd_diff is the standard error of the ELPD difference between the model and the reference model (ELPD_diff equal to zero)."
+#| fig-cap: "Boxplot shows the LOO-CV compare between the competing models based on the expected log pointwise predictive density (ELPD_diff) difference across the 31 tree species. The sd_diff is the standard error of the ELPD difference between the model and the reference model (ELPD_diff equal to zero)."
 
 readRDS(file.path('data', 'loo_mortSize.RDS')) |>
   left_join(
@@ -773,13 +774,13 @@ girafe(
 
 ## Conclusion
 
-In summary, our analysis revealed that incorporating competition into the growth, survival, and recruitment models proved more effective in gaining individual-level information compared to climate variables.
-The parameter $\sigma_{plot}$, which is interpreted as spatial heterogeneity, was lowest in the growth model, followed by recruitment, and then survival.
+Our analysis revealed that incorporating competition into the growth, survival, and recruitment models proved more effective in gaining individual-level information than climate variables.
+The parameter $\sigma_{plot}$, interpreted as spatial heterogeneity, was lowest in the growth model, followed by recruitment and survival.
 As the models became more complex with the inclusion of covariates, recruitment exhibited the most significant reduction in spatial variance, followed by growth, with no clear pattern in the case of survival.
 
 Regarding predictive performance, competition contributed more to the overall predictive capacity ($R^2$, MSE, and corrected accuracy) in the growth and survival models compared to climate variables.
 Although recruitment had the largest reduction in $\sigma_{plot}$, it had minimal impact on prediction accuracy.
 
-Finally, the LOO-CV indicates a clear trend where the complete model featuring plot random effects along with both competition and climate covariates outperformed the other competing models.
-Furthermore, the absolute value of the ELPD shows that the growth model gained the most information from the inclusion of covariates, followed by recruitment and survival models.
+Finally, the LOO-CV indicates a clear trend where the complete model featuring plot random effects, competition, and climate covariates outperformed the other competing models.
+Furthermore, the absolute value of the ELPD shows that the growth model gained the most information from including covariates, followed by recruitment and survival models.
 Consequently, we selected the complete model with plot random effects, competition, and climate covariates as the preferred model for further analysis.

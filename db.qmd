@@ -25,13 +25,13 @@ spIds <- read_csv(file.path(data_path, 'species_id.csv')) |>
 	filter(sp_to_analyze)
 ```
 
-In this chapter, we outline the two data sources and the steps taken to organize a create a tidy dataset for our analysis.
-We focus in two open inventory data from eastern North America: the Forest Inventory and Analysis (FIA) dataset in the United States [@OConnell2007] and the Forest Inventory of Québec [@Naturelles2016].
+This chapter outlines the two data sources and the steps to organize and create a tidy dataset for our analysis.
+We focus on two open inventory data from eastern North America: the Forest Inventory and Analysis (FIA) dataset in the United States [@OConnell2007] and the Forest Inventory of Québec [@Naturelles2016].
 From the FIA dataset, we utilized information collected from 37 states out of the total 50: Alabama, Arkansas, Connecticut, Delaware, Florida, Georgia, Illinois, Indiana, Iowa, Kansas, Kentucky, Louisiana, Maine, Maryland, Massachusetts, Michigan, Minnesota, Mississippi, Missouri, Nebraska, New Hampshire, New Jersey, New York, North Carolina, North Dakota, Ohio, Oklahoma, Pennsylvania, Rhode Island, South Carolina, South Dakota, Tennessee, Texas, Vermont, Virginia, West Virginia, and Wisconsin.
 
-At the plot level, we retained plots that had been sampled at least twice, excluding those that had undergone harvesting to focus solely on natural dynamics.
-Specifically, for the FIA dataset, we selected surveys conducted using the modern standardized methodology implemented since 1999.
-Post the application of these filters, our final dataset encompassed nearly 26,000 plots, spanning a latitude range from 26° to 53° (@fig-plotCoverage).
+At the plot level, we retained plots sampled at least twice, excluding those that had undergone harvesting to focus solely on natural dynamics.
+Specifically, we selected surveys conducted for the FIA dataset using the modern standardized methodology implemented since 1999.
+After applying these filters, our final dataset encompassed nearly 26,000 plots spanning a latitude range from 26° to 53° (@fig-plotCoverage).
 Each plot within the dataset was measured between 1970 and 2021, with observation frequencies ranging from 2 to 7 times and an average of 3 measurements per plot.
 The time intervals between measurements varied from 1 to 40 years, with a median interval of 7 years (@fig-plotCoverage).
 
@@ -185,9 +185,8 @@ From this pool, we selected the 31 most abundant species (@tbl-tabSpecies).
 This selection comprises 9 conifer species and 21 hardwood species.
 We ensured an even distribution of species across the continuous shade tolerance trait, with 3 species classified as very intolerant, 9 as intolerant, 8 as intermediate, 8 as tolerant, and 5 as very tolerant [@burns1990silvics].
 While our analysis focuses on these 31 selected species, we retained the data for the remaining species for potential future exploration and analysis.
-Note that we initially included the *Ostrya virginiana* species in our analysis.
-However, we encountered substantial challenges with several parameters in the growth, survival, and recruitment models, which had very large confidence intervals.
-As a result, we made the decision to remove this species from our analysis, even though the fit files are still accessible for potential future investigations.
+We initially included the *Ostrya virginiana* species in our analysis; however, we encountered substantial challenges with several growth, survival, and recruitment parameters, with substantial confidence intervals.
+As a result, we decided to remove this species from our analysis, even though the fit files are still accessible for potential future investigations.
 
 ```{r,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: tbl-tabSpecies
@@ -225,8 +224,8 @@ treeData |>
 
 ### Competition index
 
-To assess competition effects, we calculated the basal area (BA) of living individuals for each species-plot-year combination based on the dbh of each individual $i$.
-We first calculated individual BA in $m^2$ following:
+To assess competition effects, we calculated the basal area (BA) of living individuals for each species-plot-year combination based on the dbh of each $i$.
+We first calculated individual BA in $m^2$ as follows:
 
 $$
 	BA^{ind}_i = \pi * (\frac{dbh_i}{2 * 1000})^2
@@ -245,17 +244,18 @@ $$
 	BAL^{plot}_{ij} = \sum_i^{n_j > BA_i}{BA^{ind}_i} \times \frac{10000}{plot~area_j}
 $$
 
-Note that BAL is now specific to both the plot ($j$) and the individual ($i$).
+Note that BAL is now specific to the plot ($j$) and the individual ($i$).
 
 
 ### Climate
 
-We obtained the 19 bioclimatic variables with a 10 $km^2$ (300 arc sec) resolution grid, covering the period from 1970 to 2018.
+We obtained the 19 bioclimatic variables with a 10 $km^2$ (300 arcsec) resolution grid, covering the period from 1970 to 2018.
 These climate variables were modeled using the ANUSPLIN interpolation method [@mckenney2011].
-We used the plot longitude and latitude coordiantes to extract the mean annual temperature (MAT) and mean annual precipitation (MAP).
-To incorporate the climate covariates in the dataset, we used the latitude and longitude coordinates of each plot to extract the mean annual temperature (MAT) and mean annual precipitation (MAP).
-In cases where plots did not fall within a valid pixel of the climate variable grid, we interpolated the climate condition using the eigth neigbouring cells.
-Due to the transitional nature of the dataset, we considered both the average and standard deviation of MAT and MAP over the years within each time interval. This approach allows us to account for both the averaged effect and the temporal variability effect of climate on tree demography.
+We used the plot's longitude and latitude coordinates to extract the mean annual temperature (MAT) and mean annual precipitation (MAP).
+To incorporate the climate covariates in the dataset, we used each plot's latitude and longitude coordinates to extract the mean annual temperature (MAT) and mean annual precipitation (MAP).
+In cases where plots did not fall within a valid pixel of the climate variable grid, we interpolated the climate condition using the eight neighboring cells.
+Due to the transitional nature of the dataset, we considered both the average and standard deviation of MAT and MAP over the years within each time interval.
+This approach allows us to account for climate's averaged and temporal variability effects on tree demography.
 Finally, we normalized MAT and MAP within the 0 and 1 range, facilitating comparisons of optimal climate conditions and climate breadth among species.
 
 ## R objects
@@ -269,15 +269,15 @@ Metadata associated with each script is described in Table @tbl-tabMetadata.
 From the `treeData.RDS` dataset, we derived four additional datasets, each representing the transition between time $t$ and time $t + \Delta t`:
 
 - `growth_dt.RDS`: Contains growth rate information between time $t$ and $t + \Delta t$.
-- `status_dt.RDS`: Contains the status (alive or dead) of individuals at both time $t$ and time $t + \Delta t$.
+- `status_dt.RDS`: Contains individuals' status (alive or dead) at both time $t$ and time $t + \Delta t$.
 - `fec_dt.RDS`: Contains ingrowth rate (number of individuals entering the population at 127 mm) between time $t$ and $t + \Delta t$.
-- `sizeIngrowth_dt.RDS`: Contains the size distribution of all individuals that entered the population for each remeasurements.
+- `sizeIngrowth_dt.RDS`: Contains the size distribution of all individuals that entered the population for each remeasurement.
 
 You can access all the data objects mentioned in the ownCloud folder via this link: [doc.ielab.usherbrooke.ca/s/83YSAiLAGeLm682](https://doc.ielab.usherbrooke.ca/s/83YSAiLAGeLm682).
 In addition to the data objects, this folder contains three extra files:
 
-- `climate_scaleRange.RDS`contains the maximum and minimum values required to scale the climate covariates..
-- `db_metadata.csv` contains the csv description used in the table bellow.
+- `climate_scaleRange.RDS` contains the maximum and minimum values required to scale the climate covariates.
+- `db_metadata.csv` contains the csv description used in the table below.
 - `species_id.csv`  contains species descriptions and additional traits used in the analysis.
 
 ```{r,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}

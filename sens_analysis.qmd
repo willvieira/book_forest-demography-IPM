@@ -1,4 +1,4 @@
-# Sensitivity analysis {#sec-sensAnalysis}
+# Sensitivity nalysis {#sec-sensAnalysis}
 
 ```{r,include=FALSE,echo=FALSE}
 Echo=FALSE
@@ -73,19 +73,19 @@ outRF_pars
 
 Here, we conducted a global sensitivity analysis (GSA) of the population growth rate ($\lambda$) with respect to demographic models.
 Sensitivity analysis uses various methods to decompose the total variance of an outcome into contributions from parameters or input variables.
-In structured population models, sensitivity analyses involve computing partial derivatives of $\lambda$ with respect to individual parameters, following @Caswell1978 as:
+In structured population models, sensitivity analyses involve computing partial derivatives of $\lambda$ to individual parameters, following @Caswell1978 as:
 
 $$
  \frac{\partial \lambda}{\partial \theta_i}
 $$
 
 where theta represents a vector of $i$ parameters.
-However, most of the methods quantify the local sensitivity each parameter is evaluated separately while holding all others constant [@Saltelli2019].
-This approach can overlook the obscure parameter interactions that are often common in complex models.
-Furthermore, because of the high dimensionality of IPM due to a large number of parameters, these methods can quickly become computationally expensive.
+However, most methods quantify the local sensitivity of each parameter separately while holding all others constant [@Saltelli2019].
+This approach can overlook the obscure parameter interactions often common in complex models.
+Furthermore, because of the high dimensionality of IPM due to the large number of parameters, these methods can quickly become computationally expensive.
 
-To address this, we leveraged the efficiency of non-parametric models such as random forests for variable importance classification [@antoniadis2021].
-This approach not only offers speed but also suits our study as it allows us to quantify both sources of variability in $\lambda$.
+To address this, we leveraged the efficiency of non-parametric models, such as random forests, for variable importance classification [@antoniadis2021].
+This approach offers speed and suits our study as it allows us to quantify both sources of variability in $\lambda$.
 It accounts for the sensitivity of $\lambda$ to each parameter and considers the uncertainty associated with the parameters.
 Therefore, a specific parameter may have higher importance because either $\lambda$ is more sensitive to it or because the parameter is more uncertain.
 
@@ -93,13 +93,13 @@ We quantified the variability in population growth rate in function of the param
 Specifically, we quantified the variability $\lambda$ for different climate conditions, ranging from cold to the center and up to the hot mean annual temperatures experienced by each species.
 Furthermore, we combined the climate conditions with a low and high competition intensity.
 We defined the temperature ranges for each species using the 1st, 50th, and 99th percentiles.
-Low competition was defined as a population size of $N = 0.1$, while high competition was set at the 99th percentile of plot basal area.
-Precipitation was kept at optimal conditions, computed based on the average optimal precipitation parameters among growth, survival, and recruitment models. 
+The low competition was defined as a population size of $N = 0.1$, while high competition was set at the 99th percentile of the plot basal area.
+Precipitation was kept at optimal conditions computed based on the average optimal precipitation parameters among growth, survival, and recruitment models. 
 
-For each species, climate, and competition condition, we computed $\lambda$ 500 times using different draws from the posterior distribution, setting plot random effects to zero.
+For each species, climate, and competition conditions, we computed $\lambda$ 500 times using different draws from the posterior distribution, setting the plot random effects to zero.
 The code used for this analysis can be found in the [`forest-IPM`](https://github.com/willvieira/forest-IPM/tree/master/simulations/sensAnalysis_v3) GitHub repository.
 
-## Simulation summary
+## Simulation Summary
 
 The final simulation involved a total of `r nrow(lambdas)` draws across species and different conditions.
 The @fig-lambdaDist illustrates the distribution of $\lambda$ computed using 500 random draws from the posterior distribution of parameters across different climate and competition conditions.
@@ -174,17 +174,17 @@ lambdas |>
 
 ## Importance of demographic models
 
-Random forest is a non-parametric classification or regression model that enables ranking the importance of each input variable in explaining the variance of the response variable.
+Random forest is a non-parametric classification or regression model that ranks each input variable's importance in explaining the variance of the response variable.
 We used the permutation method for ranking variable importance [@breiman2001].
 This method measures the change in model performance by individually shuffling (permuting) the values of each input variable.
-The greater the change in predictive accuracy with shuffling, the more important the variable is considered.
+The greater the change in predictive accuracy with shuffling input values, the more important the specific variable will become.
 This is computed individually for each tree and then averaged across all $n$ random trees.
 Finally, we normalized the importance output of each regression model so that they sum to 1.
 We used the R package `ranger` with default hyperparameters for fitting the random forest models [@Wright2017].
 
 Figure @fig-rfr2 shows the distribution of $R^2$ from 20 random forest replications across different climate and competition conditions.
 These values range from 0.2 to 0.9, with an average value of 0.63 across species and conditions.
-This variation possibily reflects the uncertainty in the parameters across species.
+This variation possibly reflects the uncertainty in the parameters across species.
 
 ```{r rfr2,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-rfr2
@@ -227,7 +227,7 @@ Thus, we omitted this model and concentrated on the growth, survival, and recrui
 #| label: fig-ternaryLambda
 #| fig-width: 8
 #| fig-height: 6
-#| fig-cap: "Ternary plot decribing the distribution of importance among the growth, survival, and recruitment models. Color represetns the level of shade tolerance [@burns1990silvics]."
+#| fig-cap: "Ternary plot describing the importance distribution among the growth, survival, and recruitment models. Color represents the level of shade tolerance [@burns1990silvics]."
 
 outRF_pars |>
   group_by(species_id, comp, clim, rep, parvr) |>
@@ -281,7 +281,7 @@ In @fig-recVsMort, we explore the correlation between the importance of recruitm
 #| label: fig-recVsMort
 #| fig-width: 8
 #| fig-height: 4
-#| fig-cap: "Correlation between the survival and recruitment relative importance across the 31 species, climate and competition conditions. Species points are grouped by a Multivariate Normal Density function with probability of 90%."
+#| fig-cap: "Correlation between the survival and recruitment relative importance across the 31 species, climate and competition conditions. Species points are grouped by a Multivariate Normal Density function with a probability of 90%."
 
 outRF_pars |>
   group_by(species_id, comp, clim, rep, parvr) |>
@@ -337,7 +337,7 @@ p1_dt |>
 
 We observe that at low competition, for most species, variations in $\lambda$ are primarily explained by recruitment.
 This pattern slightly diminishes as we move from the cold range to the center and up to the hot temperature range.
-At high competition intensity, we can observe an overall shift toward the survival model, especially at the hot temperature range.
+We can observe an overall shift toward the survival model at high competition intensity, especially in the hot temperature range.
 
 ## Importance of covariates 
 
@@ -349,7 +349,7 @@ The @fig-climVsComp shows the distribution of relative importance between climat
 #| label: fig-climVsComp
 #| fig-width: 8
 #| fig-height: 4
-#| fig-cap: "Distribution of relative importance between climate and competition covariates according to Random Forest, the respective $R^2$. The more species are to the right of the panel, the more climate is important relative to competition. Color represetns the level of shade tolerance [@burns1990silvics]."
+#| fig-cap: "Distribution of relative importance between climate and competition covariates according to Random Forest, the respective $R^2$. The more species are to the right of the panel, the more climate is important relative to competition. Color represents the level of shade tolerance [@burns1990silvics]."
 
 outRF_cov |>
   filter(par == 'clim') |>
@@ -389,11 +389,11 @@ outRF_cov |>
 
 In the preceding discussion, we did not specify whether we were considering conspecific or heterospecific competition.
 For all the results presented in this chapter, the *high competition* condition was applied at the heterospecific level, while conspecific competition was set to a very low proportion.
-This choice is based on the common invasion growth rate metric, or the population growth rate when rare, an important measure for quantifying population persistence [@lewontin1969].
+This choice is based on the standard invasion growth rate metric, or the population growth rate when rare, an important measure for quantifying population persistence [@lewontin1969].
 
 Additionally, we performed the sensitivity analysis with the same conditions, except for changing the high competition from heterospecific to conspecific individuals.
 We observed that nearly all the variation in $\lambda$, previously attributed to the growth model, shifted to the recruitment model.
-Also, the importance attributed to the survival model for certain species at the center and cold temperature conditions, shifted toward the recruitment model.
+Also, the importance attributed to the survival model for certain species at the center and cold temperature conditions shifted toward the recruitment model.
 Although we observed this shift, the overall patterns remained similar to those discussed earlier.
-The only exeption was for the distribution of relative importance between climate and competition [@fig-climVsComp], where many species had an increase in the importance of competition relative to climate.
+The only exception was the distribution of relative importance between climate and competition [@fig-climVsComp], where many species had an increase in the importance of competition relative to climate.
 These observed differences primarily arise from the high sensitivity of $\lambda$ to the $\phi$ parameter.

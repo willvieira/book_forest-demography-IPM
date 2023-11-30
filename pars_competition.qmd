@@ -3,8 +3,8 @@
 In this section, we discuss the effect of competition on the growth, survival, and recruitment vital rates.
 For all three demographic functions, competition for light increases linearly with the plot density, determined by the $\beta$ parameter, indicating the density-dependent effect.
 Assuming that light represents the most limiting resource for trees, we define that the influence of individuals smaller than the focal tree is negligible. 
-Consequently, we used the total basal area of individuals larger than the focal tree as a measure of competition.
-Furthermore, we divided the impact of total basal area into contributions from conspecific and heterospecific individuals larger than the focal individual.
+Consequently, we used the total basal area of individuals larger than the focal tree to measure competition.
+Furthermore, we divided the impact of the total basal area into contributions from conspecific and heterospecific individuals larger than the focal individual.
 
 ```{r,include=FALSE,echo=FALSE}
 Echo=FALSE
@@ -322,7 +322,7 @@ pars_growth |>
 #| label: fig-compRec
 #| fig-width: 8.5
 #| fig-height: 6
-#| fig-cap: "Posterior distribution of the density depndence parameter affecting annual survival rate of recruitment individuals."
+#| fig-cap: "Posterior distribution of the density dependence parameter affecting the annual survival rate of recruitment individuals."
 
 pars_rec |>
   left_join(

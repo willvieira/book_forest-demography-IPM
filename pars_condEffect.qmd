@@ -12,7 +12,7 @@ $$
 $$
 
 where $x'$ is the normalized vector of values for the covariate $x$.
-We then increase the normalized values by a pertrubation size $p$, before transforming it back to the original scale:
+We then increase the normalized values by a perturbation size $p$ before transforming it back to the original scale:
 
 $$
 \begin{align*}
@@ -28,9 +28,9 @@ $$
   AME = \frac{1}{n} \sum_{i=1}^n \frac{\mid f(x_i + h, z_i, \theta) - f(x_i, z_i, \theta) \mid}{h}
 $$
 
-Where $f$ denotes one of the growth, survival, or recruitment demographic models, $z$ the remaining covariates retained at their original values, and $\theta$ the collection of parameters.
+$f$ denotes one of the growth, survival, or recruitment demographic models, $z$ the remaining covariates retained at their original values, and $\theta$ is the collection of parameters.
 This approach is valuable because it captures the locally linearized effect of each observation. 
-Furthermore, computing the average effect across the observed dataset takes into account the diversity in the distribution of each covariate, giving more weight to regions where observations are more prevalent.
+Furthermore, computing the average effect across the observed dataset considers the diversity in the distribution of each covariate, giving more weight to regions where observations are more prevalent.
 
 ```{r,include=FALSE,echo=FALSE}
 Echo=FALSE
@@ -714,7 +714,7 @@ AME_growth |>
 #| label: fig-AMEsumm
 #| fig-width: 9
 #| fig-height: 5
-#| fig-cap: "Average Marginal effect of each covariate grouped by species and their respective uncertainity. The larger the values, the stronger the marginal effect of the covariate across all observation for the species."
+#| fig-cap: "Average Marginal effect of each covariate grouped by species and their respective uncertainty. The larger the values, the stronger the marginal effect of the covariate across all observations for the species."
 
 ggarrange(
   AME_growth |>
@@ -825,7 +825,7 @@ ggarrange(
 #| label: fig-AMEsummComp
 #| fig-width: 8.5
 #| fig-height: 5
-#| fig-cap: "Average Marginal effect of the competition covariates grouped by species shade tolerance and their respective uncertainity. The larger the values, the stronger the marginal effect of the covariate across all observation for the species."
+#| fig-cap: "Average Marginal effect of the competition covariates grouped by species shade tolerance and their respective uncertainty. The larger the values, the stronger the marginal effect of the covariate across all observations for the species."
 
 AME_growth |>
   group_by(species_id) |>
@@ -895,7 +895,7 @@ AME_growth |>
 #| label: fig-AMEsummTemp
 #| fig-width: 9
 #| fig-height: 5
-#| fig-cap: "Average Marginal effect of Temperature in function of average latitudinal position of the species. Blue line is 50% quantile quantile and the gray lines are the 25% and 75% quantiles."
+#| fig-cap: "Average Marginal effect of Temperature in the function of the average latitudinal position of the species. The blue line is 50% quantile and the gray lines are the 25% and 75% quantiles."
 
 AME_growth |>
   select(species_id, ydiff_temp) |>

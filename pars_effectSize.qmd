@@ -1,20 +1,21 @@
 # Conditional effect of covariates {#sec-effectSize}
 
 In this section, we quantify the relative effect size of each covariate (competition conspecific, competition heterospecific, temperature, and precipitation) on the intercept of each vital rate function.
-Because of the non-linearity of the functions, we evaluate the condition effect of each covariate at the lower and upper observed values of the covariate-species combination.
+Because of the functions' non-linearity, we evaluate each covariate's condition effect at the covariate-species combination's lower and upper observed values.
 For instance, the conditional effect of annual mean temperature on the growth rate of species $x$ is evaluated at both the 1th and 99th quantile of annual mean temperature that species $x$ was observed.
 Here I define conditional effect size, or simply effect size, as the relative reduction of the intercept parameter.
-This means that when we compare the conditional effect size between species, those effects do not account for the intercept value, nor it accounts for the other covariates.
-Conditional effect size are values between 0 and 1, where 0 means no effect on the intercept.
+This means that when we compare the conditional effect size between species, those effects do not account for the intercept value or the other covariates.
+The conditional effect size is between 0 and 1, where 0 means no effect on the intercept.
 
 The idea behind measuring the conditional effect of the covariate at lower and upper observed conditions is to assess the range of effects observed by each species for the specific covariate.
 While this metric allows us to identify the range observed effect size of the covariate, it does not account for the total distribution of observed covariates.
-For instance, the distribution of observed temperature for a specific species can be highly concentrated at the average, then while the conditional effect of temperature is relatively high at the lower border, it is not representative of the total population.
-In the next chapter (@sec-averageMarginalEffect), we discuss the marginal effect of each covariate averaged across all observations, what we call the Average Marginal Effect.
+For instance, the observed temperature distribution for a specific species can be highly concentrated at the average.
+While the conditional effect of temperature is relatively high at the lower border, it is not representative of the total population.
+In the next chapter (@sec-averageMarginalEffect), we discuss the marginal effect of each covariate averaged across all observations, called the Average Marginal Effect.
 This metric better accounts for the total observed distribution of the covariates and gives more weight to locations where data is concentrated.
 
-In this chapter, we first compute the conditional effect size at lower and upper range conditions for each covariate-species combination.
-Second, we visualize the conditioanl effect size under the harsh conditions by selecting the strongest effect size between the lower and upper conditions.
+In this chapter, we first compute the conditional effect size at lower and upper-range conditions for each covariate-species combination.
+Second, we visualize the conditional effect size under harsh conditions by selecting the highest effect size between the lower and upper conditions.
 Finally, we split each species-specific population into the lower, center, or upper range position following the latitude distribution of each plot ID, where the range is defined as plots having their latitude lower or upper than the 10% or 90% latitude quantile distribution, respectively.
 
 ```{r,include=FALSE,echo=FALSE}
@@ -114,7 +115,7 @@ treeData <- readRDS(file.path(data_path, 'treeData.RDS')) |>
 #| label: fig-efszGrowth
 #| fig-width: 8.5
 #| fig-height: 6
-#| fig-cap: "Effect size of each covariate affecting growth at the lower (1% quantile) and upper (99% quantile) observed range of the covariate. Values close to zero mean that the covariate had no effect on the intercept of the species."
+#| fig-cap: "Effect size of each covariate affecting growth at the lower (1% quantile) and upper (99% quantile) observed range of the covariate. Values close to zero mean that the covariate did not affect the intercept of the species."
 
 myQuantile_f <- function(var, varName, probs, naRm = TRUE) {
   qout_l = as.list(
@@ -224,7 +225,7 @@ growht_borderEffect |>
 #| label: fig-efszGrowthSumm
 #| fig-width: 7
 #| fig-height: 4
-#| fig-cap: "Effect size of each covariate affecting growth at the lower (1% quantile) and upper (99% quantile) observed range of the covariate. Values close to zero mean that the covariate had no effect on the intercept of the species."
+#| fig-cap: "Effect size of each covariate affecting growth at the lower (1% quantile) and upper (99% quantile) observed range of the covariate. Values close to zero mean that the covariate did not affect the intercept of the species."
 
 growht_borderEffect |>
   group_by(species_id) |>
@@ -267,7 +268,7 @@ growht_borderEffect |>
 #| label: fig-efszSurvSumm
 #| fig-width: 7
 #| fig-height: 4
-#| fig-cap: "Effect size of each covariate affecting growth at the lower (1% quantile) and upper (99% quantile) observed range of the covariate. Values close to zero mean that the covariate had no effect on the intercept of the species."
+#| fig-cap: "Effect size of each covariate affecting growth at the lower (1% quantile) and upper (99% quantile) observed range of the covariate. Values close to zero mean that the covariate did not affect the intercept of the species."
 
 pars_survival |>
   group_by(species_id) |>
@@ -330,7 +331,7 @@ survival_borderEffect |>
 #| label: fig-efszRecSumm
 #| fig-width: 7
 #| fig-height: 4
-#| fig-cap: "Effect size of each covariate affecting growth at the lower (1% quantile) and upper (99% quantile) observed range of the covariate. Values close to zero mean that the covariate had no effect on the intercept of the species."
+#| fig-cap: "Effect size of each covariate affecting growth at the lower (1% quantile) and upper (99% quantile) observed range of the covariate. Values close to zero mean that the covariate did not affect the intercept of the species."
 
 BAsp_effect <- function(x_pos, optimal, sigma)
   return( 1 - exp((-1/sigma^2) * (x_pos - optimal)^2) )
@@ -396,7 +397,7 @@ Harsh condition is defined here as the extreme observed covariate with the large
 #| label: fig-efszHarshCond
 #| fig-width: 7.5
 #| fig-height: 4
-#| fig-cap: "Effect size of each covariate affecting growth at the lower (1% quantile) and upper (99% quantile) observed range of the covariate. Values close to zero mean that the covariate had no effect on the intercept of the species."
+#| fig-cap: "Effect size of each covariate affecting growth at the lower (1% quantile) and upper (99% quantile) observed range of the covariate. Values close to zero mean that the covariate did not affect the intercept of the species."
 
 growht_borderEffect |>
   group_by(species_id) |>
@@ -666,7 +667,7 @@ all_effect
 #| label: fig-efszHarshCondRangeGrowth
 #| fig-width: 7
 #| fig-height: 4.5
-#| fig-cap: "Effect size of each covariate affecting growth at the lower (1% quantile) and upper (99% quantile) observed range of the covariate. Values close to zero mean that the covariate had no effect on the intercept of the species."
+#| fig-cap: "Effect size of each covariate affecting growth at the lower (1% quantile) and upper (99% quantile) observed range of the covariate. Values close to zero mean that the covariate did not affect the intercept of the species."
 
 # figures
 all_effect |>
@@ -742,7 +743,7 @@ all_effect |>
 #| label: fig-efszHarshCondRangeRec
 #| fig-width: 7
 #| fig-height: 4.5
-#| fig-cap: "Effect size of each covariate affecting growth at the lower (1% quantile) and upper (99% quantile) observed range of the covariate. Values close to zero mean that the covariate had no effect on the intercept of the species."
+#| fig-cap: "Effect size of each covariate affecting growth at the lower (1% quantile) and upper (99% quantile) observed range of the covariate. Values close to zero mean that the covariate did not affect the intercept of the species."
 
 # figures
 all_effect |>

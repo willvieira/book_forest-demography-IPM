@@ -1,19 +1,19 @@
 # Parameters {#sec-parameters}
 
-The parameters for the demographic models are stored in an ownCloud folder, which you can access via this link: [doc.ielab.usherbrooke.ca/s/83YSAiLAGeLm682](https://doc.ielab.usherbrooke.ca/s/83YSAiLAGeLm682).
+We stored the parameters for the demographic models in an ownCloud folder, which you can access via this link: [doc.ielab.usherbrooke.ca/s/83YSAiLAGeLm682](https://doc.ielab.usherbrooke.ca/s/83YSAiLAGeLm682).
 The code used for model fitting, post-processing of model outputs, and diagnostic generation are available in the [github.com/willvieira/TreesDemography](https://github.com/willvieira/TreesDemography) GitHub repository.
 Specifically, for each demographic model, the script `R/preparePosterior.R` is used to transform Stan outputs into tidy RDS formats.
 These tidy parameters are stored in the folder named `output_sim_processed`, which is organized into subfolders for each demographic model.
-Within each demographic model folder, there are subfolders containing the fitted parameters for different models, ranging from the simplest intercept-only model (`intcpt`) to the more complete model (`intcpt_plot_comp_clim`). 
-Inside each model folder, the parameters files are the `posterior_pop_spID.RDS` and `posterior_plot_spID.RDS`, where the *pop* makes reference to the species level parameters, the *plot* for the plot specific posterior draws, and *spID* to the species ID described in @tbl-tabSpecies.
-Within each model folder, you will find parameter files named `posterior_pop_spID.RDS` and `posterior_plot_spID.RDS`, where *pop* refers to the species-level parameters, *plots* represents plot-specific posterior draws, and *spID* the species ID described in @tbl-tabSpecies.
+Within each demographic model folder are subfolders containing the fitted parameters for different models, ranging from the simplest intercept-only model (`intcpt`) to the more complete model (`intcpt_plot_comp_clim`). 
+Inside each model folder, the parameters files are the `posterior_pop_spID.RDS` and `posterior_plot_spID.RDS,` where the *pop* refers to the species-level parameters, the *plot* for the plot-specific posterior draws, and *spID* to the species ID described in @tbl-tabSpecies.
+Within each model folder, you will find parameter files named `posterior_pop_spID.RDS` and `posterior_plot_spID.RDS,` where *pop* refers to the species-level parameters, *plots* represents plot-specific posterior draws, and *spID* the species ID described in @tbl-tabSpecies.
 
-The `R/preparePosterior.R` script is responsible for producing the `diagnostics_spID.RDS` and `loo_spID.RDS` files.
+The `R/preparePosterior.R` script produces the `diagnostics_spID.RDS` and `loo_spID.RDS` files.
 The former contains diagnostic summary information from the Stan fit, including divergent transitions, E-BFMI (Effective Bayesian Fraction of Missing Information), and $\hat{R}$ statistics.
 The latter file contains the output of the Leave-One-Out Cross-Validation (LOO-CV).
 Furthermore, the model folders contain predictive performance metrics generated in the `MCMCdiagnostics_vitalRate.Rmd` report document.
-Specifically, it should containt the files `MSE.RDS` (Mean Squared Error) and `R2.RDS` ($R^2$) for the growth and recruitment models, and the `accur.RDS` (accuracy) and `R2.RDS` for the survival model.
-Specifically, these folders contain the files `MSE.RDS` (Mean Squared Error) and `R2.RDS` ($R^2$) for the growth and recruitment models, and `accur.RDS` (accuracy) and `R2.RDS` for the survival model.
+Specifically, it should contain the files `MSE.RDS` (Mean Squared Error) and `R2.RDS` ($R^2$) for the growth and recruitment models and the `accur.RDS` (accuracy) and `R2.RDS` for the survival model.
+Specifically, these folders contain the files `MSE.RDS` (Mean Squared Error) and `R2.RDS` ($R^2$) for the growth and recruitment models and `accur.RDS` (accuracy) and `R2.RDS` for the survival model.
 The `output_sim_processed` folder tree structure should look like this:
 
 ```{r folderTree,echo=FALSE,eval=TRUE,cache=FALSE,warning=FALSE,message=FALSE}

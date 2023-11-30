@@ -275,7 +275,7 @@ pars_rec |>
 
 ## Correlation in Plot Random Effects Among Species
 
-In this section we compare the correlation among species regarding the plot offset of each demographic model.
+In this section, we compare the correlation among species regarding the plot offset of each demographic model.
 
 ```{r prepareRandomEffects,echo=Echo,eval=FALSE,cache=Cache,warning=Warng,message=Msg}
 #setting eval=FALSE to run only once
@@ -398,7 +398,7 @@ plot_mean_ls[['recruit']] |>
   )
 ```
 
-#### Distribution of correlation among species
+#### Distribution of the correlation among species par
 
 ```{r allCoor,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| fig-width: 7
@@ -440,7 +440,7 @@ plot_mean_ls |>
 
 ## Spatial Distribution of Plot Random Effects
 
-In our modeling approach, we used a simple hierarchical model that did not consider the plot identity explicitly.
+Our modeling approach used a simple hierarchical model that did not explicitly account for the plot identity.
 However, this section allows us to explore potential spatial structure by visualizing the spatial distribution of the plot's random effects.
 As illustrated in the figure below, we categorized the continuous offset values into nine distinct bin classes to aid visualization. 
 To address the issue of overlapping points within the small figures, we use a transparency gradient that allows us to assign more emphasis to plots with higher absolute values.

@@ -1,20 +1,20 @@
 # Integral Projection Model {#sec-ipm_description}
 
 The Integral Projection Model (IPM) is a category of mathematical tools used to improve our understanding of population dynamics.
-It distinguishes itself from other traditional population models by assuming that the population is structured based on a continuous trait [@Easterling2000].
+It distinguishes itself from traditional population models by assuming the population is structured based on a continuous trait [@Easterling2000].
 This is particularly significant for trees, given the substantial variability in vital rates depending on the size of the individual [@kohyama1992].
-Specifically, an IPM consists of a set of functions that predicts the transition of a distribution of individual traits from time $t$ to time $t+1$:
+Precisely, an IPM consists of a set of functions that predicts the transition of a distribution of individual traits from time $t$ to time $t+1$:
 
 $$
 n(z', t + 1) = \int_{L}^{U} \, k(z', z, \theta)\, n(z, t)\, \mathrm{d}z
-$$
+$${#eq-ipm}
 
 In our case, the continuous trait $z$ at time $t$ and $z'$ at time $t+1$ represent the diameter at breast height (DBH), and $n(z, t)$ characterizes the continuous DBH distribution for a population.
 The projection probability of the population distribution size from $n(z, t)$ to $n(z', t+1)$ is governed by the kernel $K$ and the species-specific parameters $\theta$. The kernel $K$ s composed of the three sub-models we described above:
 
 $$
 k(z', z, \theta) = [Growth(z', z, \theta) \times Survival(z, \theta)] + Recruitment(z, \theta)
-$$
+$${#eq-ipm2}
 
 
 ## Numerical implementation
@@ -22,4 +22,4 @@ $$
 In practice, we employ the mid-point rule to perform the discrete-form integration of the continuous kernel $K$ [@Ellner2016].
 While this approach is straightforward to implement, it comes with the trade-off of potentially introducing bias into estimates, particularly in the case of large matrices with overall slow growth rates, such as trees.
 Simulation analyses have shown that integration bins ranging from 0.1 to 1 cm are appropriate for obtaining reliable outputs [@zuidema2010integral].
-In this study, we use the lower proposed value of 0.1 cm size bins.
+This study uses the lower proposed value of 0.1 cm size bins.

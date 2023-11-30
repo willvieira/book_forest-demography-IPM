@@ -128,14 +128,14 @@ The code used to perform these analysis are hosted at the [`forest-IPM`](https:/
 
 ## Results
 
-We show in @fig-ame the sensitivity of each species' population growth rate to conspecific and heterospecific competition, temperature, and precipitation.
+In @fig-ame, we show the sensitivity of each species' population growth rate to conspecific and heterospecific competition, temperature, and precipitation.
 Among all species, $\lambda$ is more sensitive to temperature, followed by conspecific and heterospecific competition.
 
 ```{r fig-ame,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-ame
 #| fig-width: 8.5
 #| fig-height: 6
-#| fig-cap: "Log sensitivity of species population growth rate to each conspecific competition, heterospecific competition, mean annual temperature, and mean annual precipitation across all plot-year observations. The smaller the values the lower the sensitivity to a covariate."
+#| fig-cap: "Log sensitivity of species population growth rate to each conspecific competition, heterospecific competition, mean annual temperature, and mean annual precipitation across all plot-year observations. The smaller the values, the lower the sensitivity to a covariate."
 
 AME_sp |>
   left_join(
@@ -446,7 +446,7 @@ For that, we calculated the median of MAT for each species for all plots within 
 This allowed us to account for the difference in range position between the species to avoid comparing, for instance, the cold range of a boreal species with the cold range of a temperature one.
 Overall, for the species and range classes, the sensitivity of $\lambda$ to climate was higher than to the competition covariates (@fig-sensBorder_temp).
 Except for sensitivity to climate at the hot range, all the other groups followed the pattern of increase in sensitivity as the species' range position was located towards the colder mean annual temperatures.
-At the hot range of the species, the sensitivity to competition decreased towards hotter temperatures, while the sensitivity to climate remained constant across the range of MAT.
+At the hot range of the species, the sensitivity to competition decreased towards hotter temperatures, while the climate sensitivity remained constant across the range of MAT.
 At the cold range of the species, the sensitivity to both competition and climate increased towards colder temperatures, with a higher increase rate for the climate than competition.
 Finally, at the center, the sensitivity to climate and competition increased towards colder temperatures, but there was no clear distinction between the two covariates.
 
@@ -507,7 +507,7 @@ out |>
 To quantify the sensitivity difference between competition and climate from @fig-sensBorder_temp, we analyze how the $CCR$ for the cold and hot range changes across the temperature range position of each species (@fig-ccrVsTemp).
 We omitted the center range class to improve clarity, as $CCR$ did not change with MAT.
 Overall, the relative sensitivity of $\lambda$ to climate than competition increases towards the cold and hot ranges.
-While at the hot range the increase in sensitivity to climate was due to the decrease in sensitivity to competition, at the cold range it was due to a higher increase rate of climate than the competition (@fig-sensBorder_temp).
+While at the hot range, the increase in sensitivity to climate was due to the decrease in sensitivity to competition, at the cold range, it was due to a higher increase rate of climate than the competition (@fig-sensBorder_temp).
 This is why we can observe a higher rate of increase in the relative sensitivity to climate in the hot range compared to the cold range.
 When analyzing across the species, the relative sensitivity to competition was higher at the center of the MAT range regardless of the cold or hot range positions.
 
@@ -555,7 +555,7 @@ out |>
 
 So far, we have discussed the sensitivity of $\lambda$ to competition and climate using averages across species and temperature range positions.
 Below, we summarize the raw observed sensitivity to competition, climate, and their ratio for each species-plot observation.
-For plots with more than one observation, we averaged the each of the three metrics across the observations.
+For plots with more than one observation, we averaged each of the three metrics across the observations.
 
 ```{r funcPrint,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 plot_spatial_sens <- function(sp) {
