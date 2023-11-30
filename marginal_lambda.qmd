@@ -515,7 +515,7 @@ When analyzing across the species, the relative sensitivity to competition was h
 #| label: fig-ccrVsTemp
 #| fig-width: 7
 #| fig-height: 4
-#| fig-cap: "Relative sensitivity of species population growth rate between competition and climate for cold (blue), center (green), and hot (red) temperature ranges."
+#| fig-cap: "Relative sensitivity of species population growth rate between competition and climate for cold (blue), center (green), and hot (red) temperature ranges. The summary lines are the 25, 50, and 75% quantiles."
 
 out |>
   # three species that had the lowerst AME (low sensitivity to covariates)
