@@ -1,4 +1,4 @@
-# Sensitivity nalysis {#sec-sensAnalysis}
+# Sensitivity analysis {#sec-sensAnalysis}
 
 ```{r,include=FALSE,echo=FALSE}
 Echo=FALSE
