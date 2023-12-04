@@ -453,24 +453,26 @@ Finally, at the center, the sensitivity to climate and competition increased tow
 ```{r fig-sensBorder_temp,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-sensBorder_temp
 #| fig-width: 8.5
-#| fig-height: 4.5
-#| fig-cap: "Relative sensitivity of species population growth rate between competition and climate for cold (blue), center (green), and hot (red) temperature ranges. We defined each species' temperature range position as the median Mean Annual Temperature across all observed plots for each cold, center, and hot range class. Species points are grouped by a Multivariate Normal Density function with 75% probability."
+#| fig-height: 5.5
+#| fig-cap: "Bottom panels describe the sensitivity of species population growth rate to competition (green) and climate (yellow) across the cold, center, and hot temperature ranges. The top panels show the log ratio between competition and climate sensitivities, where negative values mean climate sensitivity is relatively higher than competition. We defined each species' temperature range position as the median Mean Annual Temperature across all observed plots for each cold, center, and hot range class. In the bottom panel, species points are grouped by a Multivariate Normal Density function with 75% probability, while in the top panel, the lines represent the 25, 50, and 75% quantile probabilities."
 
 out |>
-  # three species that had the lowerst AME (low sensitivity to covariates)
+  # three species that had the lowest AME (low sensitivity to covariates)
   # filter(!species_id %in% c('NAQUEPRI', '19290QUEALB', '27821NYSSYL')) |>
   mutate(
     clim = log(par.temp + par.prec),
-    comp = log(par.BA_con + par.BA_het)
+    comp = log(par.BA_con + par.BA_het),
+    ccr = comp - clim
   ) |>
   left_join(plotBorder_class) |>
   group_by(species_id, border_cl, rep) |>
   mutate(
     Climate = mean(clim),
-    Competition = mean(comp)
+    Competition = mean(comp),
+    CCR = mean(ccr)
   ) |>
   slice_head(n = 1) |>
-  pivot_longer(cols = c(Climate, Competition)) |>
+  pivot_longer(cols = c(Climate, Competition, CCR)) |>
   left_join(    
     treeData |>
       left_join(plotBorder_class) |>
@@ -479,46 +481,78 @@ out |>
         range_pos = median(bio_01_mean, na.rm = TRUE)
       ) |>
       mutate(range_pos = range_pos + rnorm(n(), 0, 0.001))
-  ) |>
-  # filter(border_cl != 'Center') |>
+  ) ->
+plot_dt
+  
+plot_dt |>
+  filter(name == 'CCR') |>
   ggplot() +
   aes(range_pos, value) +
-  aes(fill = name, color = name) +
   facet_wrap(~border_cl) +
-  stat_pointinterval(alpha = 0.7) +
-  ggdensity::geom_hdr(
-    aes(color = NULL),
-    probs = .75, alpha = .4,
-    method = 'mvnorm'
-  ) +
-  # geom_smooth(method = 'lm', alpha = .8) +
-  scale_color_manual(values = c('#d8b365', '#5ab4ac')) +
-  scale_fill_manual(values = c('#d8b365', '#5ab4ac')) +
+  geom_point(alpha = 0.4) +
+  geom_quantile(quantiles = 0.5, alpha = 0.8, linewidth = 1, color = 'black') +
+  geom_quantile(quantiles = c(0.25, 0.75), alpha = 0.6, linewidth = .6, color = 'black') +
+  geom_hline(yintercept = 0, alpha = 0.5, linetype = 2) +
   theme_classic() +
   labs(
-    x = 'Mean annual temperature (°C)',
-    y = 'ln(Sensitivity)',
-    color = '',
-    fill = ''
+    y = 'ln(CCR)',
+    x = NULL
   ) +
-  theme(legend.position = 'top')
+  theme(
+    axis.text.x=element_blank(),
+    axis.ticks.x=element_blank(),
+    axis.line.x = element_blank()
+  ) +
+  scale_y_continuous(breaks = c(0, -2, -4)) ->
+p1
+
+ggpubr::ggarrange(
+  p1,
+  plot_dt |>
+    filter(name != 'CCR') |>
+    ggplot() +
+    aes(range_pos, value) +
+    aes(fill = name, color = name) +
+    facet_wrap(~border_cl) +
+    stat_pointinterval(alpha = 0.7) +
+    ggdensity::geom_hdr(
+      aes(color = NULL),
+      probs = .75, alpha = .4,
+      method = 'mvnorm'
+    ) +
+    # geom_smooth(method = 'lm', alpha = .8) +
+    scale_color_manual(values = c('#d8b365', '#5ab4ac')) +
+    scale_fill_manual(values = c('#d8b365', '#5ab4ac')) +
+    theme_classic() +
+    labs(
+      x = 'Mean annual temperature (°C)',
+      y = 'ln(Sensitivity)',
+      color = '',
+      fill = ''
+    ) +
+    theme(
+      legend.position = 'bottom',
+      strip.text = element_blank()
+    ) +
+    scale_y_continuous(breaks = seq(-3, -9, -2)),
+  nrow = 2, heights = c(0.4, 1)
+)
 ```
 
-To quantify the sensitivity difference between competition and climate from @fig-sensBorder_temp, we analyze how the $CCR$ for the cold and hot range changes across the temperature range position of each species (@fig-ccrVsTemp).
-We omitted the center range class to improve clarity, as $CCR$ did not change with MAT.
+To quantify the sensitivity difference between competition and climate, we analyze how the $ln(CCR)$ for the cold, center, and hot range changes across the temperature range position of each species (@fig-sensBorder_temp).
 Overall, the relative sensitivity of $\lambda$ to climate than competition increases towards the cold and hot ranges.
-While at the hot range, the increase in sensitivity to climate was due to the decrease in sensitivity to competition, at the cold range, it was due to a higher increase rate of climate than the competition (@fig-sensBorder_temp).
+While at the hot range, the increase in sensitivity to climate was due to the decrease in sensitivity to competition, at the cold range, it was due to a higher increase rate of climate than the competition.
 This is why we can observe a higher rate of increase in the relative sensitivity to climate in the hot range compared to the cold range.
 When analyzing across the species, the relative sensitivity to competition was higher at the center of the MAT range regardless of the cold or hot range positions.
 
-```{r ccrVsTemp,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+```{r ccrVsTemp,echo=Echo,eval=FALSE,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-ccrVsTemp
 #| fig-width: 7
 #| fig-height: 4
 #| fig-cap: "Relative sensitivity of species population growth rate between competition and climate for cold (blue), center (green), and hot (red) temperature ranges. The summary lines are the 25, 50, and 75% quantiles."
 
 out |>
-  # three species that had the lowerst AME (low sensitivity to covariates)
+  # three species that had the lowest AME (low sensitivity to covariates)
   # filter(!species_id %in% c('NAQUEPRI', '19290QUEALB', '27821NYSSYL')) |>
   mutate(
     clim = log(par.temp + par.prec),
