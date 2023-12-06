@@ -247,11 +247,108 @@ treeData |>
   labs(color = expression(xi[MAP]),)
 ```
 
+#### Optimal temperature vs temperature mid range
+
+```{r optTempVsMid,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-optTempVsMid
+#| fig-width: 8
+#| fig-height: 4
+#| fig-cap: "Optimal Mean annual temperature for the growth, survival, and recruitment models as function of each species midpoint temperature range."
+
+treeData |>
+  # mutate(
+  #   bio_01_mean_nat = unscaleClim(bio_01_mean_scl, 'temp'),
+  #   bio_12_mean_nat = unscaleClim(bio_12_mean_scl, 'prec')
+  # ) |>
+  group_by(species_id) |>
+  reframe(
+    mid_temp = (max(bio_01_mean, na.rm = TRUE)+min(bio_01_mean, na.rm = TRUE))/2,
+    mid_prec = (max(bio_12_mean, na.rm = TRUE)+min(bio_12_mean, na.rm = TRUE))/2
+  ) ->
+sp_mid
+
+pars_growth |>
+  bind_cols(vr = 'Growth') |>
+  bind_rows(
+    pars_survival |>
+      bind_cols(vr = 'Survival')
+  ) |>
+  bind_rows(
+    pars_recruit |>
+      bind_cols(vr = 'Recruitment')
+  ) |>
+  left_join(sp_mid) |>
+  ggplot() +
+  aes(mid_temp, unscaleClim(optimal_temp, 'temp')) +
+  aes(color = vr) +
+  stat_pointinterval(position = position_dodgejust(0.5)) +
+  geom_smooth(method = 'lm') +
+  scale_color_manual(
+    values = c('#018571', '#dfc27d', '#a6611a'),
+    labels = c('Growth', 'Recruitment', 'Survival')
+  ) +
+  theme_classic() +
+  labs(
+    x = 'Annual Mean Temperature midpoint (°C)',
+    y = expression(xi[MAT]),
+    color = ''
+  )
+```
+
+
+#### Optimal precipitaiton vs precipitation mid range
+
+```{r optPrecVsMid,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-optPrecVsMid
+#| fig-width: 8
+#| fig-height: 4
+#| fig-cap: "Optimal Mean annual temperature for the growth, survival, and recruitment models as function of each species midpoint temperature range."
+
+treeData |>
+  # mutate(
+  #   bio_01_mean_nat = unscaleClim(bio_01_mean_scl, 'temp'),
+  #   bio_12_mean_nat = unscaleClim(bio_12_mean_scl, 'prec')
+  # ) |>
+  group_by(species_id) |>
+  reframe(
+    mid_temp = (max(bio_01_mean, na.rm = TRUE)+min(bio_01_mean, na.rm = TRUE))/2,
+    mid_prec = (max(bio_12_mean, na.rm = TRUE)+min(bio_12_mean, na.rm = TRUE))/2
+  ) ->
+sp_mid
+
+pars_growth |>
+  bind_cols(vr = 'Growth') |>
+  bind_rows(
+    pars_survival |>
+      bind_cols(vr = 'Survival')
+  ) |>
+  bind_rows(
+    pars_recruit |>
+      bind_cols(vr = 'Recruitment')
+  ) |>
+  left_join(sp_mid) |>
+  ggplot() +
+  aes(mid_prec, unscaleClim(optimal_prec, 'prec')) +
+  aes(color = vr) +
+  stat_pointinterval(position = position_dodgejust(0.5)) +
+  geom_smooth(method = 'lm') +
+  scale_color_manual(
+    values = c('#018571', '#dfc27d', '#a6611a'),
+    labels = c('Growth', 'Recruitment', 'Survival')
+  ) +
+  theme_classic() +
+  labs(
+    x = 'Annual Mean Precipitation midpoint (°C)',
+    y = expression(xi[MAP]),
+    color = ''
+  )
+```
 
 ## Climate breadth
 
 The climate breadth is the second parameter to account for the climate effect on the growth, survival, and recruitment functions.
-The closer this value is to zero, the lower the growth rate that increases the climate effect as we move from the optimal value (parameter above).
+We define climate breadth as the precision parameter, which is the inverse of the variance of the bell shape ($\tau = \frac{1}{\sigma^2}$).
+The closer this value is to zero, the higher is the breadth around the mean.
 In other words, when climate breadth is zero, the bell-shaped unimodal function becomes an almost flat line.
 
 #### Climate breadth 
@@ -313,7 +410,7 @@ pars_growth |>
     values = c('#018571', '#dfc27d', '#a6611a'),
     labels = c('Growth', 'Recruitment', 'Survival')
   ) +
-  xlab(expression(tau^-1)) +
+  xlab(expression(tau)) +
   ylab('') +
   theme(axis.text.y = element_text(face = "italic")) +
   labs(color = '')
@@ -384,23 +481,23 @@ pars_growth |>
   scale_fill_manual(
     values = c('#386cb0', '#fdc086')
   ) +
-  ylab(expression(tau^-1)) +
+  ylab(expression(tau)) +
   xlab('') +
   theme(axis.text.y = element_text(face = "italic")) +
   labs(fill = '') +
   theme(legend.position = 'bottom')
 ```
 
-
+<!-- 
 #### Climate breadth vs optimal climate
 
 We have seen with @fig-matDist and @fig-mapDist that the optimal temperature and precipitation are often at the border of the distribution. 
-In @fig-optClimVsTau, we plot the correlation between the optimal climate's position with its distribution (0 representing the lower limit and 1 indicating the upper limit) and the climate breadth parameter.
+In @fig-optClimVsTau, we plot the correlation between the optimal climate's position with its distribution (0 representing the lower limit and 1 indicating the upper limit) and the climate breadth parameter. -->
 
-```{r climate_tauvsRangeSize,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+```{r climate_tauvsRangeSize,echo=Echo,eval=FALSE,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-optClimVsTau
-#| fig-width: 8
-#| fig-height: 5
+#| fig-width: 9
+#| fig-height: 6
 #| fig-cap: "Climate breadth in function of mean optimal climate relative to the species climate range in which 0 means lower climate limit and 1 means upper climate limit."
 
 treeData |>
@@ -493,7 +590,7 @@ pars_growth |>
   ggplot() +
   aes(x = clim_value, y = value) +
   aes(color = vr) +
-  facet_wrap(~clim) +
+  facet_grid(clim~vr) +
   stat_pointinterval(alpha = 0.8) +
   scale_color_manual(
     values = c('#018571', '#dfc27d', '#a6611a')
@@ -501,7 +598,7 @@ pars_growth |>
   geom_smooth(method = 'lm') +
   theme_classic() +
   xlab('Mean optimal climate relative to the species range') +
-  ylab(expression(tau^-1)) +
+  ylab(expression(tau)) +
   labs(color = '') +
   theme(legend.position = 'top')
 ```
@@ -513,8 +610,8 @@ In @fig-climRangeVsTau, we plot the climate range size of a species with its cli
 
 ```{r climate_tauvsRangeSize,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-climRangeVsTau
-#| fig-width: 8
-#| fig-height: 5
+#| fig-width: 9
+#| fig-height: 6
 #| fig-cap: "Climate breadth in function of climate range size. The higher the climate range size, the more climate conditions the species experienced."
 
 # function to get range distribution from quantile extremes
@@ -596,7 +693,7 @@ pars_growth |>
   ggplot() +
   aes(clim_val, value) +
   aes(color = vr) +
-  facet_wrap(~clim) +
+  facet_grid(clim~vr) +
   # aes(tau_temp, fct_reorder(species_name, tau_temp)) +
   stat_pointinterval(
     alpha = 0.8
@@ -607,7 +704,7 @@ pars_growth |>
   geom_smooth(method = 'lm') +
   theme_classic() +
   xlab('Climate range') +
-  ylab(expression(tau^-1)) +
+  ylab(expression(tau)) +
   labs(color = '') +
   theme(legend.position = 'top')
 ```

@@ -495,6 +495,7 @@ plot_dt |>
   geom_hline(yintercept = 0, alpha = 0.5, linetype = 2) +
   theme_classic() +
   labs(
+    # y = expression('ln('~over(S[comp], S[clim])~')'),
     y = 'ln(CCR)',
     x = NULL
   ) +
@@ -625,13 +626,27 @@ plot_spatial_sens <- function(sp) {
     filter(
       comp_ln > quantile(comp_ln, 0.05) & comp_ln < quantile(comp_ln, 0.95)
     ) |>
+    filter(
+      clim_ln > quantile(clim_ln, 0.05) & clim_ln < quantile(clim_ln, 0.95)
+    ) |>
+    ungroup() |>
+    select(comp_ln, clim_ln) |>
+    pivot_longer(cols = everything()) |>
+    pull(value) |>
+    range() ->
+  sens_range
+
+  sp_dt |>
+    filter(
+      comp_ln > quantile(comp_ln, 0.05) & comp_ln < quantile(comp_ln, 0.95)
+    ) |>
     st_as_sf(
       coords = c('longitude', 'latitude'),
       crs = 4326
     ) |>
     ggplot() +
     geom_sf(aes(color = comp_ln), alpha = 0.7, size = 0.1) +
-    scale_color_viridis_c() +
+    scale_color_viridis_c(limits = sens_range) +
     labs(color = expression('ln('~S[competition]~')')) +
     theme_plot ->
   p1
@@ -646,7 +661,7 @@ plot_spatial_sens <- function(sp) {
     ) |>
     ggplot() +
     geom_sf(aes(color = clim_ln), alpha = 0.7, size = 0.1) +
-    scale_color_viridis_c() +
+    scale_color_viridis_c(limits = sens_range) +
     labs(color = expression('ln('~S[climate]~')')) +
     theme_plot ->
   p2
