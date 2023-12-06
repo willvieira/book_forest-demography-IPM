@@ -50,23 +50,10 @@ book:
 
 bibliography: references.bib
 
-website:
-  comments: 
-    hypothesis:
-      theme: clean
-      openSidebar: false
-
 format:
   html:
     theme: [cosmo, mytheme.scss]
-  # pdf:
-  #   documentclass: scrreprt
-  #   geometry:
-  #     - top=20mm
-  #     - left=25mm
-  #     - right=15mm
-  #     - bottom=20mm
-  # docx:
-  #   toc: false
+    comments:
+      hypothesis: true
 
 number-depth: 1
