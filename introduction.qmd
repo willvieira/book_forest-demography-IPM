@@ -9,7 +9,7 @@ And this thing is what I tried to build during my thesis.
 Here, I use this book as a lab notebook to share all the details related to the model construction so it can be easily replicated and extended to others.
 The initial chapter covers the dataset description, the selected tree species, variables, and their computation methods.
 
-This book unfolds in three separate sections.
+This book unfolds in three separate parts.
 The first one describes the growth, survival, and recruitment demographic models.
 In the first chapter of this section (@sec-demo_model_description), we elucidate the ecological rationale behind each demographic model and its mathematical formulation.
 The following chapter (@sec-mixed_cov) details how we improved the base models by partitioning the variance between random and fixed effects.
