@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.2.335">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Lab notebook - 11&nbsp; Climate effect</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./pars_effectSize.html" rel="next">
+<link href="./pars_competition.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+<script async="" src="https://hypothes.is/embed.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+</head>
+
+<body class="nav-sidebar floating">
+
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+    <div class="container-fluid d-flex justify-content-between">
+      <h1 class="quarto-secondary-nav-title"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Climate effect</span></h1>
+      <button type="button" class="quarto-btn-toggle btn" aria-label="Show secondary navigation">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Lab notebook</a> 
+        <div class="sidebar-tools-main">
+    <a href="https://github.com/willvieira/book_forest-demography-IPM/" title="Source Code" class="sidebar-tool px-1"><i class="bi bi-github"></i></a>
+</div>
+    </div>
+      </div>
+      <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+      </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">Preface</a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./introduction.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./db.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Dataset</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">Demographic models</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./model_description.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Model description</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./covariates_description.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Mixed covariates</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./model_fit.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Model fit</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./model_comparison.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Model comparison</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./parameters_descr.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Parameters</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">Demographic model evaluation</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./pars_intercept.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Intercept</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./pars_randomEffect.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Random effects</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./pars_competition.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Competition effect</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./pars_climate.html" class="sidebar-item-text sidebar-link active"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Climate effect</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./pars_effectSize.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Conditional effect of covariates</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./pars_condEffect.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Average Marginal Effect</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="true">Using demographic models to infer population level performance</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./ipm_description.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">Integral Projection Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./guide_IPM.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">A guide to use the forest-IPM code</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./sens_analysis.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">Sensitivity analysis</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./conditional_lambda.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Conditional effect of covariates</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./marginal_lambda.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">Marginal effect of covariates</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./extinction_risk.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">19</span>&nbsp; <span class="chapter-title">Suitable probability</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./references.html" class="sidebar-item-text sidebar-link">References</a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#optimal-climate" id="toc-optimal-climate" class="nav-link active" data-scroll-target="#optimal-climate">Optimal climate</a></li>
+  <li><a href="#climate-breadth" id="toc-climate-breadth" class="nav-link" data-scroll-target="#climate-breadth">Climate breadth</a></li>
+  <li><a href="#conditional-effect-at-the-lower-and-upper-climate-range" id="toc-conditional-effect-at-the-lower-and-upper-climate-range" class="nav-link" data-scroll-target="#conditional-effect-at-the-lower-and-upper-climate-range">Conditional effect at the lower and upper climate range</a></li>
+  </ul>
+<div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/willvieira/book_forest-demography-IPM/issues/new" class="toc-action">Report an issue</a></p></div></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title"><span id="sec-parsClimate" class="quarto-section-identifier d-none d-lg-block"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Climate effect</span></span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<p>In this section, I discuss the effect of climate on growth, survival, and recruitment vital rates. We employ the bioclimatic variables of mean annual temperature (MAT) and mean annual precipitation (MAP), averaging these variables over the years, covering the time intervals spanning two measurement periods. The effect of these two variables on growth, survival, and recruitment is modeled using an unimodal function characterized by two key parameters: the optimal climate (<span class="math inline">\(\xi\)</span>), representing the climatic conditions where growth and survival reach their peak, and the climate breadth (<span class="math inline">\(\sigma\)</span>), which quantifies the rate of change in the climate’s impact as one moves away from this optimal point. In the fit process, we transformed the climate breadth parameters as <span class="math inline">\(\sigma = \tau^{-1}\)</span> for sampling efficiency.</p>
+<div class="cell" data-hash="pars_climate_cache/html/intercept_loadPars_b47f50ecb2cbf6752f20bd0a3bafdaf1">
+
+</div>
+<section id="optimal-climate" class="level2">
+<h2 class="anchored" data-anchor-id="optimal-climate">Optimal climate</h2>
+<p><a href="#fig-matDist">Figure&nbsp;<span>11.1</span></a> and <a href="#fig-mapDist">Figure&nbsp;<span>11.2</span></a> show the distribution of the optimal climate parameter, meaning the climate location where the vital rate is at its maximum, across the 31 tree species. The parameter mean and their uncertainty are displayed with the dot interval for growth (green), recruitment (yellow), and survival (brown). The density plot in light gray is the distribution of the climate variable among all observed trees across space and time.</p>
+<section id="mean-annual-temperature" class="level4">
+<h4 class="anchored" data-anchor-id="mean-annual-temperature">Mean annual temperature</h4>
+<div class="cell" data-hash="pars_climate_cache/html/fig-matDist_80361485aedd9970f48f453aa2c32676">
+<div class="cell-output-display">
+<div id="fig-matDist" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="pars_climate_files/figure-html/fig-matDist-1.png" class="img-fluid figure-img" width="816"></p>
+<p></p><figcaption class="figure-caption">Figure&nbsp;11.1: Distribution for the optimal annual mean temperature (<span class="math inline">\(\xi_{MAT}\)</span>) for growth (green), recruitment (yellow), and survival (brown). The gray density plot is the annual mean temperature distribution among all observed trees across space and time.</figcaption><p></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="mean-annual-precipitation" class="level4">
+<h4 class="anchored" data-anchor-id="mean-annual-precipitation">Mean annual precipitation</h4>
+<div class="cell" data-hash="pars_climate_cache/html/fig-mapDist_306e58eb30f68af138226962599e1fab">
+<div class="cell-output-display">
+<div id="fig-mapDist" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="pars_climate_files/figure-html/fig-mapDist-1.png" class="img-fluid figure-img" width="816"></p>
+<p></p><figcaption class="figure-caption">Figure&nbsp;11.2: Distribution for the optimal mean annual precipitation (<span class="math inline">\(\xi_{MAP}\)</span>) for growth (green), recruitment (yellow), and survival (brown). The density plot in gray is the distribution of annual precipitation variable among all observed trees across space and time.</figcaption><p></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="optimal-temperature-vs-temperature-mid-range" class="level4">
+<h4 class="anchored" data-anchor-id="optimal-temperature-vs-temperature-mid-range">Optimal temperature vs temperature mid range</h4>
+<div class="cell" data-hash="pars_climate_cache/html/fig-optTempVsMid_7f89e940804cf8ce0a0e0aa60033367b">
+<div class="cell-output-display">
+<div id="fig-optTempVsMid" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="pars_climate_files/figure-html/fig-optTempVsMid-1.png" class="img-fluid figure-img" width="768"></p>
+<p></p><figcaption class="figure-caption">Figure&nbsp;11.3: Optimal Mean annual temperature for the growth, survival, and recruitment models as function of each species midpoint temperature range.</figcaption><p></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="optimal-precipitaiton-vs-precipitation-mid-range" class="level4">
+<h4 class="anchored" data-anchor-id="optimal-precipitaiton-vs-precipitation-mid-range">Optimal precipitaiton vs precipitation mid range</h4>
+<div class="cell" data-hash="pars_climate_cache/html/fig-optPrecVsMid_c3a7e4852e8a42d0169cb88a2adafb55">
+<div class="cell-output-display">
+<div id="fig-optPrecVsMid" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="pars_climate_files/figure-html/fig-optPrecVsMid-1.png" class="img-fluid figure-img" width="768"></p>
+<p></p><figcaption class="figure-caption">Figure&nbsp;11.4: Optimal Mean annual temperature for the growth, survival, and recruitment models as function of each species midpoint temperature range.</figcaption><p></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="climate-breadth" class="level2">
+<h2 class="anchored" data-anchor-id="climate-breadth">Climate breadth</h2>
+<p>The climate breadth is the second parameter to account for the climate effect on the growth, survival, and recruitment functions. We define climate breadth as the precision parameter, which is the inverse of the variance of the bell shape (<span class="math inline">\(\tau = \frac{1}{\sigma^2}\)</span>). The closer this value is to zero, the higher is the breadth around the mean. In other words, when climate breadth is zero, the bell-shaped unimodal function becomes an almost flat line.</p>
+<section id="climate-breadth-1" class="level4">
+<h4 class="anchored" data-anchor-id="climate-breadth-1">Climate breadth</h4>
+<div class="cell" data-hash="pars_climate_cache/html/fig-climBreadth_d95cfa72ab6b9e72799dcaefdfbf092b">
+<div class="cell-output-display">
+<div id="fig-climBreadth" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="pars_climate_files/figure-html/fig-climBreadth-1.png" class="img-fluid figure-img" width="816"></p>
+<p></p><figcaption class="figure-caption">Figure&nbsp;11.5: Mean annual temperature and mean annual precipitation effect size across the growth (green), recruitment (yellow), and survival (brown) vital rates. The higher the value, the stronger the negative effect of climate when moving from the optimal climate.</figcaption><p></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell" data-hash="pars_climate_cache/html/fig-climBreadthSumm_1ff8b21eaf31eb3e789b927524cf4088">
+<div class="cell-output-display">
+<div id="fig-climBreadthSumm" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="pars_climate_files/figure-html/fig-climBreadthSumm-1.png" class="img-fluid figure-img" width="768"></p>
+<p></p><figcaption class="figure-caption">Figure&nbsp;11.6: Mean annual temperature and mean annual precipitation effect size across the growth (green), recruitment (yellow), and survival (brown) vital rates. The higher the value, the stronger the negative effect of climate when moving from the optimal climate.</figcaption><p></p>
+</figure>
+</div>
+</div>
+</div>
+<!-- 
+#### Climate breadth vs optimal climate
+
+We have seen with @fig-matDist and @fig-mapDist that the optimal temperature and precipitation are often at the border of the distribution. 
+In @fig-optClimVsTau, we plot the correlation between the optimal climate's position with its distribution (0 representing the lower limit and 1 indicating the upper limit) and the climate breadth parameter. -->
+<div class="cell" data-hash="pars_climate_cache/html/fig-optClimVsTau_8334a61f9a5a4d540e939491752445b9">
+
+</div>
+</section>
+<section id="climate-breadth-vs-observed-climate-range-size" class="level4">
+<h4 class="anchored" data-anchor-id="climate-breadth-vs-observed-climate-range-size">Climate breadth vs observed climate range size</h4>
+<p>In <a href="#fig-climRangeVsTau">Figure&nbsp;<span>11.7</span></a>, we plot the climate range size of a species with its climate breadth.</p>
+<div class="cell" data-hash="pars_climate_cache/html/fig-climRangeVsTau_bd5ca407bd1ba20f62c742fe848c932a">
+<div class="cell-output-display">
+<div id="fig-climRangeVsTau" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="pars_climate_files/figure-html/fig-climRangeVsTau-1.png" class="img-fluid figure-img" width="864"></p>
+<p></p><figcaption class="figure-caption">Figure&nbsp;11.7: Climate breadth in function of climate range size. The higher the climate range size, the more climate conditions the species experienced.</figcaption><p></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="conditional-effect-at-the-lower-and-upper-climate-range" class="level2">
+<h2 class="anchored" data-anchor-id="conditional-effect-at-the-lower-and-upper-climate-range">Conditional effect at the lower and upper climate range</h2>
+<p>To have an integral understanding of the climate effect across the range of the species, we computed the effect size of each climate variable on each vital rate for both the minimum and maximum observed climate conditions. Effect size ranges from zero (no effect) to 1 (maximum negative effect). We defined each species’ minimum and maximum climate conditions separately using the 0.1 and 99% quantile probability distributions. In <a href="#fig-climEffectSize">Figure&nbsp;<span>11.8</span></a>, we changed the signal of the lower minimum condition to negative to better visualize both lower and upper ranges but consider the absolute value.</p>
+<div class="cell" data-hash="pars_climate_cache/html/climate_prepareRangePerform_7ee2bfe6c310625762c97ed22d28cdaf">
+
+</div>
+<div class="cell" data-hash="pars_climate_cache/html/fig-climEffectSize_cad6c6f8441ce22726cdd1951df1cfde">
+<div class="cell-output-display">
+<div id="fig-climEffectSize" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="pars_climate_files/figure-html/fig-climEffectSize-1.png" class="img-fluid figure-img" width="864"></p>
+<p></p><figcaption class="figure-caption">Figure&nbsp;11.8: Mean annual temperature and mean annual precipitation effect size on growth, recruitment, and survival vital rates between the minimum and maximum observed climate condition. Note that the effect size ranges from 0 (no effect) to 1 (maximum negative effect), and the effect at the lower climate condition was converted to negative for visual clarity.</figcaption><p></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell" data-hash="pars_climate_cache/html/fig-climEffectSizeSunn_d0be1098a1737ff9f7c4e406981f6c77">
+<div class="cell-output-display">
+<div id="fig-climEffectSizeSunn" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="pars_climate_files/figure-html/fig-climEffectSizeSunn-1.png" class="img-fluid figure-img" width="768"></p>
+<p></p><figcaption class="figure-caption">Figure&nbsp;11.9: Summary between the species of the climate effect size for each vital rate between the minimum and maximum observed climate condition.</figcaption><p></p>
+</figure>
+</div>
+</div>
+</div>
+<!-- 
+In @fig-latVsEffect, we compare the climate effect at the lower observed range with the average latitude distribution among all observations of the species.
+We have tested multiple combinations of lower/upper and temperature/precipitation. This was the one where there was a clear pattern: species more distributed towards the poles are the ones whose growth rate is more affected by temperature at the lower border. -->
+<div class="cell" data-hash="pars_climate_cache/html/fig-latVsEffect_85890eadd6b2b478c872d52ed8cd64d9">
+
+</div>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./pars_competition.html" class="pagination-link">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Competition effect</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./pars_effectSize.html" class="pagination-link">
+        <span class="nav-page-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Conditional effect of covariates</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+</body></html>

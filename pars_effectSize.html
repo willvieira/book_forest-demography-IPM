@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.2.335">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Lab notebook - 12&nbsp; Conditional effect of covariates</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./pars_condEffect.html" rel="next">
+<link href="./pars_climate.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+<script async="" src="https://hypothes.is/embed.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+</head>
+
+<body class="nav-sidebar floating">
+
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+    <div class="container-fluid d-flex justify-content-between">
+      <h1 class="quarto-secondary-nav-title"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Conditional effect of covariates</span></h1>
+      <button type="button" class="quarto-btn-toggle btn" aria-label="Show secondary navigation">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Lab notebook</a> 
+        <div class="sidebar-tools-main">
+    <a href="https://github.com/willvieira/book_forest-demography-IPM/" title="Source Code" class="sidebar-tool px-1"><i class="bi bi-github"></i></a>
+</div>
+    </div>
+      </div>
+      <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+      </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">Preface</a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./introduction.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./db.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Dataset</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">Demographic models</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./model_description.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Model description</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./covariates_description.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Mixed covariates</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./model_fit.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Model fit</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./model_comparison.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Model comparison</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./parameters_descr.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Parameters</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">Demographic model evaluation</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./pars_intercept.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Intercept</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./pars_randomEffect.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Random effects</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./pars_competition.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Competition effect</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./pars_climate.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Climate effect</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./pars_effectSize.html" class="sidebar-item-text sidebar-link active"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Conditional effect of covariates</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./pars_condEffect.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Average Marginal Effect</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="true">Using demographic models to infer population level performance</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./ipm_description.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">Integral Projection Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./guide_IPM.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">A guide to use the forest-IPM code</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./sens_analysis.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">Sensitivity analysis</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./conditional_lambda.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Conditional effect of covariates</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./marginal_lambda.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">Marginal effect of covariates</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./extinction_risk.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">19</span>&nbsp; <span class="chapter-title">Suitable probability</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./references.html" class="sidebar-item-text sidebar-link">References</a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#conditional-effect-size-at-lower-and-upper-covariate-range" id="toc-conditional-effect-size-at-lower-and-upper-covariate-range" class="nav-link active" data-scroll-target="#conditional-effect-size-at-lower-and-upper-covariate-range">Conditional effect size at lower and upper covariate range</a></li>
+  <li><a href="#effect-size-at-harsh-condition" id="toc-effect-size-at-harsh-condition" class="nav-link" data-scroll-target="#effect-size-at-harsh-condition">Effect size at harsh condition</a></li>
+  <li><a href="#effect-size-at-harsh-condition-grouped-by-range-position" id="toc-effect-size-at-harsh-condition-grouped-by-range-position" class="nav-link" data-scroll-target="#effect-size-at-harsh-condition-grouped-by-range-position">Effect size at harsh condition grouped by range position</a></li>
+  </ul>
+<div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/willvieira/book_forest-demography-IPM/issues/new" class="toc-action">Report an issue</a></p></div></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title"><span id="sec-effectSize" class="quarto-section-identifier d-none d-lg-block"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Conditional effect of covariates</span></span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<p>In this section, we quantify the relative effect size of each covariate (competition conspecific, competition heterospecific, temperature, and precipitation) on the intercept of each vital rate function. Because of the functions’ non-linearity, we evaluate each covariate’s condition effect at the covariate-species combination’s lower and upper observed values. For instance, the conditional effect of annual mean temperature on the growth rate of species <span class="math inline">\(x\)</span> is evaluated at both the 1th and 99th quantile of annual mean temperature that species <span class="math inline">\(x\)</span> was observed. Here I define conditional effect size, or simply effect size, as the relative reduction of the intercept parameter. This means that when we compare the conditional effect size between species, those effects do not account for the intercept value or the other covariates. The conditional effect size is between 0 and 1, where 0 means no effect on the intercept.</p>
+<p>The idea behind measuring the conditional effect of the covariate at lower and upper observed conditions is to assess the range of effects observed by each species for the specific covariate. While this metric allows us to identify the range observed effect size of the covariate, it does not account for the total distribution of observed covariates. For instance, the observed temperature distribution for a specific species can be highly concentrated at the average. While the conditional effect of temperature is relatively high at the lower border, it is not representative of the total population. In the next chapter (<a href="pars_condEffect.html"><span>Chapter&nbsp;13</span></a>), we discuss the marginal effect of each covariate averaged across all observations, called the Average Marginal Effect. This metric better accounts for the total observed distribution of the covariates and gives more weight to locations where data is concentrated.</p>
+<p>In this chapter, we first compute the conditional effect size at lower and upper-range conditions for each covariate-species combination. Second, we visualize the conditional effect size under harsh conditions by selecting the highest effect size between the lower and upper conditions. Finally, we split each species-specific population into the lower, center, or upper range position following the latitude distribution of each plot ID, where the range is defined as plots having their latitude lower or upper than the 10% or 90% latitude quantile distribution, respectively.</p>
+<div class="cell" data-hash="pars_effectSize_cache/html/re_loadPars_2f41a7ba3ef6184519746373d1dbfeb7">
+
+</div>
+<section id="conditional-effect-size-at-lower-and-upper-covariate-range" class="level2">
+<h2 class="anchored" data-anchor-id="conditional-effect-size-at-lower-and-upper-covariate-range">Conditional effect size at lower and upper covariate range</h2>
+<section id="growth" class="level4">
+<h4 class="anchored" data-anchor-id="growth">Growth</h4>
+<div class="cell" data-hash="pars_effectSize_cache/html/fig-efszGrowth_920a3e2c9f383b6cb69b386e45be68a3">
+<div class="cell-output-display">
+<div id="fig-efszGrowth" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="pars_effectSize_files/figure-html/fig-efszGrowth-1.png" class="img-fluid figure-img" width="816"></p>
+<p></p><figcaption class="figure-caption">Figure&nbsp;12.1: Effect size of each covariate affecting growth at the lower (1% quantile) and upper (99% quantile) observed range of the covariate. Values close to zero mean that the covariate did not affect the intercept of the species.</figcaption><p></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell" data-hash="pars_effectSize_cache/html/fig-efszGrowthSumm_87a53150e966019a263e1d08eb10bd19">
+<div class="cell-output-display">
+<div id="fig-efszGrowthSumm" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="pars_effectSize_files/figure-html/fig-efszGrowthSumm-1.png" class="img-fluid figure-img" width="672"></p>
+<p></p><figcaption class="figure-caption">Figure&nbsp;12.2: Effect size of each covariate affecting growth at the lower (1% quantile) and upper (99% quantile) observed range of the covariate. Values close to zero mean that the covariate did not affect the intercept of the species.</figcaption><p></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="survival" class="level4">
+<h4 class="anchored" data-anchor-id="survival">Survival</h4>
+<div class="cell" data-hash="pars_effectSize_cache/html/fig-efszSurvSumm_858ca3589537896f1840ad13577fcbd8">
+<div class="cell-output-display">
+<div id="fig-efszSurvSumm" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="pars_effectSize_files/figure-html/fig-efszSurvSumm-1.png" class="img-fluid figure-img" width="672"></p>
+<p></p><figcaption class="figure-caption">Figure&nbsp;12.3: Effect size of each covariate affecting growth at the lower (1% quantile) and upper (99% quantile) observed range of the covariate. Values close to zero mean that the covariate did not affect the intercept of the species.</figcaption><p></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="recruitment" class="level4">
+<h4 class="anchored" data-anchor-id="recruitment">Recruitment</h4>
+<div class="cell" data-hash="pars_effectSize_cache/html/fig-efszRecSumm_8286ceea4c530f070de5038947f89931">
+<div class="cell-output-display">
+<div id="fig-efszRecSumm" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="pars_effectSize_files/figure-html/fig-efszRecSumm-1.png" class="img-fluid figure-img" width="672"></p>
+<p></p><figcaption class="figure-caption">Figure&nbsp;12.4: Effect size of each covariate affecting growth at the lower (1% quantile) and upper (99% quantile) observed range of the covariate. Values close to zero mean that the covariate did not affect the intercept of the species.</figcaption><p></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="effect-size-at-harsh-condition" class="level2">
+<h2 class="anchored" data-anchor-id="effect-size-at-harsh-condition">Effect size at harsh condition</h2>
+<p>Harsh condition is defined here as the extreme observed covariate with the largest conditional effect size between the 1% and 99% quantile distribution of the covariate.</p>
+<div class="cell" data-hash="pars_effectSize_cache/html/fig-efszHarshCond_7def9449f0b3e47c84e69b7f3f1df663">
+<div class="cell-output-display">
+<div id="fig-efszHarshCond" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="pars_effectSize_files/figure-html/fig-efszHarshCond-1.png" class="img-fluid figure-img" width="720"></p>
+<p></p><figcaption class="figure-caption">Figure&nbsp;12.5: Effect size of each covariate affecting growth at the lower (1% quantile) and upper (99% quantile) observed range of the covariate. Values close to zero mean that the covariate did not affect the intercept of the species.</figcaption><p></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="effect-size-at-harsh-condition-grouped-by-range-position" class="level2">
+<h2 class="anchored" data-anchor-id="effect-size-at-harsh-condition-grouped-by-range-position">Effect size at harsh condition grouped by range position</h2>
+<p>Now, we using the effect size from the harsh condition (the lower or upper covariate quantile), we divide the effect size between three regions using the mean annual temperature (MAT) gradient: cold range (MAT &lt; 10%), hot range (MAT &gt; 90%), and the center otherwise.</p>
+<div class="cell" data-hash="pars_effectSize_cache/html/effSz_harshCondRangeData_6d673bd6085dfcca1eedb441b4e69293">
+
+</div>
+<section id="growth-1" class="level4">
+<h4 class="anchored" data-anchor-id="growth-1">Growth</h4>
+<div class="cell" data-hash="pars_effectSize_cache/html/fig-efszHarshCondRangeGrowth_8ff0bae50a086492364298babac228ea">
+<div class="cell-output-display">
+<div id="fig-efszHarshCondRangeGrowth" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="pars_effectSize_files/figure-html/fig-efszHarshCondRangeGrowth-1.png" class="img-fluid figure-img" width="672"></p>
+<p></p><figcaption class="figure-caption">Figure&nbsp;12.6: Effect size of each covariate affecting growth at the lower (1% quantile) and upper (99% quantile) observed range of the covariate. Values close to zero mean that the covariate did not affect the intercept of the species.</figcaption><p></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="survival-1" class="level4">
+<h4 class="anchored" data-anchor-id="survival-1">Survival</h4>
+<div class="cell" data-hash="pars_effectSize_cache/html/fig-efszHarshCondRangeSurv_10acf518e7a18ee2fc365321198be36e">
+<div class="cell-output-display">
+<div id="fig-efszHarshCondRangeSurv" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="pars_effectSize_files/figure-html/fig-efszHarshCondRangeSurv-1.png" class="img-fluid figure-img" width="672"></p>
+<p></p><figcaption class="figure-caption">Figure&nbsp;12.7: Effect size of each covariate affecting growth at the lower (1% quantile) and upper (99% quantile) observed range of the covariate. Values close to zero mean that the covariate had no effect on the intercept of the species.</figcaption><p></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="recruitment-1" class="level4">
+<h4 class="anchored" data-anchor-id="recruitment-1">Recruitment</h4>
+<div class="cell" data-hash="pars_effectSize_cache/html/fig-efszHarshCondRangeRec_ec9d5a07aac5eb07895e93967c8356b2">
+<div class="cell-output-display">
+<div id="fig-efszHarshCondRangeRec" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="pars_effectSize_files/figure-html/fig-efszHarshCondRangeRec-1.png" class="img-fluid figure-img" width="672"></p>
+<p></p><figcaption class="figure-caption">Figure&nbsp;12.8: Effect size of each covariate affecting growth at the lower (1% quantile) and upper (99% quantile) observed range of the covariate. Values close to zero mean that the covariate did not affect the intercept of the species.</figcaption><p></p>
+</figure>
+</div>
+</div>
+</div>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./pars_climate.html" class="pagination-link">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Climate effect</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./pars_condEffect.html" class="pagination-link">
+        <span class="nav-page-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Average Marginal Effect</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+</body></html>

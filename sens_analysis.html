@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.2.335">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Lab notebook - 16&nbsp; Sensitivity analysis</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./conditional_lambda.html" rel="next">
+<link href="./guide_IPM.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+<script async="" src="https://hypothes.is/embed.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+</head>
+
+<body class="nav-sidebar floating">
+
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+    <div class="container-fluid d-flex justify-content-between">
+      <h1 class="quarto-secondary-nav-title"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">Sensitivity analysis</span></h1>
+      <button type="button" class="quarto-btn-toggle btn" aria-label="Show secondary navigation">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Lab notebook</a> 
+        <div class="sidebar-tools-main">
+    <a href="https://github.com/willvieira/book_forest-demography-IPM/" title="Source Code" class="sidebar-tool px-1"><i class="bi bi-github"></i></a>
+</div>
+    </div>
+      </div>
+      <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+      </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">Preface</a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./introduction.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./db.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Dataset</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">Demographic models</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./model_description.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Model description</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./covariates_description.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Mixed covariates</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./model_fit.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Model fit</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./model_comparison.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Model comparison</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./parameters_descr.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Parameters</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">Demographic model evaluation</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./pars_intercept.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Intercept</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./pars_randomEffect.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Random effects</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./pars_competition.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Competition effect</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./pars_climate.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Climate effect</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./pars_effectSize.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Conditional effect of covariates</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./pars_condEffect.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Average Marginal Effect</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="true">Using demographic models to infer population level performance</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./ipm_description.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">Integral Projection Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./guide_IPM.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">A guide to use the forest-IPM code</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./sens_analysis.html" class="sidebar-item-text sidebar-link active"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">Sensitivity analysis</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./conditional_lambda.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Conditional effect of covariates</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./marginal_lambda.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">Marginal effect of covariates</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./extinction_risk.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">19</span>&nbsp; <span class="chapter-title">Suitable probability</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./references.html" class="sidebar-item-text sidebar-link">References</a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#simulation-summary" id="toc-simulation-summary" class="nav-link active" data-scroll-target="#simulation-summary">Simulation Summary</a></li>
+  <li><a href="#importance-of-demographic-models" id="toc-importance-of-demographic-models" class="nav-link" data-scroll-target="#importance-of-demographic-models">Importance of demographic models</a></li>
+  <li><a href="#importance-of-covariates" id="toc-importance-of-covariates" class="nav-link" data-scroll-target="#importance-of-covariates">Importance of covariates</a></li>
+  <li><a href="#notes-on-conspecific-and-heterospecific-competition-effects" id="toc-notes-on-conspecific-and-heterospecific-competition-effects" class="nav-link" data-scroll-target="#notes-on-conspecific-and-heterospecific-competition-effects">Notes on Conspecific and Heterospecific Competition Effects</a></li>
+  </ul>
+<div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/willvieira/book_forest-demography-IPM/issues/new" class="toc-action">Report an issue</a></p></div></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title"><span id="sec-sensAnalysis" class="quarto-section-identifier d-none d-lg-block"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">Sensitivity analysis</span></span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<div class="cell" data-hash="sens_analysis_cache/html/loadSimData_098c7aef736f2d50876d32bcf086fe40">
+
+</div>
+<p>Here, we conducted a global sensitivity analysis (GSA) of the population growth rate (<span class="math inline">\(\lambda\)</span>) with respect to demographic models. Sensitivity analysis uses various methods to decompose the total variance of an outcome into contributions from parameters or input variables. In structured population models, sensitivity analyses involve computing partial derivatives of <span class="math inline">\(\lambda\)</span> to individual parameters, following <span class="citation" data-cites="Caswell1978">Caswell (<a href="references.html#ref-Caswell1978" role="doc-biblioref">1978</a>)</span> as:</p>
+<p><span class="math display">\[
+\frac{\partial \lambda}{\partial \theta_i}
+\]</span></p>
+<p>where theta represents a vector of <span class="math inline">\(i\)</span> parameters. However, most methods quantify the local sensitivity of each parameter separately while holding all others constant <span class="citation" data-cites="Saltelli2019">(<a href="references.html#ref-Saltelli2019" role="doc-biblioref">Saltelli et al. 2019</a>)</span>. This approach can overlook the obscure parameter interactions often common in complex models. Furthermore, because of the high dimensionality of IPM due to the large number of parameters, these methods can quickly become computationally expensive.</p>
+<p>To address this, we leveraged the efficiency of non-parametric models, such as random forests, for variable importance classification <span class="citation" data-cites="antoniadis2021">(<a href="references.html#ref-antoniadis2021" role="doc-biblioref">Antoniadis, Lambert-Lacroix, and Poggi 2021</a>)</span>. This approach offers speed and suits our study as it allows us to quantify both sources of variability in <span class="math inline">\(\lambda\)</span>. It accounts for the sensitivity of <span class="math inline">\(\lambda\)</span> to each parameter and considers the uncertainty associated with the parameters. Therefore, a specific parameter may have higher importance because either <span class="math inline">\(\lambda\)</span> is more sensitive to it or because the parameter is more uncertain.</p>
+<p>We quantified the variability in population growth rate in function of the parameters using an <em>insileco</em> experimental approach. Specifically, we quantified the variability <span class="math inline">\(\lambda\)</span> for different climate conditions, ranging from cold to the center and up to the hot mean annual temperatures experienced by each species. Furthermore, we combined the climate conditions with a low and high competition intensity. We defined the temperature ranges for each species using the 1st, 50th, and 99th percentiles. The low competition was defined as a population size of <span class="math inline">\(N = 0.1\)</span>, while high competition was set at the 99th percentile of the plot basal area. Precipitation was kept at optimal conditions computed based on the average optimal precipitation parameters among growth, survival, and recruitment models.</p>
+<p>For each species, climate, and competition conditions, we computed <span class="math inline">\(\lambda\)</span> 500 times using different draws from the posterior distribution, setting the plot random effects to zero. The code used for this analysis can be found in the <a href="https://github.com/willvieira/forest-IPM/tree/master/simulations/sensAnalysis_v3"><code>forest-IPM</code></a> GitHub repository.</p>
+<section id="simulation-summary" class="level2">
+<h2 class="anchored" data-anchor-id="simulation-summary">Simulation Summary</h2>
+<p>The final simulation involved a total of 93000 draws across species and different conditions. The <a href="#fig-lambdaDist">Figure&nbsp;<span>16.1</span></a> illustrates the distribution of <span class="math inline">\(\lambda\)</span> computed using 500 random draws from the posterior distribution of parameters across different climate and competition conditions.</p>
+<div class="cell" data-hash="sens_analysis_cache/html/fig-lambdaDist_a6c6c2abd8ff6d0607dabf0cde51778d">
+<div class="cell-output-display">
+<div id="fig-lambdaDist" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="sens_analysis_files/figure-html/fig-lambdaDist-1.png" class="img-fluid figure-img" width="864"></p>
+<p></p><figcaption class="figure-caption">Figure&nbsp;16.1: Distribution of 500 draws of population growth rate <span class="math inline">\(\lambda\)</span> for different climate and competition conditions.</figcaption><p></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The <a href="#fig-lambdaSumm">Figure&nbsp;<span>16.2</span></a> presents the distribution of the average and standard deviation of <span class="math inline">\(\lambda\)</span> across the 500 draws for each species.</p>
+<div class="cell" data-hash="sens_analysis_cache/html/fig-lambdaSumm_57fda0d230ec088ff7136203823eb9c6">
+<div class="cell-output-display">
+<div id="fig-lambdaSumm" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="sens_analysis_files/figure-html/fig-lambdaSumm-1.png" class="img-fluid figure-img" width="768"></p>
+<p></p><figcaption class="figure-caption">Figure&nbsp;16.2: Distribution of 500 draws of population growth rate <span class="math inline">\(\lambda\)</span> for different climate and competition conditions.</figcaption><p></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="importance-of-demographic-models" class="level2">
+<h2 class="anchored" data-anchor-id="importance-of-demographic-models">Importance of demographic models</h2>
+<p>Random forest is a non-parametric classification or regression model that ranks each input variable’s importance in explaining the variance of the response variable. We used the permutation method for ranking variable importance <span class="citation" data-cites="breiman2001">(<a href="references.html#ref-breiman2001" role="doc-biblioref">Breiman 2001</a>)</span>. This method measures the change in model performance by individually shuffling (permuting) the values of each input variable. The greater the change in predictive accuracy with shuffling input values, the more important the specific variable will become. This is computed individually for each tree and then averaged across all <span class="math inline">\(n\)</span> random trees. Finally, we normalized the importance output of each regression model so that they sum to 1. We used the R package <code>ranger</code> with default hyperparameters for fitting the random forest models <span class="citation" data-cites="Wright2017">(<a href="references.html#ref-Wright2017" role="doc-biblioref">Wright and Ziegler 2017</a>)</span>.</p>
+<p>Figure <a href="#fig-rfr2">Figure&nbsp;<span>16.3</span></a> shows the distribution of <span class="math inline">\(R^2\)</span> from 20 random forest replications across different climate and competition conditions. These values range from 0.2 to 0.9, with an average value of 0.63 across species and conditions. This variation possibly reflects the uncertainty in the parameters across species.</p>
+<div class="cell" data-hash="sens_analysis_cache/html/fig-rfr2_368ea7580d11d0af5a702c680c70242b">
+<div class="cell-output-display">
+<div id="fig-rfr2" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="sens_analysis_files/figure-html/fig-rfr2-1.png" class="img-fluid figure-img" width="576"></p>
+<p></p><figcaption class="figure-caption">Figure&nbsp;16.3: Distribution of <span class="math inline">\(R^2\)</span> from 20 random forest replications across different climate and competition conditions.</figcaption><p></p>
+</figure>
+</div>
+</div>
+</div>
+<p>As our primary interest lies in demographic levels rather than parameter levels, we focus on the combined importance of all parameters for each demographic model. This splits the total importance among the four demographic functions of the IPM: growth, survival, recruitment, and recruited size models. The recruited size model had an insignificant contribution to <span class="math inline">\(\lambda\)</span>, with nearly all random forest models showing a contribution below 1%. Thus, we omitted this model and concentrated on the growth, survival, and recruitment models, which collectively explain over 99% of the variation in <span class="math inline">\(\lambda\)</span> <a href="#fig-ternaryLambda">Figure&nbsp;<span>16.4</span></a>.</p>
+<div class="cell" data-hash="sens_analysis_cache/html/fig-ternaryLambda_1f2aff60079414d5625064e11ef2dd28">
+<div class="cell-output-display">
+<div id="fig-ternaryLambda" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="sens_analysis_files/figure-html/fig-ternaryLambda-1.png" class="img-fluid figure-img" width="768"></p>
+<p></p><figcaption class="figure-caption">Figure&nbsp;16.4: Ternary plot describing the importance distribution among the growth, survival, and recruitment models. Color represents the level of shade tolerance <span class="citation" data-cites="burns1990silvics">(<a href="references.html#ref-burns1990silvics" role="doc-biblioref">Burns, Honkala, et al. 1990</a>)</span>.</figcaption><p></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The ternary plots above show the raw importance data from the random forest, which can be challenging to interpret. The key message is that variance in <span class="math inline">\(\lambda\)</span> is primarily explained by the recruitment and survival demographic models. Furthermore, certain conditions appear to shift the importance from recruitment to the survival model. In <a href="#fig-recVsMort">Figure&nbsp;<span>16.5</span></a>, we explore the correlation between the importance of recruitment and survival under different covariate conditions.</p>
+<div class="cell" data-hash="sens_analysis_cache/html/fig-recVsMort_361dba5eef533c803b6c3b19dbe7c0a4">
+<div class="cell-output-display">
+<div id="fig-recVsMort" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="sens_analysis_files/figure-html/fig-recVsMort-1.png" class="img-fluid figure-img" width="768"></p>
+<p></p><figcaption class="figure-caption">Figure&nbsp;16.5: Correlation between the survival and recruitment relative importance across the 31 species, climate and competition conditions. Species points are grouped by a Multivariate Normal Density function with a probability of 90%.</figcaption><p></p>
+</figure>
+</div>
+</div>
+</div>
+<p>We observe that at low competition, for most species, variations in <span class="math inline">\(\lambda\)</span> are primarily explained by recruitment. This pattern slightly diminishes as we move from the cold range to the center and up to the hot temperature range. We can observe an overall shift toward the survival model at high competition intensity, especially in the hot temperature range.</p>
+</section>
+<section id="importance-of-covariates" class="level2">
+<h2 class="anchored" data-anchor-id="importance-of-covariates">Importance of covariates</h2>
+<p>Similar to assessing parameter importance, we also used the random forest approach to evaluate the importance of covariates. For simplicity, we used the same output of the simulations as previously explained, shifting the explanatory variables from parameters to covariates.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> The <a href="#fig-climVsComp">Figure&nbsp;<span>16.6</span></a> shows the distribution of relative importance between climate and competition covariates for each species.</p>
+<div class="cell" data-hash="sens_analysis_cache/html/fig-climVsComp_9b545898401a25d557a2d9dc40f1eeab">
+<div class="cell-output-display">
+<div id="fig-climVsComp" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="sens_analysis_files/figure-html/fig-climVsComp-1.png" class="img-fluid figure-img" width="768"></p>
+<p></p><figcaption class="figure-caption">Figure&nbsp;16.6: Distribution of relative importance between climate and competition covariates according to Random Forest, the respective <span class="math inline">\(R^2\)</span>. The more species are to the right of the panel, the more climate is important relative to competition. Color represents the level of shade tolerance <span class="citation" data-cites="burns1990silvics">(<a href="references.html#ref-burns1990silvics" role="doc-biblioref">Burns, Honkala, et al. 1990</a>)</span>.</figcaption><p></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="notes-on-conspecific-and-heterospecific-competition-effects" class="level2">
+<h2 class="anchored" data-anchor-id="notes-on-conspecific-and-heterospecific-competition-effects">Notes on Conspecific and Heterospecific Competition Effects</h2>
+<p>In the preceding discussion, we did not specify whether we were considering conspecific or heterospecific competition. For all the results presented in this chapter, the <em>high competition</em> condition was applied at the heterospecific level, while conspecific competition was set to a very low proportion. This choice is based on the standard invasion growth rate metric, or the population growth rate when rare, an important measure for quantifying population persistence <span class="citation" data-cites="lewontin1969">(<a href="references.html#ref-lewontin1969" role="doc-biblioref">Lewontin and Cohen 1969</a>)</span>.</p>
+<p>Additionally, we performed the sensitivity analysis with the same conditions, except for changing the high competition from heterospecific to conspecific individuals. We observed that nearly all the variation in <span class="math inline">\(\lambda\)</span>, previously attributed to the growth model, shifted to the recruitment model. Also, the importance attributed to the survival model for certain species at the center and cold temperature conditions shifted toward the recruitment model. Although we observed this shift, the overall patterns remained similar to those discussed earlier. The only exception was the distribution of relative importance between climate and competition <a href="#fig-climVsComp">Figure&nbsp;<span>16.6</span></a>, where many species had an increase in the importance of competition relative to climate. These observed differences primarily arise from the high sensitivity of <span class="math inline">\(\lambda\)</span> to the <span class="math inline">\(\phi\)</span> parameter.</p>
+
+
+<div id="refs" class="references csl-bib-body hanging-indent" role="doc-bibliography" style="display: none">
+<div id="ref-antoniadis2021" class="csl-entry" role="doc-biblioentry">
+Antoniadis, Anestis, Sophie Lambert-Lacroix, and Jean-Michel Poggi. 2021. <span>“Random Forests for Global Sensitivity Analysis: A Selective Review.”</span> <em>Reliability Engineering &amp; System Safety</em> 206: 107312.
+</div>
+<div id="ref-breiman2001" class="csl-entry" role="doc-biblioentry">
+Breiman, Leo. 2001. <span>“Random Forests.”</span> <em>Machine Learning</em> 45: 5–32.
+</div>
+<div id="ref-burns1990silvics" class="csl-entry" role="doc-biblioentry">
+Burns, Russell M, Barbara H Honkala, et al. 1990. <span>“Silvics of North America: 1. Conifers; 2. Hardwoods Agriculture Handbook 654.”</span> <em>US Department of Agriculture, Forest Service, Washington, DC</em>.
+</div>
+<div id="ref-Caswell1978" class="csl-entry" role="doc-biblioentry">
+Caswell, Hal. 1978. <span>“A General Formula for the Sensitivity of Population Growth Rate to Changes in Life History Parameters.”</span> <em>Theoretical Population Biology</em> 14 (2): 215–30.
+</div>
+<div id="ref-lewontin1969" class="csl-entry" role="doc-biblioentry">
+Lewontin, Richard C, and Daniel Cohen. 1969. <span>“On Population Growth in a Randomly Varying Environment.”</span> <em>Proceedings of the National Academy of Sciences</em> 62 (4): 1056–60.
+</div>
+<div id="ref-Saltelli2019" class="csl-entry" role="doc-biblioentry">
+Saltelli, Andrea, Ksenia Aleksankina, William Becker, Pamela Fennell, Federico Ferretti, Niels Holst, Sushan Li, and Qiongli Wu. 2019. <span>“Why so Many Published Sensitivity Analyses Are False: A Systematic Review of Sensitivity Analysis Practices.”</span> <em>Environmental Modelling &amp; Software</em> 114: 29–39.
+</div>
+<div id="ref-Wright2017" class="csl-entry" role="doc-biblioentry">
+Wright, Marvin N., and Andreas Ziegler. 2017. <span>“<span class="nocase">ranger</span>: A Fast Implementation of Random Forests for High Dimensional Data in <span>C++</span> and <span>R</span>.”</span> <em>Journal of Statistical Software</em> 77 (1): 1–17. <a href="https://doi.org/10.18637/jss.v077.i01">https://doi.org/10.18637/jss.v077.i01</a>.
+</div>
+</div>
+</section>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn1"><p>This analysis could be expanded to include more marginal conditions beyond just cold, center, and hot temperatures and low and high competition. However, this would exponentially increase the number of simulations.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./guide_IPM.html" class="pagination-link">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">A guide to use the forest-IPM code</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./conditional_lambda.html" class="pagination-link">
+        <span class="nav-page-text"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Conditional effect of covariates</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+</body></html>
