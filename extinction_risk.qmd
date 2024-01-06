@@ -1,4 +1,4 @@
-# Extinction risk {#sec-ExtRisk}
+# Suitable probability {#sec-suitableProbability}
 
 ```{r,include=FALSE,echo=FALSE}
 Echo=FALSE
@@ -10,12 +10,16 @@ library(tidyverse)
 library(ggdist)
 library(ggpubr)
 library(ggrepel)
+library(ggdensity)
 ```
 
-In this section, we discuss the concept and application of extinction risk as derived from the stochastic population growth rate in the IPM.
-The inherent demographic and environmental stochasticity introduces variance into the population growth rate ($\lambda$), and the strength of this variance directly influences the risk of extinction, especially for populations with lower performance or density [@Holt2005].
-To illustrate the concept, consider two populations with equal mean growth rates but varying standard deviations.
-Extinction risk can be defined as the area under the distribution for $\lambda < 1$ [@fig-lambda_sigma].
+In this section, we discuss the concept and application of suitable probability derived from the stochastic population growth rate in the IPM.
+The variability in the population growth rate ($\lambda$) arises from both environmental stochasticity and parametric uncertainty.
+The former combines spatial and temporal variation in the climate (mean annual temperature and precipitation) and variation in the strength of competition for light.
+The latter combines model uncertainty at the individual level for the growth, survival, and recruitment models, along with the spatial heterogeneity determined by the variance of these demographic models among local populations (plot level variability).
+The inherent demographic uncertainty and environmental stochasticity introduce variance into $\lambda$, and the strength of this variance directly influences the suitable probability, especially for populations with lower performance or density [@Holt2005].
+To illustrate the concept, consider two populations with equal mean growth rates ($\overline{\lambda}$) but varying standard deviations ($\sigma_\lambda$).
+We define suitable probability as the area under the distribution for $\lambda >= 1$ [@fig-lambda_sigma].
 
 ```{r re_sigma,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-lambda_sigma
@@ -40,13 +44,17 @@ expand_grid(
   geom_density(alpha = 0.7, color = 'transparent') +
   geom_vline(xintercept = 1, linetype = 2) +
   scale_fill_manual(
-    values = c('#5ab4ac', '#d8b365')
+    values = c('#5ab4ac', '#d8b365'),
+    labels = c(
+      expression(bar(lambda)~'='~'1.05; '~sigma[lambda]~'='~'0.05'),
+      expression(bar(lambda)~'='~'1.05; '~sigma[lambda]~'='~'0.2')
+    )
   ) +
   theme_classic() +
   labs(
     x = expression(lambda),
     y = '',
-    fill = expression('sd('~lambda~')')
+    fill = NULL,
     # subtitle = expression('Distribution of 2000 draws of'~lambda~'~'~plain(N(1.05, sd)))
   ) +
   scale_x_continuous(breaks = seq(0.5, 1.5, 0.5)) +
@@ -57,21 +65,21 @@ expand_grid(
 
 ```
 
-We measure extinction risk using the cumulative distribution function ($F(\lambda)$), integrating the estimated density function ($f(\lambda)$) from negative infinity to the threshold of 1, as follows: 
+We measure suitable probability using the cumulative distribution function $F(\lambda)$, integrating the estimated density function ($f(\lambda)$) from the threshold of 1 to infinity, as follows:
 
 $$
- F(\lambda) = \int_{-\infty}^1 f(\lambda)d\lambda
-$$
+ F(\lambda) = \int_{1}^{\infty} f(\lambda)d\lambda
+$$ {#eq-sp}
 
-@fig-lambda_sigma2 illustrates the relationship between $\lambda$ uncertainty and extinction risk.
-The higher the uncertainty around $\lambda$, the more blurred the mean difference between two populations becomes.
-Interestingly, increasing uncertainty tends to reduce extinction risk when the population growth rate is below 1.
+@fig-lambda_sigma2 illustrates the relationship between $\lambda$ variability and suitable probability.
+The higher the variability around $\lambda$, the more blurred the mean difference between two populations will become.
+Increasing variance tends to reduce suitable probability when the population growth rate is below 1.
 
 ```{r re_sigma,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-lambda_sigma2
 #| fig-width: 6
 #| fig-height: 4
-#| fig-cap: "Cumulative density function $F(\\lambda)$ defines extinction risk as a function of the uncertainty of $\\lambda$ for different population growth rates. The smooth lines represent 2000 replications for varying mean ($\\lambda$) and standard deviation ($\\sigma^2$)."
+#| fig-cap: "Cumulative density function $F(\\lambda)$ defines suitable probability as a function of $\\lambda$ variability for different population growth rates. The smooth lines represent 2000 replications for varying mean ($\\lambda$) and standard deviation ($\\sigma$)."
 
 set.seed(0.0)
 expand_grid(
@@ -87,14 +95,14 @@ expand_grid(
 random_lambdas
 
 
-# function to get area under the curve from threshold
+# function to get the area under the curve from Threshold
 area_thr <- function(x, threshold = 1, normalized = TRUE) {
   dd = density(x)
   den_weight =  dd$y
   if(normalized) {
-    return( sum( (den_weight/sum(den_weight))[dd$x < threshold] ) )
+    return( sum( (den_weight/sum(den_weight))[dd$x >= threshold] ) )
   }else{
-    return( sum( den_weight[dd$x < threshold] ) )
+    return( sum( den_weight[dd$x >= threshold] ) )
   }
 }
 
@@ -108,8 +116,8 @@ random_lambdas |>
   scale_colour_viridis_d() +
   theme_classic() +
   labs(
-    x = expression(sigma^2),
-    y = expression('Extinction risk '~F(lambda)),
+    x = expression(sigma),
+    y = expression('Suitable probability '~F(lambda)),
     color = expression(bar(lambda))
   )
 
@@ -134,15 +142,15 @@ random_lambdas |>
 lambdas <- readRDS(gzcon(url('https://github.com/willvieira/forest-IPM/raw/master/simulations/uncertainty_sim/output_processed/lambdas.RDS')))
 ```
 
-In this section, we investigate how increasing the uncertainty of parameters and covariates affects the risk of extinction due to stochasticity.
-We selected two species, *Quercus prinus* and *Quercus rubra*, that had an average $\lambda$ close to 1, as well as looked sensitive to both competition and climate covariates.
-We set these species to conditions with population growth rates that were the closest to 1 but with different average values (lower for *Q. rubra* and higher for *Q. prinus*) for comparison [@fig-lambdaDistsp].
+In this section, we investigate how increasing the uncertainty of parameters and the variability of covariates affects the suitable probability.
+We selected two species, *Quercus prinus* and *Quercus rubra*, with an average $\lambda$ close to 1, and were sensitive to competition and climate covariates.
+We set these species to conditions with population growth rates closest to 1 but with different average values (lower for *Q. rubra* and higher for *Q. prinus*) for comparison [@fig-lambdaDistsp].
 
 ```{r lambdaDistsp,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-lambdaDistsp
 #| fig-width: 6
 #| fig-height: 4
-#| fig-cap: "Population growth rate under demographic stochasticity from the 500 posterior distributions."
+#| fig-cap: "Population growth rate under demographic uncertainty from the 500 posterior distributions."
 
 lambdas |>
   filter(noise_size == 'noise1') |>
@@ -166,17 +174,16 @@ lambdas |>
 
 ```
 
-We used the same 500 parameter draws from the posterior distribution as defined in the sensitivity analysis section (@sec-sensAnalysis).
-We ran four simulation sets to assess the cummulative effect of demographic, environemental, and environmentally induced competition stochasticity.
-We conducted four sets of simulations to understand the cumulative impact of demographic, environmental, and environmentally induced competition stochasticity.
-First, we quantified extinction risk under demographic stochasticity using the posterior parameter distribution while keeping the covariates at their mean conditions, effectively simulating zero noise from the covariates.
-Subsequently, we introduced environmental stochasticity along with demographic stochasticity by adding noise to the mean temperature conditions.
+We used the same 500 parameter draws from the posterior distribution defined in the sensitivity analysis section (@sec-sensAnalysis).
+We conducted four simulations to understand the cumulative impact of demographic uncertainty, environmental, and environmentally induced competition stochasticity.
+First, we quantified suitable probability under demographic uncertainty using the posterior parameter distribution while keeping the covariates at their mean conditions, effectively simulating zero noise from the covariates.
+Subsequently, we introduced environmental stochasticity and demographic uncertainty by adding noise to the mean temperature conditions.
 Similarly, we introduced noise to the mean basal area of heterospecific individuals while keeping temperature constant at the mean.
-Finally, we added all sources of variability together, encompassing demographic, environmental, and environmentally induced competition stochasticity. 
-For temperature, we increased the standard deviation (SD) from 0.1 to 1.5, and for basal area, SD increased from 1 to 8.
+Finally, we added all sources of variability together, encompassing demographic, environmental, and environmentally induced competition variability. 
+We increased the standard deviation (SD) for temperature from 0.1 to 1.5, and for basal area, SD increased from 1 to 8.
 
-@fig-lambdaVsNoise shows the changes in $\lambda$ variability with increased stochasticity of covariates.
-The panels illustrate the effect of climate stochasticity, competition stochasticity, and both factors combined.
+@fig-lambdaVsNoise shows the changes in $\lambda$ variability with increased variability of the covariates.
+The panels illustrate the effect of climate stochasticity, competition stochasticity, and both combined factors.
 
 ```{r lambdaVsNoise,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-lambdaVsNoise
@@ -198,7 +205,7 @@ lambdas |>
   theme_classic() +
   labs(
     y = expression('ln('~lambda~')'),
-    x = expression('Noise intensity ('~sigma~')'),
+    x = expression('Noise intensity ('~sigma~') increasing from left to right'),
     fill = ''
   ) +
   theme(
@@ -209,16 +216,16 @@ lambdas |>
   )
 ```
 
-Both @fig-lambdaVsNoise and @fig-sdVsNoise highlight that increased noise around the average covariate conditions leads to greater variability in $\lambda$.
+@fig-lambdaVsNoise and @fig-sdVsNoise highlight that increased noise around the average covariate conditions leads to higher variability in $\lambda$.
 It is important to note that the y-scale on the panels in @fig-sdVsNoise is standardized, showing a higher $\lambda$ variability for *Q. rubra* compared to *Q. prinus*.
-This suggests that climate and competition play more significant roles as predictors for all vital rates of *Q. rubra* compared to *Q. prinus*.
-In summary, greater variability in covariates is likely to increase the variability in $\lambda$, proportional to the covariate sensitivity.
+This suggests that climate and competition are more significant predictors for all vital rates of *Q. rubra* compared to *Q. prinus*.
+In summary, higher variability in covariates will likely increase the variability in $\lambda$, proportional to the covariate sensitivity.
 
 ```{r sdVsNoise,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-sdVsNoise
 #| fig-width: 8
 #| fig-height: 4
-#| fig-cap: "Correlation between $\\lambda$ standard deviation and stochasticity intensity. The axis values of $\\sigma$ have been omitted as they differ between the covariates. However, the noise increases from left to right. The line represents a smoothed approximation from the point data."
+#| fig-cap: "Correlation between $\\lambda$ standard deviation and variability intensity. The axis values of $\\sigma$ have been omitted as they differ between the covariates. However, the noise increases from left to right. The line represents a smoothed approximation from the point data."
 
 lambdas |>
   group_by(species_name, sim, noise_size) |>
@@ -241,7 +248,7 @@ lambdas |>
   theme_classic() +
   labs(
     y = expression(sigma[lambda]),
-    x = expression('Noise intensity ('~sigma~')'),
+    x = expression('Noise intensity ('~sigma~') increasing from left to right'),
     color = NULL
   ) +
   theme(
@@ -252,14 +259,14 @@ lambdas |>
   )
 ```
 
-Once we determine the uncertainty in $\lambda$, we can calculate population-level extinction risk using the cumulative distribution function $F(\lambda)$.
-@fig-noiseVsExt illustrates how extinction risk increases for *Q. prinus* and decreases for *Q. rubra* with increased stochasticity of covariates.
+Once we determine the uncertainty in $\lambda$, we can calculate population-level suitable probability using the cumulative distribution function $F(\lambda)$.
+@fig-noiseVsExt illustrates how suitable probability increases for *Q. prinus* and decreases for *Q. rubra* with increased variability of covariates.
 
 ```{r noiseVsExt,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-noiseVsExt
 #| fig-width: 8
 #| fig-height: 4
-#| fig-cap: "Correlation between extinction risk and stochasticity intensity. The axis values of $\\sigma$ have been omitted as they differ between the covariates. However, the noise increases from left to right. The line represents a smoothed approximation from the point data."
+#| fig-cap: "Correlation between suitable probability and variability intensity. The axis values of $\\sigma$ have been omitted as they differ between the covariates. However, the noise increases from left to right. The line represents a smoothed approximation from the point data."
 
 lambdas |>
   # filter(species_name != 'Picea mariana') |>
@@ -278,8 +285,8 @@ lambdas |>
   ) +
   theme_classic() +
   labs(
-    y = 'Extinction risk',
-    x = expression('Noise intensity ('~sigma~')'),
+    y = 'Suitable probability',
+    x = expression('Noise intensity ('~sigma~') increasing from left to right'),
     color = NULL
   ) +
   theme(
@@ -315,7 +322,7 @@ lambdas |>
   ) +
   theme_classic() +
   labs(
-    y = 'Extinction risk',
+    y = 'Suitable probability',
     x = expression(sigma[lambda]),
     color = NULL
   ) +
@@ -326,3 +333,817 @@ lambdas |>
   )
 ```
 
+## Objective
+
+This exploration shows that parametric uncertainty and environmental stochasticity can increase $\lambda$ variability and change suitable probability.
+In this chapter, we want to assess the effect of spatio-temporal environmental variability and demographic uncertainty on the suitable probability of each species.
+Specifically, we aim to model how the suitable probability changes from the center toward the cold and hot temperature range distribution.
+By having the suitable probability varying across the temperature range, we can predict the effect of climate and competition, along with environmental variability and model uncertainty, on the range limits of forest trees.
+This new approach allows us to test whether species interaction (here competition) can set range limits while accounting for the uncertainty of the estimations.
+We conclude this study with a novel theory that uses suitable probability to establish the link between individual demographic rates and metapopulation dynamics.
+
+## Methods
+
+### Sources of population growth rate ($\lambda$) variability
+
+Population growth rate ($\lambda$) is determined on the local population scale, specifically at the plot level in our study.
+At a given generic location, say latitude, where several plots are located, the variance of $\lambda$ among those plots arises from the spatio-temporal variation in both the climate and competition covariates.
+For instance, climate stochasticity creates noise in the annual temperature and precipitation.
+Similarly, two locations with the same climate conditions can have different community abundance and composition, creating variability in the strength of competition.
+Beyond these spatio-temporal environmentally-induced variations, $\lambda$ can still vary due to model uncertainty.
+In our study, the demographic models track uncertainty at two complementary scales: individual and plot levels.
+At the individual level, a plot with the same climate and competition conditions can have different $\lambda$ values due to the uncertainty in the demographic models.
+Similarly, two plots with the same environmental conditions and averaged parameter values (so no demographic uncertainty at the individual level) can still yield different $\lambda$ values due to the spatial uncertainty of each demographic model assigned among plots.
+Therefore, variability in population growth rate can arise from the spatio-temporal variation in both the environment and the parameters.
+
+Except for the parameter uncertainty at the individual level, all other sources of variability are space-dependent.
+This means environmental variability (from climate, competition, or both) and parameter uncertainty at the plot level can change depending on their spatial location.
+For instance, plots on the border of the species distribution can have more temperature variability than those at the center of the distribution.
+Additionally, plot-level parametric uncertainty can be spatially structured by capturing potential features of demographic variability available beyond the climatic and competition covariates, such as historical factors of a region or local edaphic conditions.
+Using demographic range models, while accounting for the environmental variability and model uncertainty, can gives us a better picture of how the species' population growth rate changes across their range distribution.
+
+### Modeling suitable probability
+
+We can assess the suitable probability of a species at multiple scales, from the local plot up to the metapopulation level.
+When we evaluate the suitable probability at the plot level, the only sources of variability in $\lambda$ are from the parametric uncertainty at the individual level and the temporal environmental stochasticity in climate and competition.
+At the metapopulation scale, when suitable probability is evaluated using several plots simultaneously, we can further account for the spatial variability in the environment and the spatial uncertainty in the plot-level parameters.
+At this larger scale, we can then assess how the suitable probability of a species changes across its range distribution as a function of both fixed climate and competition effects and the underlying spatio-temporal variability arising from the environmental stochasticity and parameter uncertainty.
+
+Given all these sources of variability, we can model how suitable probability changes across the latitude range of the species.
+In our study, we are particularly interested in how suitable probability changes towards the cold and hot ranges.
+For that, we split the plots of each species into cold and hot ranges using the centroid of the observed Mean Annual Temperature (MAT) among all plots ($\frac{max(MAT) + min(MAT)}{2}$).
+We chose to use MAT instead of latitude because we are interested in the species' climatic niche, although the two variables are highly correlated.
+We assess suitable probability at the cold and hot ranges separately, using a linear model to represent how the population growth rate ($\lambda$) changes as a function of MAT.
+The spatio-temporal variability of $\lambda$ from the environmental stochasticity and parameter uncertainty will determine the variance of the model.
+As this variance could change depending on the range position, we also allowed the variance of the linear model to be dependent on MAT.
+Finally, to accommodate the possible asymmetry in this variance, we use a Skew Normal Distribution ($SN$) with an additional parameter $\alpha$ that can add right or left skewed tail to the variance:
+
+$$
+\begin{split}
+&log(\lambda) \sim SN(\xi, \omega, \alpha) \\[2pt]
+&\xi = \beta_{1, \xi} \times MAT + \beta_{0, \xi} \\[2pt]
+&\omega = e^{\beta_{1, \omega} \times MAT + \beta_{0, \omega}}
+\end{split}
+$$ {#eq-metamodel}
+
+Here, $\xi$ is the location parameter or the $\lambda$ average, and $\omega$ is the scale representing the variance around the mean.
+
+In @fig-metamodel_example, we show some examples of the model's flexibility.
+At each panel, two sets of parameter combinations illustrate the different behavior of the model.
+Each panel illustrates an element of the model attributed to accommodate the data variability.
+In panel 1, the most straightforward case shows how suitable probability changes linearly with MAT and constant variance.
+Panel 2 shows two cases with larger and smaller variances derived from the spatiotemporal variability of the conditions and model uncertainty.
+Panel 3 demonstrates how this variability can change across the range distribution.
+Finally, panel 4 shows how the asymmetry of the variability can bias the variance towards lower (yellow) or higher (green) values.
+Note that in panel 4, the illustration does not fully represent the asymmetry in the model, as the tool to create the curves does not allow asymmetric variance.
+Therefore, while the figure illustrates a shift in the average and variance, we should instead see a shift only in the variance.
+
+```{r example_of_how_nice_and_flexible_is_my_model,echo=FALSE,eval=FALSE}
+library(tidyverse)
+
+n = 50
+tibble(
+  beta_mean = rnorm(n, -0.5, 0.3),
+  beta_sigma = rnorm(n, -.1, .1),
+  inter = rnorm(n, 2, .5),
+  sigma_inter = rnorm(n, -1, .8),
+  alpha = rnorm(n, 6, 1)
+) |>
+mutate(
+  row_id = row_number()
+) |>
+group_by(row_id) |>
+expand_grid(temp = seq(0, 10)) |>
+group_by(temp, row_id) |>
+expand_grid(rep = 1:100) |>
+mutate(
+  y = sn::rsn(
+    n(),
+    xi = inter + beta_mean * temp,
+    omega = exp(sigma_inter + beta_sigma * temp),
+    alpha = alpha
+  )
+) ->
+pred_dat
+
+pred_dat |>
+  pull(y) |>
+  quantile(probs = c(0.01, .99)) ->
+yLim
+
+pred_dat |>
+  group_split(row_id) |>
+  map(
+    ~ .x |>
+      ggplot() +
+      aes(temp, y) +
+      ggdist::stat_lineribbon(.width = 0.9) +
+      geom_hline(yintercept = 0, alpha = 0.7, linetype = 2) +
+      theme_classic() +
+      theme(legend.position = 'none') +
+      ylim(yLim)
+  ) ->
+gg_plots
+
+animation::saveGIF(
+  expr = {
+    walk(
+      gg_plots,
+      ~ print(.)
+    )
+  },
+  movie.name = 'test.gif',
+  interval = .5,
+  ani.width = 600,
+  ani.height = 400
+)
+
+# TODO:
+# - each idea should be introduced incrementally
+# - First the slope and intercept variation
+# - Then the intercept to the variance and what it represents (spatio-temporal...)
+# - Then show that there is also a slope to the variance in function of MAT
+# - Finally, the skewness can introduce possible bias in the variance
+```
+
+```{r metamodel_example,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-metamodel_example
+#| fig-width: 8
+#| fig-height: 6
+#| fig-cap: "The linear model from the correlation between $\\lambda$ and Mean annual temperature allows us to assess how suitable probability changes across the climate range. At each panel, two sets of parameter combination illustrate the different behaviour of the model. Each panel illustrates an element of the model attributed to accomodate the data variability."
+
+library(tidyverse)
+tibble(
+  beta_mean = c(-.05, -.1,-.05, -.1,-.05, -.1, -.05, -.1),
+  beta_sigma = c(0, 0, 0, 0, .05, -.15, .05, -.15),
+  inter = c(.8, 1.4, .8, 1.4, .8, 1.4, .8, 1.4),
+  sigma_inter = c(-1.8, -1.8, -2, -1, -2, -1, -2, -1),
+  alpha = c(0, 0, 0, 0, 0, 0, -1, 1),
+  group = factor(rep(1:2, 4)),
+  plot_n = factor(rep(1:4, each = 2))
+) |>
+mutate(row_id = row_number()) |>
+group_by(row_id) |>
+expand_grid(temp = seq(0, 18, 0.1)) |>
+group_by(temp, row_id) |>
+expand_grid(replication = 1:2000) |>
+mutate(
+  y = sn::rsn(
+    n(),
+    xi = inter + beta_mean * temp,
+    omega = exp(sigma_inter + beta_sigma * temp),
+    alpha = alpha
+  )
+) |>
+ggplot() +
+aes(temp, y) +
+aes(group = group, color = group, fill = group) +
+facet_wrap(~plot_n) +
+ggdist::stat_lineribbon(.width = 0.9, alpha = 0.7, size = 2) +
+# geom_point(alpha = 0.5, size = .3) +
+theme_classic() +
+scale_color_manual(values = c('#d8b365', '#5ab4ac')) +
+scale_fill_manual(values = c('#d8b365', '#5ab4ac')) +
+geom_hline(yintercept = 0, linetype = 2, alpha = 0.8) +
+labs(
+  x = 'Mean annual temperature (°C)',
+  y = expression('ln('~lambda~')'),
+  color = NULL, fill = NULL
+) +
+theme(legend.position = 'none')
+```
+
+### Simulations
+
+We computed $\lambda$ for each species using the plot-year observations in the dataset.
+For each observed species-plot-year combination, we included environmentally induced variability and parameter uncertainty.
+To include temporal stochasticity in the climate condition, we used the mean and standard deviation of mean annual temperature and precipitation calculated from the years between measurements.
+For instance, for a plot that was observed twice, we calculated $\lambda$ for the second observation with climate conditions drawn randomly from a normal distribution with mean and standard deviation defined from climate observations among the years between the two measurements.
+Similarly, temporal stochasticity in competition arises from variation in abundance and composition between measured years.
+By repeating this calculation several times, we can randomly draw parameter values from the posterior distribution to include demographic uncertainty at the individual level.
+For each species-plot-year measurement, we replicate the calculation of $\lambda$ 100 times.
+Finally, by repeating this approach across the plots, we directly include spatial variation in the climate and competition conditions as well as spatial uncertainty in the plot-level parameters.
+
+For each species-plot-year-replication combination, we calculated $\lambda$ under two simulated conditions.
+The first condition was set to no competition, precisely defining heterospecific competition at zero and conspecific competition at a tiny proportion (total population size (N) = 0.1).
+This condition simulated the population growth rate under the fundamental niche.
+The second condition simulated the invasion growth rate; in other words, the population growth rate when the focal species is rare (N = 0.1) and the heterospecific competition is set to the observed abundance of the competitive species.
+This condition simulated the population growth rate under the realized niche.
+The code used to perform this computation on High-performance computing is hosted on GitHub: [https://github.com/willvieira/forest-IPM/tree/master/simulations/lambda_plot](https://github.com/willvieira/forest-IPM/tree/master/simulations/lambda_plot).
+
+Once we calculated $\lambda$ for each species-plot-year-replication combination, we used these esimates to fit the linear model describing how $\lambda$ and its variability changes across the mean annual temperature gradient.
+We fitted the species-specific linear model for the hot and cold ranges using the Hamiltonian Monte Carlo (HMC) algorithm via the Stan software [version 2.30.1 @stan2022stan] and the `cmdstandr` R package [version 0.5.3 @cmdstanr].
+To reduce the sampling time, we used a sample of 5000 plots for each species to fit the model.
+This sample was necessary only for 6 out of the 31 species.
+The R and Stan scripts used to perform this computation on High-performance computing are hosted on GitHub: [https://github.com/willvieira/forest-IPM/tree/master/simulations/model_lambdaPlot/](https://github.com/willvieira/forest-IPM/tree/master/simulations/model_lambdaPlot/).
+
+With the fitted models, we can then use the posterior distribution to estimate the suitable probability of a species for any value of MAT.
+Given that we split each species distribution into cold and hot ranges, we can predict how suitable probability changes from the center towards the border.
+Specifically, we estimated suitable probability under four different MAT conditions encountered by the species: at the border and the center of each cold and hot range.
+We defined the border of the cold range as the minimum observed MAT for the focal species in the dataset, while the hot range was defined as the maximum observed MAT.
+The center location is defined as the centroid of MAT for the focal species.
+Although the center location has the same MAT for the cold and hot ranges, we need to keep both because the model is fitted separately for the cold and hot ranges.
+Finally, we estimate the suitable probability for each location under no competition (fundamental niche) and heterospecific competition (realized niche) conditions.
+We estimated suitable probability using the empirical cumulative distribution function over 1000 predictive draws.
+
+```{r check_for_spatial_aggreation_in_the_temperature_variability, echo=FALSE,eval=FALSE}
+library(sf)
+
+treeData = readRDS(file.path(readLines('_data.path'), 'growth_dt.RDS'))
+
+treeData |>
+  group_by(plot_id, year1) |>
+  reframe(
+    delta_year = unique(deltaYear),
+    temp_var = unique(bio_01_sd)/delta_year,
+    prec_var = unique(bio_12_sd)/delta_year,
+    latitude = unique(latitude),
+    longitude = unique(longitude)
+  ) |>
+  drop_na() |>
+  st_as_sf(
+    coords = c('longitude', 'latitude'),
+    crs = 4326
+  ) |>
+  ggplot() + 
+  aes(color = log(temp_var), fill = log(temp_var)) +
+  geom_sf(size = 0.5, alpha = 0.7)
+
+
+
+```
+
+## Results
+
+```{r download_processed_data,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+out_pars <- readRDS(gzcon(url("https://github.com/willvieira/forest-IPM/raw/master/simulations/model_lambdaPlot/param_posterior.RDS"))) |>
+  filter(par != 'lp__')
+sp_dt <- readRDS(gzcon(url('https://github.com/willvieira/forest-IPM/raw/master/simulations/model_lambdaPlot/suitable_prob.RDS')))
+sim_pars <- readRDS(gzcon(url('https://github.com/willvieira/forest-IPM/raw/master/simulations/model_lambdaPlot/simulation_pars.RDS')))
+
+out_pars |>
+  left_join(sim_pars) |>
+  mutate(
+    sim = factor(sim),
+    cond = factor(cond)
+  ) ->
+out_pars
+```
+
+We used a linear model to summarize the evolution of the population growth rate ($\lambda$) and its variability across the cold and warm ranges (@eq-metamodel).
+The @fig-res_example shows the observed $\lambda$ distribution and the fit of the underlying model on the mean annual temperature gradient for the species *Abies balsamea*.
+Each point represents a plot-year-replication encompassing the complete spatio-temporal sources of variability arising from the stochastic environment and parameter uncertainty.
+The purple line represents the average fitted model (how $\lambda$ changes with MAT), and the shaded purple area is the 90th quantile of model uncertainty (how the variability of $\lambda$ changes with MAT).
+From this uncertainty, we can deduce the suitable probability.
+In this example, in the cold range, the mean and variance of $\lambda$ decrease towards the cold boundary.
+By comparing the model under heterospecific competition with that without competition, we can observe a slight decrease in the average at the cold border but a larger decrease in uncertainty (@fig-res_example at the bottom left).
+
+```{r res_example,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-res_example
+#| fig-width: 8
+#| fig-height: 6
+#| fig-cap: "Distribution of stochastic population growth rate ($\\lambda$) for *Abies balsamea* over the mean annual temperature gradient for cold (left panels) and warm (right panels) ranges under no competition (fundamental niche) and heterospecific competition (realized niche)."
+
+Sp = '18032ABIBAL'
+
+readRDS(file.path('data', 'lambda_MAT_dt.RDS')) |>
+  list2env(envir = environment()) |>
+  invisible()
+
+out_pars |>
+  filter(species_id == Sp & border == 'cold' & sim == 2 & cond != 3) |>
+  select(cond, iter, par, value) |>
+  pivot_wider(names_from = par, values_from = value) |>
+  group_by(cond, iter) |>
+  expand_grid(
+    temp = seq(temp_range_cold[1], temp_range_cold[2], length.out = 200)
+  ) |>
+  mutate(
+    lambda = sn::rsn(n(), beta_mean * temp + inter, exp(sigma_inter + beta_sigma * temp), alpha)
+  ) |>
+  ggplot() +
+  aes(temp, lambda) +
+  facet_wrap(
+    ~cond,
+    ncol = 1,
+    labeller = as_labeller(setNames(c('No competition', 'Heterospecific competition'), 1:2))
+  ) +
+  geom_point(
+    data = db_sim_cold |>
+      group_by(cond) |>
+      slice_sample(n = 1e4),
+    aes(temp, log(lambda)),
+    alpha = 0.4, size = 0.3
+  ) +
+  stat_lineribbon(.width = 0.9, alpha = 0.6, color = 'purple') +
+  geom_hline(yintercept = 0, linetype = 2) +
+  theme_classic() +
+  theme(
+    plot.title = element_text(face = 'italic'),
+    legend.position = 'none',
+    strip.background = element_blank()
+  ) +
+  labs(
+    subtitle = 'Cold',
+    x = 'Mean annual temperature (°C)',
+    y = expression('ln('~lambda~')')
+  ) +
+  xlim(temp_range_cold) +
+  ylim(yLim) ->
+p1
+
+out_pars |>
+  filter(species_id == Sp & border == 'hot' & sim == 2 & cond != 3) |>
+  select(cond, iter, par, value) |>
+  pivot_wider(names_from = par, values_from = value) |>
+  group_by(cond, iter) |>
+  expand_grid(
+    temp = seq(temp_range_hot[1], temp_range_hot[2], length.out = 200)
+  ) |>
+  mutate(
+    lambda = sn::rsn(n(), beta_mean * temp + inter, exp(sigma_inter + beta_sigma * temp), alpha)
+  ) |>
+  ggplot() +
+  aes(temp, lambda) +
+  facet_wrap(
+    ~cond,
+    ncol = 1,
+    labeller = as_labeller(setNames(c('No competition', 'Heterospecific competition'), 1:2))
+  ) +
+  geom_point(
+    data = db_sim_hot |>
+      group_by(cond) |>
+      slice_sample(n = 1e4),
+    aes(temp, log(lambda)),
+    alpha = 0.4, size = 0.3
+  ) +
+  stat_lineribbon(.width = 0.9, alpha = 0.6, color = 'purple') +
+  geom_hline(yintercept = 0, linetype = 2) +
+  theme_classic() +
+  theme(
+    strip.background = element_blank(),
+    legend.position = 'none'
+  ) +
+  labs(
+    subtitle = 'Hot',
+    x = 'Mean annual temperature (°C)',
+    y = NULL
+  ) +
+  xlim(temp_range_hot) +
+  ylim(yLim) ->
+p2
+
+ggarrange(p1, p2, ncol = 2)
+```
+
+We can estimate the suitable probability using the empirical cumulative distribution approach (@eq-sp) from the linear model predictions.
+The @fig-sp-example shows the suitable probability expected over the mean annual temperature of the same species.
+As expected, the suitable probability was reduced toward the cold border and was lower under heterospecific competition (yellow curve).
+We can also observe that the decrease in suitable probability toward the border is nonlinear, becoming more substantial for heterospecific competition than for the no-competition condition.
+
+```{r sp-example,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-sp-example
+#| fig-width: 8
+#| fig-height: 3.5
+#| fig-cap: "Suitable probability of *Abies balsamea* over the mean annual temperature gradient for cold and warm ranges under no competition (green) and heterospecific (yellow). The vertical dotted line represents the range limits of the MAT observed in the dataset."
+
+# equation to estimate suitable probability using the ecdf
+get_ext <- function(mean_y, var_y, alpha) {
+  P = ecdf(sn::rsn(1000, mean_y, var_y, alpha))
+  return(1 - P(0))
+}
+
+Sp = '18032ABIBAL'
+
+out_pars |>
+  filter(species_id == Sp & border == 'cold' & sim == 2 & cond != 3) |>
+  group_by(cond, par) |>
+  reframe(value = mean(value)) |>
+  pivot_wider(names_from = par, values_from = value) |>
+  group_by(cond) |>
+  expand_grid(
+    temp = seq(species_range[1] - abs(species_range[1] * 0.2), temp_range_cold[2], length.out = 1000)
+  ) |>
+  mutate(
+    mean = beta_mean * temp + inter,
+    sd = exp(sigma_inter + beta_sigma * temp)
+  ) |>
+  rowwise() |>
+  mutate(
+    ext = get_ext(mean, sd, alpha)
+  ) |>
+  ggplot() +
+  aes(temp, ext) +
+  aes(color = cond) +
+  geom_smooth(size = 1.3) +
+  geom_vline(xintercept = species_range[1], linetype = 2, alpha = 0.6) +
+  theme_classic() +
+  scale_color_manual(values = c('#5ab4ac', '#d8b365')) +
+  theme(
+    plot.title = element_text(face = 'italic'),
+    legend.position = 'none'
+  ) +
+  labs(
+    subtitle = 'Cold',
+    x = 'Mean annual temperature (°C)',
+    y = 'Suitable probability'
+  ) +
+  ylim(0, 1) ->
+p1
+
+out_pars |>
+  filter(species_id == Sp & border == 'hot' & sim == 2 & cond != 3) |>
+  group_by(cond, par) |>
+  reframe(value = mean(value)) |>
+  pivot_wider(names_from = par, values_from = value) |>
+  group_by(cond) |>
+  expand_grid(
+    temp = seq(temp_range_hot[1], species_range[2] + species_range[2] * 0.2, length.out = 1000)
+  ) |>
+  mutate(
+    mean_y = beta_mean * temp + inter,
+    sd_y = exp(sigma_inter + beta_sigma * temp)
+  ) |>
+  rowwise() |>
+  mutate(
+    ext = get_ext(mean_y, sd_y, alpha)
+  ) |>
+  ggplot() +
+  aes(temp, ext) +
+  aes(color = cond) +
+  geom_smooth(size = 1.3) +
+  geom_vline(xintercept = species_range[2], linetype = 2, alpha = 0.6) +
+  theme_classic() +
+  scale_color_manual(values = c('#5ab4ac', '#d8b365')) +
+  theme(
+    axis.text.y = element_blank(),
+    legend.position = 'none'
+  ) +
+  labs(
+    subtitle = 'Hot',
+    x = 'Mean annual temperature (°C)',
+    y = NULL
+  ) +
+  ylim(0, 1) ->
+p2
+
+ggarrange(p1, p2, ncol = 2)
+```
+
+The final step was to analyze the effect of competition on the suitable probability at the border and center of the temperature range distribution for all species.
+The @fig-sp_comp_vs_nocomp compares the suitable probability under no competition to those under heterospecific competition.
+Almost all species, in all conditions, are distributed below the line of identity (1:1), meaning that heterospecific competition reduces the suitable probability.
+In the cold range, the suitable probability is high overall for both competition conditions, with no significant difference between the border (red) and center (blue) of the distribution.
+However, at the border of the hot range (red in the right panel), we can observe that many species have shifted to lower values of suitable probabilities.
+In addition, we can also observe that these species have moved away from the identity line, which means that the effect of heterospecific competition is more significant in the hot range.
+
+```{r sp_comp_vs_nocomp,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-sp_comp_vs_nocomp
+#| fig-width: 8
+#| fig-height: 4
+#| fig-cap: "The relationship in the suitable probability between no competition and with heterospecific competition. Each point represents the 31 forest species at their border (red) or center (blue) locations. Species points are grouped by a Multivariate Normal Density function with 75% probability. Note that we omitted the parameter uncertainty in this figure to avoid overlap and increase clarity."
+
+sp_dt |>
+  select(species_id, iter, cond, range_pos, border, ext) |>
+  pivot_wider(
+    names_from = cond,
+    values_from = ext,
+    names_prefix = 'cond_'
+  ) |>
+  mutate(
+    sp_diff = cond_2-cond_1
+  ) |>
+  group_by(species_id, range_pos, border) |>
+  reframe(
+    cond_1 = mean(cond_1),
+    cond_2 = mean(cond_2)
+  ) |>
+  ggplot() +
+  aes(cond_1, cond_2) +
+  aes(color = range_pos, fill = range_pos) +
+  facet_wrap(~border) +
+  geom_hdr(
+    aes(color = NULL),
+    probs = .75, alpha = .4,
+    method = 'mvnorm'
+  ) +
+  geom_point() +
+  geom_abline(slope = 1, intercept = 0, alpha = 0.7) +
+  scale_color_manual(values = c('#fc8d59', '#91bfdb')) +
+  scale_fill_manual(values = c('#fc8d59', '#91bfdb')) +
+  theme_classic() +
+  labs(
+    x = 'Suitable probability (no competition)',
+    y = 'Suitable probability (heter competition)',
+    color = NULL,
+    fill = NULL
+  ) +
+  theme(
+    legend.position = 'top',
+    strip.background = element_blank()
+  )
+
+```
+
+We further tested whether the effect of heterospecific competition on suitable probability changes depends on the location of the species border.
+For instance, we observed that competition was stronger in the hot range than in the cold range.
+We can expect competition strength to increase for species distributed at higher temperatures.
+The @fig-sp_over_MAT1 shows the suitable probability distribution at the border for the cold and hot ranges over the MAT gradient.
+We can observe that heterospecific competition decreases the suitable probability almost similarly for all species across the temperature gradient.
+The only exception is for the cold range species located toward higher temperatures, which showed a relatively higher effect of competition than species located in cold temperatures (@fig-sp_over_MAT1 left panel).
+
+```{r sp_over_MAT1,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-sp_over_MAT1
+#| fig-width: 8
+#| fig-height: 4
+#| fig-cap: "Suitable probability at the cold and hot border for 31 species located over the mean annual temperature gradient. Species points are grouped by a Multivariate Normal Density function with 75% probability."
+
+sp_dt |>
+  filter(range_pos == 'border') |>
+  mutate(
+    cond = case_match(
+      as.character(cond),
+      '1' ~ 'No competition',
+      '2' ~ 'Heterospecific competition'
+    )
+  ) |>
+  ggplot() +
+  aes(temp, ext) +
+  aes(color = cond, fill = cond) +
+  facet_wrap(~border, scales = 'free_x') +
+  geom_hdr(
+    aes(color = NULL),
+    probs = .9, alpha = .4,
+    method = 'mvnorm'
+  ) +
+  ylim(0, 1.1) +
+  stat_pointinterval() +
+  theme_classic() +
+  theme(
+    legend.position = 'top',
+    strip.background = element_blank()
+  ) +
+  scale_color_manual(values = c('#d8b365', '#5ab4ac')) +
+  scale_fill_manual(values = c('#d8b365', '#5ab4ac')) +
+  labs(
+    x = 'Mean annual temperature (°C)',
+    y = 'Suitable probability at the border',
+    color = NULL,
+    fill = NULL
+  )
+```
+
+In @fig-sp_over_MAT2, we evaluate the difference between the suitable probability with heterospecific competition and without competition, where negative values mean that heterospecific competition reduced the suitable probability.
+In the cold range, competition has a higher effect on species distributed toward higher temperatures.
+In the hot range, there is no clear trend of change in the temperature gradient.
+Overall, heterospecific competition was higher in the hot than cold range.
+
+```{r sp_over_MAT2,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-sp_over_MAT2
+#| fig-width: 8
+#| fig-height: 4
+#| fig-cap: "Difference in suitable probability (heterospecific competition - no competition) at the cold and hot border for 31 species located over the mean annual temperature gradient. Negative values mean heterospecific competition reduced suitable probability. Species points are grouped by a Multivariate Normal Density function with 75% probability."
+
+sp_dt |>
+  filter(range_pos == 'border') |>
+  select(species_id, temp, iter, cond, range_pos, border, ext) |>
+  pivot_wider(
+    names_from = cond,
+    values_from = ext,
+    names_prefix = 'cond_'
+  ) |>
+  mutate(
+    sp_diff = cond_2-cond_1
+  ) |>
+  # filter(species_id != '19462FAGGRA') |>
+  ggplot() +
+  aes(temp, sp_diff) +
+  aes(color = border, fill = border) +
+  # facet_wrap(~border, scales = 'free_x') +
+  geom_hdr(
+    aes(color = NULL),
+    probs = .75, alpha = .4,
+    method = 'mvnorm'
+  ) +
+  geom_hline(yintercept = 0, linetype = 2, alpha = 0.7) +
+  stat_pointinterval() +
+  theme_classic() +
+  theme(
+    legend.position = 'top',
+    strip.background = element_blank()
+  ) +
+  scale_color_manual(values = c('#91bfdb', '#fc8d59')) +
+  scale_fill_manual(values = c('#91bfdb', '#fc8d59')) +
+  labs(
+    x = 'Mean annual temperature (°C)',
+    y = 'Difference in suitable probability',
+    color = NULL,
+    fill = NULL
+  )
+```
+
+## Appendices
+
+```{r appen,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| fig-width: 8
+#| fig-height: 8
+
+# data with temperature range limits of each species db and cold/hot ranges
+tempRange_ls <- readRDS(file.path('data', 'temperatureRange_sp.RDS'))
+
+# species id to use latin name
+spIds <- read_csv(file.path(readLines('_data.path'), 'species_id.csv'))
+
+for(Sp in unique(out_pars$species_id))
+{
+  # define temperature ranges
+  temp_cold = c(
+    tempRange_ls[[Sp]][['species_range']][1] - abs(tempRange_ls[[Sp]][['species_range']][1] * 0.2),
+    tempRange_ls[[Sp]][['temp_range_cold']][2]
+  )
+  temp_hot = c(
+    tempRange_ls[[Sp]][['temp_range_hot']][1],
+    tempRange_ls[[Sp]][['species_range']][2] + tempRange_ls[[Sp]][['species_range']][2] * 0.2
+  )
+
+  out_pars |>
+    filter(species_id == Sp & border == 'cold' & sim == 2 & cond != 3) |>
+    select(cond, iter, par, value) |>
+    pivot_wider(names_from = par, values_from = value) |>
+    group_by(cond, iter) |>
+    expand_grid(
+      temp = seq(temp_cold[1], temp_cold[2], length.out = 25)
+    ) |>
+    mutate(
+      lambda = sn::rsn(n(), beta_mean * temp + inter, exp(sigma_inter + beta_sigma * temp), alpha)
+    ) ->
+  dat_cold
+
+  out_pars |>
+    filter(species_id == Sp & border == 'hot' & sim == 2 & cond != 3) |>
+    select(cond, iter, par, value) |>
+    pivot_wider(names_from = par, values_from = value) |>
+    group_by(cond, iter) |>
+    expand_grid(
+      temp = seq(temp_hot[1], temp_hot[2], length.out = 25)
+    ) |>
+    mutate(
+      lambda = sn::rsn(n(), beta_mean * temp + inter, exp(sigma_inter + beta_sigma * temp), alpha)
+    ) ->
+  dat_hot
+
+  yLim = quantile(c(dat_cold$lambda, dat_hot$lambda), probs = c(0.01, 0.999))
+  
+  dat_cold |>
+    ggplot() +
+    aes(temp, lambda) +
+    aes(color = cond, fill = cond) +
+    facet_wrap(
+      ~cond,
+      ncol = 1,
+      scales = 'free_x',
+      labeller = as_labeller(setNames(c('No competition', 'Heterospecific competition'), 1:2))
+    ) +
+    stat_lineribbon(.width = 0.9, alpha = 0.6) +
+    scale_color_manual(values = c('#5ab4ac', '#d8b365')) +
+    scale_fill_manual(values = c('#5ab4ac', '#d8b365')) +
+    geom_hline(yintercept = 0, linetype = 2) +
+    geom_vline(xintercept = tempRange_ls[[Sp]][['species_range']][1], linetype = 2, alpha = 0.6) +
+    theme_classic() +
+    theme(
+      plot.title = element_text(face = 'italic'),
+      legend.position = 'none',
+      strip.background = element_blank(),
+      axis.text.x = element_blank()
+    ) +
+    labs(
+      title = spIds |> filter(species_id_old == Sp) |> pull(species_name),
+      subtitle = 'Cold',
+      x = NULL,
+      y = expression('ln('~lambda~')')
+    ) +
+    scale_y_continuous(
+      limits = yLim,
+      labels = scales::number_format(accuracy = 0.01)
+    ) ->
+  p1
+
+  dat_hot |>
+    ggplot() +
+    aes(temp, lambda) +
+    aes(color = cond, fill = cond) +
+    facet_wrap(
+      ~cond,
+      ncol = 1,
+      scales = 'free_x',
+      labeller = as_labeller(setNames(c('No competition', 'Heterospecific competition'), 1:2))
+    ) +
+    stat_lineribbon(.width = 0.9, alpha = 0.6) +
+    geom_hline(yintercept = 0, linetype = 2) +
+    geom_vline(xintercept = tempRange_ls[[Sp]][['species_range']][2], linetype = 2, alpha = 0.6) +
+    scale_color_manual(values = c('#5ab4ac', '#d8b365')) +
+    scale_fill_manual(values = c('#5ab4ac', '#d8b365')) +
+    theme_classic() +
+    theme(
+      strip.background = element_blank(),
+      legend.position = 'none',
+      axis.text.y = element_blank(),
+      axis.text.x = element_blank()
+    ) +
+    labs(
+      title = '',
+      subtitle = 'Hot',
+      x = NULL,
+      y = NULL
+    ) +
+    scale_y_continuous(
+      limits = yLim,
+      labels = scales::number_format(accuracy = 0.01)
+    ) ->
+  p2
+
+  out_pars |>
+    filter(species_id == Sp & border == 'cold' & sim == 2 & cond != 3) |>
+    group_by(cond, par) |>
+    reframe(value = mean(value)) |>
+    pivot_wider(names_from = par, values_from = value) |>
+    group_by(cond) |>
+    expand_grid(
+      temp = seq(temp_cold[1], temp_cold[2], length.out = 1000)
+    ) |>
+    mutate(
+      mean = beta_mean * temp + inter,
+      sd = exp(sigma_inter + beta_sigma * temp)
+    ) |>
+    rowwise() |>
+    mutate(
+      ext = get_ext(mean, sd, alpha)
+    ) |>
+    ggplot() +
+    aes(temp, ext) +
+    aes(color = cond) +
+    geom_smooth(size = 1.3) +
+    geom_vline(xintercept = tempRange_ls[[Sp]][['species_range']][1], linetype = 2, alpha = 0.6) +
+    theme_classic() +
+    scale_color_manual(values = c('#5ab4ac', '#d8b365')) +
+    theme(
+      plot.title = element_text(face = 'italic'),
+      legend.position = 'none'
+    ) +
+    labs(
+      x = 'Mean annual temperature (°C)',
+      y = 'Suitable probability'
+    ) +
+    scale_y_continuous(
+      limits = c(0, 1),
+      labels = scales::number_format(accuracy = 0.01)
+    ) ->
+  p3
+
+  out_pars |>
+    filter(species_id == Sp & border == 'hot' & sim == 2 & cond != 3) |>
+    group_by(cond, par) |>
+    reframe(value = mean(value)) |>
+    pivot_wider(names_from = par, values_from = value) |>
+    group_by(cond) |>
+    expand_grid(
+      temp = seq(temp_hot[1], temp_hot[2], length.out = 1000)
+    ) |>
+    mutate(
+      mean_y = beta_mean * temp + inter,
+      sd_y = exp(sigma_inter + beta_sigma * temp)
+    ) |>
+    rowwise() |>
+    mutate(
+      ext = get_ext(mean_y, sd_y, alpha)
+    ) |>
+    ggplot() +
+    aes(temp, ext) +
+    aes(color = cond) +
+    geom_smooth(size = 1.3) +
+    geom_vline(xintercept = tempRange_ls[[Sp]][['species_range']][2], linetype = 2, alpha = 0.6) +
+    theme_classic() +
+    scale_color_manual(values = c('#5ab4ac', '#d8b365')) +
+    theme(
+      legend.position = 'none',
+      axis.text.y = element_blank()
+    ) +
+    labs(
+      x = 'Mean annual temperature (°C)',
+      y = NULL
+    ) +
+    scale_y_continuous(
+      limits = c(0, 1),
+      labels = scales::number_format(accuracy = 0.01)
+    ) ->
+  p4
+
+  print(
+    ggarrange(
+      p1, p2, p3, p4,
+      ncol = 2, nrow = 2,
+      heights = c(1, 0.5)
+    )
+  )
+}
+```

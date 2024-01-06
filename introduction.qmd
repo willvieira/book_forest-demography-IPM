@@ -33,4 +33,4 @@ The second chapter (@sec-ipm_guide) is a practical guide detailing the use of th
 The following chapter describes the sensitivity analysis for the IPM to the demographic model parameters (@sec-sensAnalysis).
 There, we use a random forest algorithm to rank the relative importance of each parameter in changing the intrinsic population growth rate.
 The following two chapters describe each covariate's conditional (@sec-cond-lambda) and marginal (@sec-margin-lambda) effects.
-Finally, we discuss the concept of extinction risk derived from the uncertainty around the population growth rate.
+Finally, we discuss the concept of suitable probability derived from the uncertainty around the population growth rate (@sec-suitableProbability).
