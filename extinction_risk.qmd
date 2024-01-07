@@ -136,7 +136,7 @@ random_lambdas |>
 ```
 
 
-## Effect of demographic and environmental stochasticity
+## Simulating the effect of demographic uncertainty and environmental stochasticity
 
 ```{r loadSim,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 lambdas <- readRDS(gzcon(url('https://github.com/willvieira/forest-IPM/raw/master/simulations/uncertainty_sim/output_processed/lambdas.RDS')))
@@ -593,7 +593,7 @@ out_pars
 We used a linear model to summarize the evolution of the population growth rate ($\lambda$) and its variability across the cold and warm ranges (@eq-metamodel).
 The @fig-res_example shows the observed $\lambda$ distribution and the fit of the underlying model on the mean annual temperature gradient for the species *Abies balsamea*.
 Each point represents a plot-year-replication encompassing the complete spatio-temporal sources of variability arising from the stochastic environment and parameter uncertainty.
-The purple line represents the average fitted model (how $\lambda$ changes with MAT), and the shaded purple area is the 90th quantile of model uncertainty (how the variability of $\lambda$ changes with MAT).
+The black line represents the average fitted model (how $\lambda$ changes with MAT), and the shaded area is the 90th quantile of model uncertainty (how the variability of $\lambda$ changes with MAT).
 From this uncertainty, we can deduce the suitable probability.
 In this example, in the cold range, the mean and variance of $\lambda$ decrease towards the cold boundary.
 By comparing the model under heterospecific competition with that without competition, we can observe a slight decrease in the average at the cold border but a larger decrease in uncertainty (@fig-res_example at the bottom left).
@@ -602,7 +602,7 @@ By comparing the model under heterospecific competition with that without compet
 #| label: fig-res_example
 #| fig-width: 8
 #| fig-height: 6
-#| fig-cap: "Distribution of stochastic population growth rate ($\\lambda$) for *Abies balsamea* over the mean annual temperature gradient for cold (left panels) and warm (right panels) ranges under no competition (fundamental niche) and heterospecific competition (realized niche)."
+#| fig-cap: "Distribution of stochastic population growth rate ($\\lambda$) for *Abies balsamea* over the mean annual temperature gradient for cold (left panels) and warm (right panels) ranges under no competition (fundamental niche) and heterospecific competition (realized niche). The dots represent $\\lambda$ over the plot-year-replication combinations. The model's average line and 90% prediction intervals are estimated using 500 draws from the posterior distribution."
 
 Sp = '18032ABIBAL'
 
@@ -623,6 +623,7 @@ out_pars |>
   ) |>
   ggplot() +
   aes(temp, lambda) +
+  aes(fill = cond) +
   facet_wrap(
     ~cond,
     ncol = 1,
@@ -630,12 +631,15 @@ out_pars |>
   ) +
   geom_point(
     data = db_sim_cold |>
+      mutate(cond = factor(cond)) |>
       group_by(cond) |>
       slice_sample(n = 1e4),
     aes(temp, log(lambda)),
     alpha = 0.4, size = 0.3
   ) +
-  stat_lineribbon(.width = 0.9, alpha = 0.6, color = 'purple') +
+  stat_lineribbon(.width = 0.9, alpha = 0.6) +
+  # scale_color_manual(values = c('#5ab4ac', '#d8b365')) +
+  scale_fill_manual(values = c('#5ab4ac', '#d8b365')) +
   geom_hline(yintercept = 0, linetype = 2) +
   theme_classic() +
   theme(
@@ -665,6 +669,7 @@ out_pars |>
   ) |>
   ggplot() +
   aes(temp, lambda) +
+  aes(fill = cond) +
   facet_wrap(
     ~cond,
     ncol = 1,
@@ -672,12 +677,15 @@ out_pars |>
   ) +
   geom_point(
     data = db_sim_hot |>
+      mutate(cond = factor(cond)) |>
       group_by(cond) |>
       slice_sample(n = 1e4),
     aes(temp, log(lambda)),
     alpha = 0.4, size = 0.3
   ) +
-  stat_lineribbon(.width = 0.9, alpha = 0.6, color = 'purple') +
+  stat_lineribbon(.width = 0.9, alpha = 0.6) +
+  # scale_color_manual(values = c('#5ab4ac', '#d8b365')) +
+  scale_fill_manual(values = c('#5ab4ac', '#d8b365')) +
   geom_hline(yintercept = 0, linetype = 2) +
   theme_classic() +
   theme(
@@ -717,6 +725,13 @@ Sp = '18032ABIBAL'
 
 out_pars |>
   filter(species_id == Sp & border == 'cold' & sim == 2 & cond != 3) |>
+  mutate(
+    cond = case_match(
+      as.character(cond),
+      '1' ~ 'No competition',
+      '2' ~ 'Heterospecific competition'
+    )
+  ) |>
   group_by(cond, par) |>
   reframe(value = mean(value)) |>
   pivot_wider(names_from = par, values_from = value) |>
@@ -738,21 +753,29 @@ out_pars |>
   geom_smooth(size = 1.3) +
   geom_vline(xintercept = species_range[1], linetype = 2, alpha = 0.6) +
   theme_classic() +
-  scale_color_manual(values = c('#5ab4ac', '#d8b365')) +
+  scale_color_manual(values = c('#d8b365', '#5ab4ac')) +
   theme(
     plot.title = element_text(face = 'italic'),
-    legend.position = 'none'
+    legend.position = 'top'
   ) +
   labs(
     subtitle = 'Cold',
     x = 'Mean annual temperature (°C)',
-    y = 'Suitable probability'
+    y = 'Suitable probability',
+    color = NULL
   ) +
   ylim(0, 1) ->
 p1
 
 out_pars |>
   filter(species_id == Sp & border == 'hot' & sim == 2 & cond != 3) |>
+  mutate(
+    cond = case_match(
+      as.character(cond),
+      '1' ~ 'No competition',
+      '2' ~ 'Heterospecific competition'
+    )
+  ) |>
   group_by(cond, par) |>
   reframe(value = mean(value)) |>
   pivot_wider(names_from = par, values_from = value) |>
@@ -774,20 +797,26 @@ out_pars |>
   geom_smooth(size = 1.3) +
   geom_vline(xintercept = species_range[2], linetype = 2, alpha = 0.6) +
   theme_classic() +
-  scale_color_manual(values = c('#5ab4ac', '#d8b365')) +
+  scale_color_manual(values = c('#d8b365', '#5ab4ac')) +
   theme(
     axis.text.y = element_blank(),
-    legend.position = 'none'
+    legend.position = 'top'
   ) +
   labs(
     subtitle = 'Hot',
     x = 'Mean annual temperature (°C)',
-    y = NULL
+    y = NULL,
+    color = NULL
   ) +
   ylim(0, 1) ->
 p2
 
-ggarrange(p1, p2, ncol = 2)
+ggarrange(
+  p1, p2,
+  ncol = 2,
+  common.legend = TRUE,
+  legend = 'top'
+)
 ```
 
 The final step was to analyze the effect of competition on the suitable probability at the border and center of the temperature range distribution for all species.
