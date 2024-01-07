@@ -821,10 +821,12 @@ ggarrange(
 
 The final step was to analyze the effect of competition on the suitable probability at the border and center of the temperature range distribution for all species.
 The @fig-sp_comp_vs_nocomp compares the suitable probability under no competition to those under heterospecific competition.
-Almost all species, in all conditions, are distributed below the line of identity (1:1), meaning that heterospecific competition reduces the suitable probability.
+All species except one presented high values of suitable probability at the center and border of their cold and hot ranges.
+Among the four conditions, species presented a lower suitable probability at the border of the hot range (red in the right panel).
+Almost all species, in all conditions, are distributed below the identity line (1:1), meaning that heterospecific competition reduces the suitable probability.
 In the cold range, the suitable probability is high overall for both competition conditions, with no significant difference between the border (red) and center (blue) of the distribution.
-However, at the border of the hot range (red in the right panel), we can observe that many species have shifted to lower values of suitable probabilities.
-In addition, we can also observe that these species have moved away from the identity line, which means that the effect of heterospecific competition is more significant in the hot range.
+However, at the hot range, we can observe a significant shift in suitable probability from the center to the border.
+In addition, we can also observe that the species at the border of the hot range have moved away from the identity line, which means that the effect of heterospecific competition is more significant.
 
 ```{r sp_comp_vs_nocomp,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-sp_comp_vs_nocomp
@@ -876,7 +878,7 @@ sp_dt |>
 
 We further tested whether the effect of heterospecific competition on suitable probability changes depends on the location of the species border.
 For instance, we observed that competition was stronger in the hot range than in the cold range.
-We can expect competition strength to increase for species distributed at higher temperatures.
+Therefore, we can expect competition strength to increase for species distributed at hotter temperatures.
 The @fig-sp_over_MAT1 shows the suitable probability distribution at the border for the cold and hot ranges over the MAT gradient.
 We can observe that heterospecific competition decreases the suitable probability almost similarly for all species across the temperature gradient.
 The only exception is for the cold range species located toward higher temperatures, which showed a relatively higher effect of competition than species located in cold temperatures (@fig-sp_over_MAT1 left panel).
