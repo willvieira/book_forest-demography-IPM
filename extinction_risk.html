@@ -262,7 +262,7 @@ div.csl-indent {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#effect-of-demographic-and-environmental-stochasticity" id="toc-effect-of-demographic-and-environmental-stochasticity" class="nav-link active" data-scroll-target="#effect-of-demographic-and-environmental-stochasticity">Effect of demographic and environmental stochasticity</a></li>
+  <li><a href="#simulating-the-effect-of-demographic-uncertainty-and-environmental-stochasticity" id="toc-simulating-the-effect-of-demographic-uncertainty-and-environmental-stochasticity" class="nav-link active" data-scroll-target="#simulating-the-effect-of-demographic-uncertainty-and-environmental-stochasticity">Simulating the effect of demographic uncertainty and environmental stochasticity</a></li>
   <li><a href="#objective" id="toc-objective" class="nav-link" data-scroll-target="#objective">Objective</a></li>
   <li><a href="#methods" id="toc-methods" class="nav-link" data-scroll-target="#methods">Methods</a>
   <ul class="collapse">
@@ -321,8 +321,8 @@ F(\lambda) = \int_{1}^{\infty} f(\lambda)d\lambda
 </div>
 </div>
 </div>
-<section id="effect-of-demographic-and-environmental-stochasticity" class="level2">
-<h2 class="anchored" data-anchor-id="effect-of-demographic-and-environmental-stochasticity">Effect of demographic and environmental stochasticity</h2>
+<section id="simulating-the-effect-of-demographic-uncertainty-and-environmental-stochasticity" class="level2">
+<h2 class="anchored" data-anchor-id="simulating-the-effect-of-demographic-uncertainty-and-environmental-stochasticity">Simulating the effect of demographic uncertainty and environmental stochasticity</h2>
 <div class="cell" data-hash="extinction_risk_cache/html/loadSim_3c49d4a6bef2cfdde95217358270cd43">
 
 </div>
@@ -429,19 +429,19 @@ F(\lambda) = \int_{1}^{\infty} f(\lambda)d\lambda
 <div class="cell" data-hash="extinction_risk_cache/html/download_processed_data_80c1fe245c2072d89d0a80a047d5a52a">
 
 </div>
-<p>We used a linear model to summarize the evolution of the population growth rate (<span class="math inline">\(\lambda\)</span>) and its variability across the cold and warm ranges (<a href="#eq-metamodel">Equation&nbsp;<span>19.2</span></a>). The <a href="#fig-res_example">Figure&nbsp;<span>19.8</span></a> shows the observed <span class="math inline">\(\lambda\)</span> distribution and the fit of the underlying model on the mean annual temperature gradient for the species <em>Abies balsamea</em>. Each point represents a plot-year-replication encompassing the complete spatio-temporal sources of variability arising from the stochastic environment and parameter uncertainty. The purple line represents the average fitted model (how <span class="math inline">\(\lambda\)</span> changes with MAT), and the shaded purple area is the 90th quantile of model uncertainty (how the variability of <span class="math inline">\(\lambda\)</span> changes with MAT). From this uncertainty, we can deduce the suitable probability. In this example, in the cold range, the mean and variance of <span class="math inline">\(\lambda\)</span> decrease towards the cold boundary. By comparing the model under heterospecific competition with that without competition, we can observe a slight decrease in the average at the cold border but a larger decrease in uncertainty (<a href="#fig-res_example">Figure&nbsp;<span>19.8</span></a> at the bottom left).</p>
-<div class="cell" data-hash="extinction_risk_cache/html/fig-res_example_cc4ada01233f6716f1e6a54017592a6d">
+<p>We used a linear model to summarize the evolution of the population growth rate (<span class="math inline">\(\lambda\)</span>) and its variability across the cold and warm ranges (<a href="#eq-metamodel">Equation&nbsp;<span>19.2</span></a>). The <a href="#fig-res_example">Figure&nbsp;<span>19.8</span></a> shows the observed <span class="math inline">\(\lambda\)</span> distribution and the fit of the underlying model on the mean annual temperature gradient for the species <em>Abies balsamea</em>. Each point represents a plot-year-replication encompassing the complete spatio-temporal sources of variability arising from the stochastic environment and parameter uncertainty. The black line represents the average fitted model (how <span class="math inline">\(\lambda\)</span> changes with MAT), and the shaded area is the 90th quantile of model uncertainty (how the variability of <span class="math inline">\(\lambda\)</span> changes with MAT). From this uncertainty, we can deduce the suitable probability. In this example, in the cold range, the mean and variance of <span class="math inline">\(\lambda\)</span> decrease towards the cold boundary. By comparing the model under heterospecific competition with that without competition, we can observe a slight decrease in the average at the cold border but a larger decrease in uncertainty (<a href="#fig-res_example">Figure&nbsp;<span>19.8</span></a> at the bottom left).</p>
+<div class="cell" data-hash="extinction_risk_cache/html/fig-res_example_7385375c268b1ed930f54aaa09583cac">
 <div class="cell-output-display">
 <div id="fig-res_example" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure">
 <p><img src="extinction_risk_files/figure-html/fig-res_example-1.png" class="img-fluid figure-img" width="768"></p>
-<p></p><figcaption class="figure-caption">Figure&nbsp;19.8: Distribution of stochastic population growth rate (<span class="math inline">\(\lambda\)</span>) for <em>Abies balsamea</em> over the mean annual temperature gradient for cold (left panels) and warm (right panels) ranges under no competition (fundamental niche) and heterospecific competition (realized niche).</figcaption><p></p>
+<p></p><figcaption class="figure-caption">Figure&nbsp;19.8: Distribution of stochastic population growth rate (<span class="math inline">\(\lambda\)</span>) for <em>Abies balsamea</em> over the mean annual temperature gradient for cold (left panels) and warm (right panels) ranges under no competition (fundamental niche) and heterospecific competition (realized niche). The dots represent <span class="math inline">\(\lambda\)</span> over the plot-year-replication combinations. The model’s average line and 90% prediction intervals are estimated using 500 draws from the posterior distribution.</figcaption><p></p>
 </figure>
 </div>
 </div>
 </div>
 <p>We can estimate the suitable probability using the empirical cumulative distribution approach (<a href="#eq-sp">Equation&nbsp;<span>19.1</span></a>) from the linear model predictions. The <a href="#fig-sp-example">Figure&nbsp;<span>19.9</span></a> shows the suitable probability expected over the mean annual temperature of the same species. As expected, the suitable probability was reduced toward the cold border and was lower under heterospecific competition (yellow curve). We can also observe that the decrease in suitable probability toward the border is nonlinear, becoming more substantial for heterospecific competition than for the no-competition condition.</p>
-<div class="cell" data-hash="extinction_risk_cache/html/fig-sp-example_34e3dcb066c7dba2306a31f2f21ac66a">
+<div class="cell" data-hash="extinction_risk_cache/html/fig-sp-example_2cb884e6182dd0f79241a641adf9cfb4">
 <div class="cell-output-display">
 <div id="fig-sp-example" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure">
@@ -451,7 +451,7 @@ F(\lambda) = \int_{1}^{\infty} f(\lambda)d\lambda
 </div>
 </div>
 </div>
-<p>The final step was to analyze the effect of competition on the suitable probability at the border and center of the temperature range distribution for all species. The <a href="#fig-sp_comp_vs_nocomp">Figure&nbsp;<span>19.10</span></a> compares the suitable probability under no competition to those under heterospecific competition. Almost all species, in all conditions, are distributed below the line of identity (1:1), meaning that heterospecific competition reduces the suitable probability. In the cold range, the suitable probability is high overall for both competition conditions, with no significant difference between the border (red) and center (blue) of the distribution. However, at the border of the hot range (red in the right panel), we can observe that many species have shifted to lower values of suitable probabilities. In addition, we can also observe that these species have moved away from the identity line, which means that the effect of heterospecific competition is more significant in the hot range.</p>
+<p>The final step was to analyze the effect of competition on the suitable probability at the border and center of the temperature range distribution for all species. The <a href="#fig-sp_comp_vs_nocomp">Figure&nbsp;<span>19.10</span></a> compares the suitable probability under no competition to those under heterospecific competition. All species except one presented high values of suitable probability at the center and border of their cold and hot ranges. Among the four conditions, species presented a lower suitable probability at the border of the hot range (red in the right panel). Almost all species, in all conditions, are distributed below the identity line (1:1), meaning that heterospecific competition reduces the suitable probability. In the cold range, the suitable probability is high overall for both competition conditions, with no significant difference between the border (red) and center (blue) of the distribution. However, at the hot range, we can observe a significant shift in suitable probability from the center to the border. In addition, we can also observe that the species at the border of the hot range have moved away from the identity line, which means that the effect of heterospecific competition is more significant.</p>
 <div class="cell" data-hash="extinction_risk_cache/html/fig-sp_comp_vs_nocomp_9d1bba5bff8364b341cf827eaddbebb0">
 <div class="cell-output-display">
 <div id="fig-sp_comp_vs_nocomp" class="quarto-figure quarto-figure-center anchored">
@@ -462,7 +462,7 @@ F(\lambda) = \int_{1}^{\infty} f(\lambda)d\lambda
 </div>
 </div>
 </div>
-<p>We further tested whether the effect of heterospecific competition on suitable probability changes depends on the location of the species border. For instance, we observed that competition was stronger in the hot range than in the cold range. We can expect competition strength to increase for species distributed at higher temperatures. The <a href="#fig-sp_over_MAT1">Figure&nbsp;<span>19.11</span></a> shows the suitable probability distribution at the border for the cold and hot ranges over the MAT gradient. We can observe that heterospecific competition decreases the suitable probability almost similarly for all species across the temperature gradient. The only exception is for the cold range species located toward higher temperatures, which showed a relatively higher effect of competition than species located in cold temperatures (<a href="#fig-sp_over_MAT1">Figure&nbsp;<span>19.11</span></a> left panel).</p>
+<p>We further tested whether the effect of heterospecific competition on suitable probability changes depends on the location of the species border. For instance, we observed that competition was stronger in the hot range than in the cold range. Therefore, we can expect competition strength to increase for species distributed at hotter temperatures. The <a href="#fig-sp_over_MAT1">Figure&nbsp;<span>19.11</span></a> shows the suitable probability distribution at the border for the cold and hot ranges over the MAT gradient. We can observe that heterospecific competition decreases the suitable probability almost similarly for all species across the temperature gradient. The only exception is for the cold range species located toward higher temperatures, which showed a relatively higher effect of competition than species located in cold temperatures (<a href="#fig-sp_over_MAT1">Figure&nbsp;<span>19.11</span></a> left panel).</p>
 <div class="cell" data-hash="extinction_risk_cache/html/fig-sp_over_MAT1_cc4deb5868c801293f0e35dce3c5986a">
 <div class="cell-output-display">
 <div id="fig-sp_over_MAT1" class="quarto-figure quarto-figure-center anchored">
