@@ -590,6 +590,8 @@ out_pars |>
 out_pars
 ```
 
+### Example using *Abies balsemea*
+
 We used a linear model to summarize the evolution of the population growth rate ($\lambda$) and its variability across the cold and warm ranges (@eq-metamodel).
 The @fig-res_example shows the observed $\lambda$ distribution and the fit of the underlying model on the mean annual temperature gradient for the species *Abies balsamea*.
 Each point represents a plot-year-replication encompassing the complete spatio-temporal sources of variability arising from the stochastic environment and parameter uncertainty.
@@ -819,16 +821,18 @@ ggarrange(
 )
 ```
 
-The final step was to analyze the effect of competition on the suitable probability at the border and center of the temperature range distribution for all species.
-The @fig-sp_comp_vs_nocomp compares the suitable probability under no competition to those under heterospecific competition.
-All species except one presented high values of suitable probability at the center and border of their cold and hot ranges.
-Among the four conditions, species presented a lower suitable probability at the border of the hot range (red in the right panel).
-Almost all species, in all conditions, are distributed below the identity line (1:1), meaning that heterospecific competition reduces the suitable probability.
-In the cold range, the suitable probability is high overall for both competition conditions, with no significant difference between the border (red) and center (blue) of the distribution.
-However, at the hot range, we can observe a significant shift in suitable probability from the center to the border.
-In addition, we can also observe that the species at the border of the hot range have moved away from the identity line, which means that the effect of heterospecific competition is more significant.
+### Effect of climate and competition on suitable probability
 
-```{r sp_comp_vs_nocomp,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+In the final step, we analyze the effect of competition on the suitable probability at the border and center of the temperature range distribution for all species.
+The @fig-sp_comp_vs_nocomp2 compares the suitable probability under no competition to those under heterospecific competition for four locations from the mean annual temperature gradient.
+Overall, suitable probability was high among the species, with an average of 0.78.
+Among the four locations, species presented a lower suitable probability at the border of the hot range, with an average of 0.67.
+Almost all species, in all conditions, are distributed below the identity line (1:1), meaning that heterospecific competition reduces the suitable probability.
+In the cold range, temperature decrease toward the border had little effect on the suitable probability for both competitive conditions.
+However, at the hot range, however, we can observe a significant shift in suitable probability from the center to the border.
+Across the temperature range, there is a monotonic decrease in suitable probability from the cold border toward the hot border.
+
+```{r sp_comp_vs_nocomp,echo=Echo,eval=FALSE,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-sp_comp_vs_nocomp
 #| fig-width: 8
 #| fig-height: 4
@@ -876,14 +880,330 @@ sp_dt |>
 
 ```
 
-We further tested whether the effect of heterospecific competition on suitable probability changes depends on the location of the species border.
-For instance, we observed that competition was stronger in the hot range than in the cold range.
-Therefore, we can expect competition strength to increase for species distributed at hotter temperatures.
-The @fig-sp_over_MAT1 shows the suitable probability distribution at the border for the cold and hot ranges over the MAT gradient.
-We can observe that heterospecific competition decreases the suitable probability almost similarly for all species across the temperature gradient.
-The only exception is for the cold range species located toward higher temperatures, which showed a relatively higher effect of competition than species located in cold temperatures (@fig-sp_over_MAT1 left panel).
+```{r sp_comp_vs_nocomp2,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-sp_comp_vs_nocomp2
+#| fig-width: 8
+#| fig-height: 4
+#| fig-cap: "Suitable probability for the 31 forest species in their distribution from the cold to the hot border of the mean annual temperature gradient. Note that we omitted the parameter uncertainty of each species in this figure to avoid overlap and increase clarity."
 
-```{r sp_over_MAT1,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+xLabel_order = c('Cold.border', 'Cold.center', 'Hot.center', 'Hot.border')
+
+sp_dt |>
+  select(species_id, iter, cond, range_pos, border, ext) |>
+  mutate(
+    cond = factor(cond, levels = c(1, 2), labels = c('No competition', 'Heterospecific competition'))
+  ) |>
+  group_by(species_id, border, cond, range_pos) |>
+  reframe(
+    ext = mean(ext)
+  ) |>
+  mutate(
+    gp = factor(interaction(border, range_pos), levels = xLabel_order)
+  ) |>
+  ggplot() +
+  aes(gp, ext) +
+  # aes(color = factor(cond, levels = c('No competition', 'Heterospecific competition'))) +
+  aes(color = cond) +
+  geom_point(position = position_jitterdodge()) +
+  geom_boxplot(fill = 'transparent', outlier.color = 'transparent') +
+  scale_color_manual(values = c('#5ab4ac', '#d8b365')) +
+  geom_vline(xintercept = 2.5, linetype = 2, alpha = 0.7) +
+  theme_classic() +
+  scale_x_discrete(
+    breaks = xLabel_order,
+    labels = c('Cold border', 'Cold center', 'Hot center', 'Hot border')
+  ) +
+  labs(
+    y = 'Suitable probability',
+    x = "Species' relative position in the mean annual temperature gradient",
+    color = NULL,
+  ) +
+  theme(
+    legend.position = 'top',
+    strip.background = element_blank()
+  )
+
+```
+
+We further estimated the difference in suitable probability between the border and center (for climate) and between heterospecific and non-competition within each species.
+In @fig-diff_sp_raw, we compare the suitable probability for each species under the climate or competition conditions, where each line and their respective color determines the amount of change in suitable probability.
+
+```{r diff_sp_raw,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-diff_sp_raw
+#| fig-width: 8
+#| fig-height: 7
+#| fig-cap: "Difference in suitable probability between the center and border of the distribution (left panels) and no competition and heterospecific competition (right) for the cold (top) and hot (bottom) ranges. The color of the line connecting each species' conditions represents the intensity of change in suitable probability—the more intense the color, the greater the shift between conditions."
+
+sp_dt |>
+  filter(border == 'Cold') |>
+  select(species_id, iter, cond, range_pos, ext) |>
+  mutate(
+    cond = factor(cond, levels = c(1, 2), labels = c('No competition', 'Heterospecific competition'))
+  ) |>
+  group_by(species_id, cond, range_pos) |>
+  reframe(
+    ext = mean(ext)
+  ) |>
+  pivot_wider(
+    names_from = range_pos,
+    values_from = ext
+  ) |> 
+   mutate(
+    diff = border - center
+  ) |>
+  pivot_longer(
+    cols = c(center, border),
+    names_to = 'range_pos',
+    values_to = 'ext'
+  ) |>
+  mutate(range_pos = factor(range_pos, levels = c('center', 'border'))) |>
+  ggplot() +
+  aes(range_pos, ext) +
+  geom_jitter(width = 0.01, alpha = 0.8) +
+  geom_line(aes(color = diff, group = species_id), alpha = 0.8) +
+  facet_wrap(~cond) +
+  scale_color_gradient2() +
+  theme_classic() +
+  labs(
+    title = 'Cold',
+    subtitle = 'Center vs border',
+    y = 'Suitable probability',
+    x = NULL,
+    color = NULL,
+  ) +
+  ylim(0.05, 1) +
+  theme(
+    strip.background = element_blank(),
+    axis.text.x = element_blank()
+  ) ->
+p1
+
+sp_dt |>
+  filter(border == 'Cold') |>
+  select(species_id, iter, cond, range_pos, ext) |>
+  group_by(species_id, cond, range_pos) |>
+  reframe(
+    ext = mean(ext)
+  ) |>
+  pivot_wider(
+    names_from = cond,
+    values_from = ext,
+    names_prefix = 'cond_'
+  ) |>
+   mutate(
+    diff = cond_2 - cond_1
+  ) |>
+  pivot_longer(
+    cols = contains('cond_'),
+    names_to = 'cond',
+    values_to = 'ext'
+  ) |>
+  mutate(
+    range_pos = factor(range_pos, levels = c('center', 'border')),
+    cond = factor(cond, levels = paste0('cond_', c(1, 2)), labels = c('No comp', 'Heter competition'))
+  ) |>
+  ggplot() +
+  aes(cond, ext) +
+  geom_jitter(width = 0.01, alpha = 0.8) +
+  geom_line(aes(color = diff, group = species_id), alpha = 0.8) +
+  facet_wrap(~range_pos) +
+  scale_color_gradient2() +
+  theme_classic() +
+  labs(
+    title = '',
+    subtitle = 'No competition vs heterospecific competition',
+    y = NULL,
+    x = NULL,
+    color = NULL,
+  ) +
+  ylim(0.05, 1) +
+  theme(
+    strip.background = element_blank(),
+    axis.text.x = element_blank(),
+    axis.text.y = element_blank()
+  ) ->
+p2
+
+sp_dt |>
+  filter(border == 'Hot') |>
+  select(species_id, iter, cond, range_pos, ext) |>
+  mutate(
+    cond = factor(cond, levels = c(1, 2), labels = c('No competition', 'Heterospecific competition'))
+  ) |>
+  group_by(species_id, cond, range_pos) |>
+  reframe(
+    ext = mean(ext)
+  ) |>
+  pivot_wider(
+    names_from = range_pos,
+    values_from = ext
+  ) |> 
+   mutate(
+    diff = border - center
+  ) |>
+  pivot_longer(
+    cols = c(center, border),
+    names_to = 'range_pos',
+    values_to = 'ext'
+  ) |>
+  mutate(range_pos = factor(range_pos, levels = c('center', 'border'))) |>
+  ggplot() +
+  aes(range_pos, ext) +
+  geom_jitter(width = 0.01, alpha = 0.8) +
+  geom_line(aes(color = diff, group = species_id), alpha = 0.8) +
+  facet_wrap(~cond) +
+  scale_color_gradient2() +
+  theme_classic() +
+  labs(
+    title = 'Hot',
+    subtitle = 'Center vs border',
+    y = 'Suitable probability',
+    x = NULL,
+    color = NULL,
+  ) +
+  ylim(0.05, 1) +
+  theme(
+    strip.background = element_blank()
+  ) ->
+p3
+
+sp_dt |>
+  filter(border == 'Hot') |>
+  select(species_id, iter, cond, range_pos, ext) |>
+  group_by(species_id, cond, range_pos) |>
+  reframe(
+    ext = mean(ext)
+  ) |>
+  pivot_wider(
+    names_from = cond,
+    values_from = ext,
+    names_prefix = 'cond_'
+  ) |>
+   mutate(
+    diff = cond_2 - cond_1
+  ) |>
+  pivot_longer(
+    cols = contains('cond_'),
+    names_to = 'cond',
+    values_to = 'ext'
+  ) |>
+  mutate(
+    range_pos = factor(range_pos, levels = c('center', 'border')),
+    cond = factor(cond, levels = paste0('cond_', c(1, 2)), labels = c('No comp', 'Heter competition'))
+  ) |>
+  ggplot() +
+  aes(cond, ext) +
+  geom_jitter(width = 0.01, alpha = 0.8) +
+  geom_line(aes(color = diff, group = species_id), alpha = 0.8) +
+  facet_wrap(~range_pos) +
+  scale_color_gradient2() +
+  theme_classic() +
+  labs(
+    title = '',
+    subtitle = 'No competition vs heterospecific competition',
+    y = NULL,
+    x = NULL,
+    color = NULL,
+  ) +
+  ylim(0.05, 1) +
+  theme(
+    strip.background = element_blank(),
+    axis.text.y = element_blank()
+  ) ->
+p4
+
+ggarrange(
+  p1, p2, p3, p4,
+  nrow = 2, ncol = 2,
+  common.legend = TRUE,
+  legend = 'bottom'
+)
+```
+
+The overall change in suitable probability for each condition is summarized in figure @fig-diff_sp_hist.
+The effect of heterospecific competition on suitable probability was negative for most species across the cold and hot ranges.
+For climate, however, the effect of changing temperature from the center to the border diverged between the cold and hot ranges.
+While most species experienced a decrease in suitable probability toward the hot range, moving from the center toward the cold range, the pattern was divergent with larger increases and decreases in suitable probability.
+Overall, the climate had a larger effect in changing suitable probability than competition.
+
+```{r diff_sp_hist,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-diff_sp_hist
+#| fig-width: 8
+#| fig-height: 4
+#| fig-cap: "Difference in suitable probability for climate and competition over the cold and hot ranges. When comparing one covariate, the classes of the other covariate are merged. For example, when we analyze the effect of climate, we see the distribution of the difference in suitable probability between the border and the center conditions, both for the no competition and heterospecific competition conditions together."
+
+sp_dt |>
+  select(species_id, iter, border, cond, range_pos, ext) |>
+  pivot_wider(
+    names_from = c(border, cond, range_pos),
+    values_from = ext
+  ) |>
+  mutate(
+    diff_Cold_centerBorder_nc = Cold_1_border - Cold_1_center,
+    diff_Cold_centerBorder_hc = Cold_2_border - Cold_2_center,
+    diff_Cold_comp_center = Cold_2_center - Cold_1_center,
+    diff_Cold_comp_border = Cold_2_border - Cold_1_border,
+    diff_Hot_centerBorder_nc = Hot_1_border - Hot_1_center,
+    diff_Hot_centerBorder_hc = Hot_2_border - Hot_2_center,
+    diff_Hot_comp_center = Hot_2_center - Hot_1_center,
+    diff_Hot_comp_border = Hot_2_border - Hot_1_border
+  ) |>
+  select(
+    species_id, iter, contains('diff_')
+  ) |>
+  pivot_longer(cols = contains('diff_')) |>
+  mutate(
+    name = gsub('diff_', '', name),
+    species = species_id,
+    species_id = NULL
+  ) |>
+  pivot_wider() |>
+  pivot_longer(
+    cols = contains('_'),
+    names_sep = '_',
+    names_to = c('border', 'sim', 'x')
+  ) |>
+  mutate(
+    sim = factor(sim, levels = c('comp', 'centerBorder'), labels = c('Competition\n(heter comp - no comp)', 'Climate\n(border - center)'))
+  ) |>
+  group_by(species, border, sim, x) |>
+  reframe(value = mean(value)) |>
+  ggplot() +
+  aes(value, sim) +
+  aes(fill = after_stat(x)) +
+  facet_wrap(~border) +
+  ggridges::geom_density_ridges_gradient(alpha = 0.7, color = 'grey') +
+  scale_fill_gradient2(
+    midpoint = 0,
+    name = '',
+    breaks = c(-.4, 0, .4)
+  ) +
+  # geom_vline(xintercept = 0, linetype = 2, alpha = 0.7) +
+  theme_classic() +
+  theme(
+    legend.position = 'none',
+    strip.background = element_blank()
+  ) +
+  labs(
+    x = 'Difference in suitable probability',
+    y = NULL,
+    fill = NULL
+  )
+```
+
+### Suitable probability across the mean annual temperature gradient
+
+We further tested whether the effect of climate and competition on suitable probability changes depends on the location of the species border.
+Given that the negative effect of climate and competition was stronger at the hot range (@fig-diff_sp_hist), we can expect the strength of this effect to increase for species distributed at hotter temperatures.
+<!-- The @fig-sp_over_MAT1 shows the suitable probability distribution at the border for the cold and hot ranges over the MAT gradient.
+We can observe that heterospecific competition decreases the suitable probability almost similarly for all species across the temperature gradient.
+The only exception is for the cold range species located toward higher temperatures, which showed a relatively higher effect of competition than species located in cold temperatures (@fig-sp_over_MAT1 left panel). -->
+Similar to @fig-diff_sp_hist, in @fig-sp_diff_over_MAT, we evaluate the difference in suitable probability for climate and competition across the mean annual temperature gradient.
+While at the hot range, there is no apparent difference in climate and competition across the temperature gradient, at the cold range, the difference in suitable probability changed depending on the temperature range position.
+For climate, as temperature reduced from the center to the border of the species, the suitable probability increased for species located at the hotter border but decreased for species close to the colder border.
+When comparing suitable probability between heterospecific competition and no competition at the cold range, heterospecific competition reduced suitable probability only for species located at hotter temperatures.
+
+```{r sp_over_MAT1,echo=Echo,eval=FALSE,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-sp_over_MAT1
 #| fig-width: 8
 #| fig-height: 4
@@ -924,53 +1244,97 @@ sp_dt |>
   )
 ```
 
-In @fig-sp_over_MAT2, we evaluate the difference between the suitable probability with heterospecific competition and without competition, where negative values mean that heterospecific competition reduced the suitable probability.
-In the cold range, competition has a higher effect on species distributed toward higher temperatures.
-In the hot range, there is no clear trend of change in the temperature gradient.
-Overall, heterospecific competition was higher in the hot than cold range.
-
-```{r sp_over_MAT2,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
-#| label: fig-sp_over_MAT2
+```{r sp_diff_over_MAT,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-sp_diff_over_MAT
 #| fig-width: 8
-#| fig-height: 4
-#| fig-cap: "Difference in suitable probability (heterospecific competition - no competition) at the cold and hot border for 31 species located over the mean annual temperature gradient. Negative values mean heterospecific competition reduced suitable probability. Species points are grouped by a Multivariate Normal Density function with 75% probability."
+#| fig-height: 6.5
+#| fig-cap: "Difference in suitable probability for climate and competition at the cold and hot border for 31 species located over the mean annual temperature gradient. The difference in suitable probability for the climate effect is marginalized under the no-competition condition. Likewise, the effect of competition is marginalized at the border. In both cases, the marginalization of the other condition did not modify the interpretation of the figure. Species points are grouped by a Multivariate Normal Density function with 75% probability."
 
 sp_dt |>
-  filter(range_pos == 'border') |>
-  select(species_id, temp, iter, cond, range_pos, border, ext) |>
+  # filter(cond == 1) |>
+  select(species_id, iter, cond, range_pos, border, ext) |>
   pivot_wider(
-    names_from = cond,
+    names_from = c(range_pos, cond),
     values_from = ext,
-    names_prefix = 'cond_'
+    names_prefix = 'range_'
   ) |>
   mutate(
-    sp_diff = cond_2-cond_1
+    diff_comp = range_border_2 - range_border_1,
+    diff_clim = range_border_1 - range_center_1
   ) |>
-  # filter(species_id != '19462FAGGRA') |>
+  select(species_id, border, contains('diff')) |>
+  left_join(
+    sp_dt |>
+      filter(range_pos == 'border') |>
+      group_by(species_id, border) |>
+      reframe(temp = unique(temp))
+  ) |>
+  pivot_longer(
+    cols = contains('diff')
+  ) |>
+  mutate(
+    name = factor(name, levels = c('diff_clim', 'diff_comp'), labels = c('Climate (border - center)', 'Competition (heterospecific competition - no competition)'))
+  ) |>
   ggplot() +
-  aes(temp, sp_diff) +
+  aes(temp, value) +
   aes(color = border, fill = border) +
-  # facet_wrap(~border, scales = 'free_x') +
+  facet_wrap(~name, nrow = 2) +
+  geom_hline(yintercept = 0, alpha = 0.7) +
   geom_hdr(
     aes(color = NULL),
     probs = .75, alpha = .4,
     method = 'mvnorm'
   ) +
-  geom_hline(yintercept = 0, linetype = 2, alpha = 0.7) +
   stat_pointinterval() +
   theme_classic() +
-  theme(
-    legend.position = 'top',
-    strip.background = element_blank()
-  ) +
   scale_color_manual(values = c('#91bfdb', '#fc8d59')) +
   scale_fill_manual(values = c('#91bfdb', '#fc8d59')) +
+  theme(
+    # legend.position = 'top',
+    strip.background = element_blank()
+  ) +
   labs(
     x = 'Mean annual temperature (°C)',
     y = 'Difference in suitable probability',
-    color = NULL,
-    fill = NULL
+    color = NULL, fill = NULL
   )
+
+# sp_dt |>
+#   filter(range_pos == 'border') |>
+#   select(species_id, temp, iter, cond, range_pos, border, ext) |>
+#   pivot_wider(
+#     names_from = cond,
+#     values_from = ext,
+#     names_prefix = 'cond_'
+#   ) |>
+#   mutate(
+#     sp_diff = cond_2-cond_1
+#   ) |>
+#   # filter(species_id != '19462FAGGRA') |>
+#   ggplot() +
+#   aes(temp, sp_diff) +
+#   aes(color = border, fill = border) +
+#   # facet_wrap(~border, scales = 'free_x') +
+#   geom_hdr(
+#     aes(color = NULL),
+#     probs = .75, alpha = .4,
+#     method = 'mvnorm'
+#   ) +
+#   geom_hline(yintercept = 0, linetype = 2, alpha = 0.7) +
+#   stat_pointinterval() +
+#   theme_classic() +
+#   theme(
+#     legend.position = 'top',
+#     strip.background = element_blank()
+#   ) +
+#   scale_color_manual(values = c('#91bfdb', '#fc8d59')) +
+#   scale_fill_manual(values = c('#91bfdb', '#fc8d59')) +
+#   labs(
+#     x = 'Mean annual temperature (°C)',
+#     y = 'Difference in suitable probability',
+#     color = NULL,
+#     fill = NULL
+#   )
 ```
 
 ## Appendices
