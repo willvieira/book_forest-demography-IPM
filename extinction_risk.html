@@ -270,7 +270,12 @@ div.csl-indent {
   <li><a href="#modeling-suitable-probability" id="toc-modeling-suitable-probability" class="nav-link" data-scroll-target="#modeling-suitable-probability">Modeling suitable probability</a></li>
   <li><a href="#simulations" id="toc-simulations" class="nav-link" data-scroll-target="#simulations">Simulations</a></li>
   </ul></li>
-  <li><a href="#results" id="toc-results" class="nav-link" data-scroll-target="#results">Results</a></li>
+  <li><a href="#results" id="toc-results" class="nav-link" data-scroll-target="#results">Results</a>
+  <ul class="collapse">
+  <li><a href="#example-using-abies-balsemea" id="toc-example-using-abies-balsemea" class="nav-link" data-scroll-target="#example-using-abies-balsemea">Example using <em>Abies balsemea</em></a></li>
+  <li><a href="#effect-of-climate-and-competition-on-suitable-probability" id="toc-effect-of-climate-and-competition-on-suitable-probability" class="nav-link" data-scroll-target="#effect-of-climate-and-competition-on-suitable-probability">Effect of climate and competition on suitable probability</a></li>
+  <li><a href="#suitable-probability-across-the-mean-annual-temperature-gradient" id="toc-suitable-probability-across-the-mean-annual-temperature-gradient" class="nav-link" data-scroll-target="#suitable-probability-across-the-mean-annual-temperature-gradient">Suitable probability across the mean annual temperature gradient</a></li>
+  </ul></li>
   <li><a href="#appendices" id="toc-appendices" class="nav-link" data-scroll-target="#appendices">Appendices</a></li>
   </ul>
 <div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/willvieira/book_forest-demography-IPM/issues/new" class="toc-action">Report an issue</a></p></div></div></nav>
@@ -429,6 +434,8 @@ F(\lambda) = \int_{1}^{\infty} f(\lambda)d\lambda
 <div class="cell" data-hash="extinction_risk_cache/html/download_processed_data_80c1fe245c2072d89d0a80a047d5a52a">
 
 </div>
+<section id="example-using-abies-balsemea" class="level3">
+<h3 class="anchored" data-anchor-id="example-using-abies-balsemea">Example using <em>Abies balsemea</em></h3>
 <p>We used a linear model to summarize the evolution of the population growth rate (<span class="math inline">\(\lambda\)</span>) and its variability across the cold and warm ranges (<a href="#eq-metamodel">Equation&nbsp;<span>19.2</span></a>). The <a href="#fig-res_example">Figure&nbsp;<span>19.8</span></a> shows the observed <span class="math inline">\(\lambda\)</span> distribution and the fit of the underlying model on the mean annual temperature gradient for the species <em>Abies balsamea</em>. Each point represents a plot-year-replication encompassing the complete spatio-temporal sources of variability arising from the stochastic environment and parameter uncertainty. The black line represents the average fitted model (how <span class="math inline">\(\lambda\)</span> changes with MAT), and the shaded area is the 90th quantile of model uncertainty (how the variability of <span class="math inline">\(\lambda\)</span> changes with MAT). From this uncertainty, we can deduce the suitable probability. In this example, in the cold range, the mean and variance of <span class="math inline">\(\lambda\)</span> decrease towards the cold boundary. By comparing the model under heterospecific competition with that without competition, we can observe a slight decrease in the average at the cold border but a larger decrease in uncertainty (<a href="#fig-res_example">Figure&nbsp;<span>19.8</span></a> at the bottom left).</p>
 <div class="cell" data-hash="extinction_risk_cache/html/fig-res_example_7385375c268b1ed930f54aaa09583cac">
 <div class="cell-output-display">
@@ -451,39 +458,65 @@ F(\lambda) = \int_{1}^{\infty} f(\lambda)d\lambda
 </div>
 </div>
 </div>
-<p>The final step was to analyze the effect of competition on the suitable probability at the border and center of the temperature range distribution for all species. The <a href="#fig-sp_comp_vs_nocomp">Figure&nbsp;<span>19.10</span></a> compares the suitable probability under no competition to those under heterospecific competition. All species except one presented high values of suitable probability at the center and border of their cold and hot ranges. Among the four conditions, species presented a lower suitable probability at the border of the hot range (red in the right panel). Almost all species, in all conditions, are distributed below the identity line (1:1), meaning that heterospecific competition reduces the suitable probability. In the cold range, the suitable probability is high overall for both competition conditions, with no significant difference between the border (red) and center (blue) of the distribution. However, at the hot range, we can observe a significant shift in suitable probability from the center to the border. In addition, we can also observe that the species at the border of the hot range have moved away from the identity line, which means that the effect of heterospecific competition is more significant.</p>
-<div class="cell" data-hash="extinction_risk_cache/html/fig-sp_comp_vs_nocomp_9d1bba5bff8364b341cf827eaddbebb0">
+</section>
+<section id="effect-of-climate-and-competition-on-suitable-probability" class="level3">
+<h3 class="anchored" data-anchor-id="effect-of-climate-and-competition-on-suitable-probability">Effect of climate and competition on suitable probability</h3>
+<p>In the final step, we analyze the effect of competition on the suitable probability at the border and center of the temperature range distribution for all species. The <a href="#fig-sp_comp_vs_nocomp2">Figure&nbsp;<span>19.10</span></a> compares the suitable probability under no competition to those under heterospecific competition for four locations from the mean annual temperature gradient. Overall, suitable probability was high among the species, with an average of 0.78. Among the four locations, species presented a lower suitable probability at the border of the hot range, with an average of 0.67. Almost all species, in all conditions, are distributed below the identity line (1:1), meaning that heterospecific competition reduces the suitable probability. In the cold range, temperature decrease toward the border had little effect on the suitable probability for both competitive conditions. However, at the hot range, however, we can observe a significant shift in suitable probability from the center to the border. Across the temperature range, there is a monotonic decrease in suitable probability from the cold border toward the hot border.</p>
+<div class="cell" data-hash="extinction_risk_cache/html/fig-sp_comp_vs_nocomp_d16094c587343e1e05cb99780e95ace4">
+
+</div>
+<div class="cell" data-hash="extinction_risk_cache/html/fig-sp_comp_vs_nocomp2_6b7f8095651bb624f6d76e4b8dc3e7b0">
 <div class="cell-output-display">
-<div id="fig-sp_comp_vs_nocomp" class="quarto-figure quarto-figure-center anchored">
+<div id="fig-sp_comp_vs_nocomp2" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure">
-<p><img src="extinction_risk_files/figure-html/fig-sp_comp_vs_nocomp-1.png" class="img-fluid figure-img" width="768"></p>
-<p></p><figcaption class="figure-caption">Figure&nbsp;19.10: The relationship in the suitable probability between no competition and with heterospecific competition. Each point represents the 31 forest species at their border (red) or center (blue) locations. Species points are grouped by a Multivariate Normal Density function with 75% probability. Note that we omitted the parameter uncertainty in this figure to avoid overlap and increase clarity.</figcaption><p></p>
+<p><img src="extinction_risk_files/figure-html/fig-sp_comp_vs_nocomp2-1.png" class="img-fluid figure-img" width="768"></p>
+<p></p><figcaption class="figure-caption">Figure&nbsp;19.10: Suitable probability for the 31 forest species in their distribution from the cold to the hot border of the mean annual temperature gradient. Note that we omitted the parameter uncertainty of each species in this figure to avoid overlap and increase clarity.</figcaption><p></p>
 </figure>
 </div>
 </div>
 </div>
-<p>We further tested whether the effect of heterospecific competition on suitable probability changes depends on the location of the species border. For instance, we observed that competition was stronger in the hot range than in the cold range. Therefore, we can expect competition strength to increase for species distributed at hotter temperatures. The <a href="#fig-sp_over_MAT1">Figure&nbsp;<span>19.11</span></a> shows the suitable probability distribution at the border for the cold and hot ranges over the MAT gradient. We can observe that heterospecific competition decreases the suitable probability almost similarly for all species across the temperature gradient. The only exception is for the cold range species located toward higher temperatures, which showed a relatively higher effect of competition than species located in cold temperatures (<a href="#fig-sp_over_MAT1">Figure&nbsp;<span>19.11</span></a> left panel).</p>
-<div class="cell" data-hash="extinction_risk_cache/html/fig-sp_over_MAT1_cc4deb5868c801293f0e35dce3c5986a">
+<p>We further estimated the difference in suitable probability between the border and center (for climate) and between heterospecific and non-competition within each species. In <a href="#fig-diff_sp_raw">Figure&nbsp;<span>19.11</span></a>, we compare the suitable probability for each species under the climate or competition conditions, where each line and their respective color determines the amount of change in suitable probability.</p>
+<div class="cell" data-hash="extinction_risk_cache/html/fig-diff_sp_raw_5a0d2354667271a629cd0b8ae72099d6">
 <div class="cell-output-display">
-<div id="fig-sp_over_MAT1" class="quarto-figure quarto-figure-center anchored">
+<div id="fig-diff_sp_raw" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure">
-<p><img src="extinction_risk_files/figure-html/fig-sp_over_MAT1-1.png" class="img-fluid figure-img" width="768"></p>
-<p></p><figcaption class="figure-caption">Figure&nbsp;19.11: Suitable probability at the cold and hot border for 31 species located over the mean annual temperature gradient. Species points are grouped by a Multivariate Normal Density function with 75% probability.</figcaption><p></p>
+<p><img src="extinction_risk_files/figure-html/fig-diff_sp_raw-1.png" class="img-fluid figure-img" width="768"></p>
+<p></p><figcaption class="figure-caption">Figure&nbsp;19.11: Difference in suitable probability between the center and border of the distribution (left panels) and no competition and heterospecific competition (right) for the cold (top) and hot (bottom) ranges. The color of the line connecting each species’ conditions represents the intensity of change in suitable probability—the more intense the color, the greater the shift between conditions.</figcaption><p></p>
 </figure>
 </div>
 </div>
 </div>
-<p>In <a href="#fig-sp_over_MAT2">Figure&nbsp;<span>19.12</span></a>, we evaluate the difference between the suitable probability with heterospecific competition and without competition, where negative values mean that heterospecific competition reduced the suitable probability. In the cold range, competition has a higher effect on species distributed toward higher temperatures. In the hot range, there is no clear trend of change in the temperature gradient. Overall, heterospecific competition was higher in the hot than cold range.</p>
-<div class="cell" data-hash="extinction_risk_cache/html/fig-sp_over_MAT2_2b04ebdcd938d33ffa9e12db0873ec4a">
+<p>The overall change in suitable probability for each condition is summarized in figure <a href="#fig-diff_sp_hist">Figure&nbsp;<span>19.12</span></a>. The effect of heterospecific competition on suitable probability was negative for most species across the cold and hot ranges. For climate, however, the effect of changing temperature from the center to the border diverged between the cold and hot ranges. While most species experienced a decrease in suitable probability toward the hot range, moving from the center toward the cold range, the pattern was divergent with larger increases and decreases in suitable probability. Overall, the climate had a larger effect in changing suitable probability than competition.</p>
+<div class="cell" data-hash="extinction_risk_cache/html/fig-diff_sp_hist_dd0788c743ef246e23a5c1e8f16c89f3">
 <div class="cell-output-display">
-<div id="fig-sp_over_MAT2" class="quarto-figure quarto-figure-center anchored">
+<div id="fig-diff_sp_hist" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure">
-<p><img src="extinction_risk_files/figure-html/fig-sp_over_MAT2-1.png" class="img-fluid figure-img" width="768"></p>
-<p></p><figcaption class="figure-caption">Figure&nbsp;19.12: Difference in suitable probability (heterospecific competition - no competition) at the cold and hot border for 31 species located over the mean annual temperature gradient. Negative values mean heterospecific competition reduced suitable probability. Species points are grouped by a Multivariate Normal Density function with 75% probability.</figcaption><p></p>
+<p><img src="extinction_risk_files/figure-html/fig-diff_sp_hist-1.png" class="img-fluid figure-img" width="768"></p>
+<p></p><figcaption class="figure-caption">Figure&nbsp;19.12: Difference in suitable probability for climate and competition over the cold and hot ranges. When comparing one covariate, the classes of the other covariate are merged. For example, when we analyze the effect of climate, we see the distribution of the difference in suitable probability between the border and the center conditions, both for the no competition and heterospecific competition conditions together.</figcaption><p></p>
 </figure>
 </div>
 </div>
 </div>
+</section>
+<section id="suitable-probability-across-the-mean-annual-temperature-gradient" class="level3">
+<h3 class="anchored" data-anchor-id="suitable-probability-across-the-mean-annual-temperature-gradient">Suitable probability across the mean annual temperature gradient</h3>
+<p>We further tested whether the effect of climate and competition on suitable probability changes depends on the location of the species border. Given that the negative effect of climate and competition was stronger at the hot range (<a href="#fig-diff_sp_hist">Figure&nbsp;<span>19.12</span></a>), we can expect the strength of this effect to increase for species distributed at hotter temperatures. <!-- The @fig-sp_over_MAT1 shows the suitable probability distribution at the border for the cold and hot ranges over the MAT gradient.
+We can observe that heterospecific competition decreases the suitable probability almost similarly for all species across the temperature gradient.
+The only exception is for the cold range species located toward higher temperatures, which showed a relatively higher effect of competition than species located in cold temperatures (@fig-sp_over_MAT1 left panel). --> Similar to <a href="#fig-diff_sp_hist">Figure&nbsp;<span>19.12</span></a>, in <a href="#fig-sp_diff_over_MAT">Figure&nbsp;<span>19.13</span></a>, we evaluate the difference in suitable probability for climate and competition across the mean annual temperature gradient. While at the hot range, there is no apparent difference in climate and competition across the temperature gradient, at the cold range, the difference in suitable probability changed depending on the temperature range position. For climate, as temperature reduced from the center to the border of the species, the suitable probability increased for species located at the hotter border but decreased for species close to the colder border. When comparing suitable probability between heterospecific competition and no competition at the cold range, heterospecific competition reduced suitable probability only for species located at hotter temperatures.</p>
+<div class="cell" data-hash="extinction_risk_cache/html/fig-sp_over_MAT1_266a66e29e6a60c0eb88ad06ca7af021">
+
+</div>
+<div class="cell" data-hash="extinction_risk_cache/html/fig-sp_diff_over_MAT_0d9682f28ee0da8056917f8ce4a55cee">
+<div class="cell-output-display">
+<div id="fig-sp_diff_over_MAT" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="extinction_risk_files/figure-html/fig-sp_diff_over_MAT-1.png" class="img-fluid figure-img" width="768"></p>
+<p></p><figcaption class="figure-caption">Figure&nbsp;19.13: Difference in suitable probability for climate and competition at the cold and hot border for 31 species located over the mean annual temperature gradient. The difference in suitable probability for the climate effect is marginalized under the no-competition condition. Likewise, the effect of competition is marginalized at the border. In both cases, the marginalization of the other condition did not modify the interpretation of the figure. Species points are grouped by a Multivariate Normal Density function with 75% probability.</figcaption><p></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
 </section>
 <section id="appendices" class="level2">
 <h2 class="anchored" data-anchor-id="appendices">Appendices</h2>
