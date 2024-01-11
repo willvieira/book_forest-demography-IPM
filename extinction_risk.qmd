@@ -19,7 +19,7 @@ The former combines spatial and temporal variation in the climate (mean annual t
 The latter combines model uncertainty at the individual level for the growth, survival, and recruitment models, along with the spatial heterogeneity determined by the variance of these demographic models among local populations (plot level variability).
 The inherent demographic uncertainty and environmental stochasticity introduce variance into $\lambda$, and the strength of this variance directly influences the suitable probability, especially for populations with lower performance or density [@Holt2005].
 To illustrate the concept, consider two populations with equal mean growth rates ($\overline{\lambda}$) but varying standard deviations ($\sigma_\lambda$).
-We define suitable probability as the area under the distribution for $\lambda >= 1$ [@fig-lambda_sigma].
+We define suitable probability as the area under the distribution for $\lambda \geq 1$ [@fig-lambda_sigma].
 
 ```{r re_sigma,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-lambda_sigma
@@ -65,13 +65,20 @@ expand_grid(
 
 ```
 
-We measure suitable probability using the cumulative distribution function $F(\lambda)$, integrating the estimated density function ($f(\lambda)$) from the threshold of 1 to infinity, as follows:
+To estimate suitable probability, we first determine the cumulative distribution function, $F(x)$, from the generic probability density function, $log(\lambda) = f(t)$, as follows:
 
 $$
- F(\lambda) = \int_{1}^{\infty} f(\lambda)d\lambda
-$$ {#eq-sp}
+F_{\lambda}(x) = P(\lambda \le x) = \int_{-\infty}^{0} f(t)dt
+$$
 
-@fig-lambda_sigma2 illustrates the relationship between $\lambda$ variability and suitable probability.
+This function represents the cumulative distribution from $-\infty$ to $x$.
+Subsequently, we define the suitable probability ($\Lambda$) as the inverse of the cumulative distribution function for $x = 1$:
+
+$$
+  \Lambda = 1 - F_{\lambda}(1)
+$${#eq-sp}
+
+@fig-lambda_sigma2 illustrates the relationship between $\lambda$ variability and $\Lambda$.
 The higher the variability around $\lambda$, the more blurred the mean difference between two populations will become.
 Increasing variance tends to reduce suitable probability when the population growth rate is below 1.
 
@@ -117,7 +124,7 @@ random_lambdas |>
   theme_classic() +
   labs(
     x = expression(sigma),
-    y = expression('Suitable probability '~F(lambda)),
+    y = expression('Suitable probability ('~Lambda~')'),
     color = expression(bar(lambda))
   )
 
@@ -346,41 +353,43 @@ We conclude this study with a novel theory that uses suitable probability to est
 
 ### Sources of population growth rate ($\lambda$) variability
 
-Population growth rate ($\lambda$) is determined on the local population scale, specifically at the plot level in our study.
-At a given generic location, say latitude, where several plots are located, the variance of $\lambda$ among those plots arises from the spatio-temporal variation in both the climate and competition covariates.
-For instance, climate stochasticity creates noise in the annual temperature and precipitation.
-Similarly, two locations with the same climate conditions can have different community abundance and composition, creating variability in the strength of competition.
+The estimation of $\lambda$ occurs at the local population scale, specifically at the plot level in our study.
+Within a given geographic location, such as a specific latitude where several plots are located, the variance of $\lambda$ among those plots arises from spatio-temporal variations in both climate and competition covariates.
+For instance, climate stochasticity introduces noise in annual temperature and precipitation, leading to environmental variations. 
+Similarly, even with identical climate conditions, two locations can exhibit different community abundance and composition, resulting in variability in the strength of competition. 
 Beyond these spatio-temporal environmentally-induced variations, $\lambda$ can still vary due to model uncertainty.
-In our study, the demographic models track uncertainty at two complementary scales: individual and plot levels.
-At the individual level, a plot with the same climate and competition conditions can have different $\lambda$ values due to the uncertainty in the demographic models.
-Similarly, two plots with the same environmental conditions and averaged parameter values (so no demographic uncertainty at the individual level) can still yield different $\lambda$ values due to the spatial uncertainty of each demographic model assigned among plots.
-Therefore, variability in population growth rate can arise from the spatio-temporal variation in both the environment and the parameters.
 
-Except for the parameter uncertainty at the individual level, all other sources of variability are space-dependent.
-This means environmental variability (from climate, competition, or both) and parameter uncertainty at the plot level can change depending on their spatial location.
-For instance, plots on the border of the species distribution can have more temperature variability than those at the center of the distribution.
-Additionally, plot-level parametric uncertainty can be spatially structured by capturing potential features of demographic variability available beyond the climatic and competition covariates, such as historical factors of a region or local edaphic conditions.
-Using demographic range models, while accounting for the environmental variability and model uncertainty, can gives us a better picture of how the species' population growth rate changes across their range distribution.
+In our study, demographic models track uncertainty at two complementary scales: individual and plot levels.
+At the individual level, plots with the same climate and competition conditions may have different $\lambda$ values due to the uncertainty in the demographic models. 
+Similarly, even with the same environmental conditions and averaged parameter values (eliminating demographic uncertainty at the individual level), two plots can still yield different $\lambda$ values due to the spatial uncertainty of each demographic model assigned among plots through the random effects.
+Therefore, variability in the population growth rate can arise from spatio-temporal variations in both the environment and the parameters.
 
 ### Modeling suitable probability
 
-We can assess the suitable probability of a species at multiple scales, from the local plot up to the metapopulation level.
-When we evaluate the suitable probability at the plot level, the only sources of variability in $\lambda$ are from the parametric uncertainty at the individual level and the temporal environmental stochasticity in climate and competition.
-At the metapopulation scale, when suitable probability is evaluated using several plots simultaneously, we can further account for the spatial variability in the environment and the spatial uncertainty in the plot-level parameters.
-At this larger scale, we can then assess how the suitable probability of a species changes across its range distribution as a function of both fixed climate and competition effects and the underlying spatio-temporal variability arising from the environmental stochasticity and parameter uncertainty.
+We can evaluate the suitable probability of a species at various scales, ranging from a single local plot up to several plots in a region.
+At the plot level, sources of variability in $\lambda$ stem from parametric uncertainty at the individual level and temporal environmental stochasticity in climate and competition.
+When assessing suitable probability at the metapopulation scale by considering multiple plots simultaneously, we can additionally account for spatial variability in the environment and spatial uncertainty in plot-level parameters.
 
-Given all these sources of variability, we can model how suitable probability changes across the latitude range of the species.
-In our study, we are particularly interested in how suitable probability changes towards the cold and hot ranges.
-For that, we split the plots of each species into cold and hot ranges using the centroid of the observed Mean Annual Temperature (MAT) among all plots ($\frac{max(MAT) + min(MAT)}{2}$).
+With the exception of parameter uncertainty at the individual level, all other sources of variability exhibit spatial dependence.
+This implies that environmental variability (from climate, competition, or both) and parameter uncertainty at the plot level can vary based on their spatial location.
+For instance, plots at the borders of the species distribution may experience more temperature variability than those at the center.
+Additionally, plot-level parametric uncertainty can be spatially structured, capturing potential features of demographic variability beyond the climatic and competition covariates, such as historical factors or local edaphic conditions. 
+
+At the metapopulation scale, we can model how suitable probability changes across the species' range distribution, considering both fixed climate and competition effects and the underlying spatio-temporal variability.
+In our study, we are particularly interested in examining how suitable probability evolves from the center toward the cold and hot ranges. 
+For that, we categorized all plot-year observations of a species based on the gradient of mean annual temperature (MAT), divided into cold and hot ranges using the MAT centroid among all plots ($\frac{max(MAT) + min(MAT)}{2}$).
 We chose to use MAT instead of latitude because we are interested in the species' climatic niche, although the two variables are highly correlated.
-We assess suitable probability at the cold and hot ranges separately, using a linear model to represent how the population growth rate ($\lambda$) changes as a function of MAT.
-The spatio-temporal variability of $\lambda$ from the environmental stochasticity and parameter uncertainty will determine the variance of the model.
-As this variance could change depending on the range position, we also allowed the variance of the linear model to be dependent on MAT.
-Finally, to accommodate the possible asymmetry in this variance, we use a Skew Normal Distribution ($SN$) with an additional parameter $\alpha$ that can add right or left skewed tail to the variance:
+The choice of MAT over latitude is motivated by our interest in understanding the species' climatic niche.
+Despite our choice, MAT and latitude are highly correlated for all species.
+
+We assessed suitable probability separately for the cold and hot ranges, employing a linear model to determine the relationship between $\lambda$ and MAT.
+The spatio-temporal variability of $\lambda$ arising from environmental stochasticity and parameter uncertainty influences the variance of the linear model.
+As this variance may change depending on the range position, we introduce a submodel for the variance of the linear model to be dependent on MAT.
+To accommodate potential asymmetry in this variance, we use a Skew Normal Distribution ($\mathcal{SN}$) incorporating an additional parameter ($\alpha$) that can introduce right or left-skewed tails to the variance:
 
 $$
 \begin{split}
-&log(\lambda) \sim SN(\xi, \omega, \alpha) \\[2pt]
+&log(\lambda) \sim \mathcal{SN}(\xi, \omega, \alpha) \\[2pt]
 &\xi = \beta_{1, \xi} \times MAT + \beta_{0, \xi} \\[2pt]
 &\omega = e^{\beta_{1, \omega} \times MAT + \beta_{0, \omega}}
 \end{split}
@@ -515,36 +524,33 @@ theme(legend.position = 'none')
 
 ### Simulations
 
-We computed $\lambda$ for each species using the plot-year observations in the dataset.
-For each observed species-plot-year combination, we included environmentally induced variability and parameter uncertainty.
-To include temporal stochasticity in the climate condition, we used the mean and standard deviation of mean annual temperature and precipitation calculated from the years between measurements.
-For instance, for a plot that was observed twice, we calculated $\lambda$ for the second observation with climate conditions drawn randomly from a normal distribution with mean and standard deviation defined from climate observations among the years between the two measurements.
+We computed $\lambda$ for each species based on the plot-year observations in the dataset, considering both environmentally induced variability and parameter uncertainty.
+For every observed species-plot-year combination, we incorporated temporal stochasticity in climate conditions by using the mean and standard deviation of mean annual temperature and precipitation calculated from the years between measurements.
+For instance, in the case of a plot observed twice, we calculated $\lambda$ for the second observation with climate conditions drawn randomly from a normal distribution with mean and standard deviation defined from climate observations within the year interval.
 Similarly, temporal stochasticity in competition arises from variation in abundance and composition between measured years.
-By repeating this calculation several times, we can randomly draw parameter values from the posterior distribution to include demographic uncertainty at the individual level.
-For each species-plot-year measurement, we replicate the calculation of $\lambda$ 100 times.
-Finally, by repeating this approach across the plots, we directly include spatial variation in the climate and competition conditions as well as spatial uncertainty in the plot-level parameters.
+By iteratively performing this calculation, drawing parameter values randomly from the posterior distribution, we introduced demographic uncertainty at the individual level.
+For each species-plot-year measurement, we replicated the calculation of $\lambda$ 100 times. 
+By applying this approach across all plots, we naturally incorporate spatial variation in climate and competition conditions and spatial uncertainty in plot-level parameters.
 
 For each species-plot-year-replication combination, we calculated $\lambda$ under two simulated conditions.
-The first condition was set to no competition, precisely defining heterospecific competition at zero and conspecific competition at a tiny proportion (total population size (N) = 0.1).
+The first condition assumed no competition, with heterospecific competition defined at zero and conspecific competition at a minimal proportion (total population size ($N$) = 0.1).
 This condition simulated the population growth rate under the fundamental niche.
-The second condition simulated the invasion growth rate; in other words, the population growth rate when the focal species is rare (N = 0.1) and the heterospecific competition is set to the observed abundance of the competitive species.
+The second condition simulated the invasion growth rate, representing the population growth rate when the focal species is rare ($N = 0.1$) and heterospecific competition set to the observed abundance of the competitive species.
 This condition simulated the population growth rate under the realized niche.
-The code used to perform this computation on High-performance computing is hosted on GitHub: [https://github.com/willvieira/forest-IPM/tree/master/simulations/lambda_plot](https://github.com/willvieira/forest-IPM/tree/master/simulations/lambda_plot).
+The code for these computations on High-performance computing is available on GitHub: [https://github.com/willvieira/forest-IPM/tree/master/simulations/lambda_plot](https://github.com/willvieira/forest-IPM/tree/master/simulations/lambda_plot).
 
-Once we calculated $\lambda$ for each species-plot-year-replication combination, we used these esimates to fit the linear model describing how $\lambda$ and its variability changes across the mean annual temperature gradient.
+After calculating $\lambda$ for each species-plot-year-replication combination, we used these estimates to fit the linear model describing how $\lambda$ and its variability change across the mean annual temperature gradient.
 We fitted the species-specific linear model for the hot and cold ranges using the Hamiltonian Monte Carlo (HMC) algorithm via the Stan software [version 2.30.1 @stan2022stan] and the `cmdstandr` R package [version 0.5.3 @cmdstanr].
 To reduce the sampling time, we used a sample of 5000 plots for each species to fit the model.
 This sample was necessary only for 6 out of the 31 species.
-The R and Stan scripts used to perform this computation on High-performance computing are hosted on GitHub: [https://github.com/willvieira/forest-IPM/tree/master/simulations/model_lambdaPlot/](https://github.com/willvieira/forest-IPM/tree/master/simulations/model_lambdaPlot/).
+The R and Stan scripts for these computations on High-performance computing are accessible on GitHub: [https://github.com/willvieira/forest-IPM/tree/master/simulations/model_lambdaPlot/](https://github.com/willvieira/forest-IPM/tree/master/simulations/model_lambdaPlot/).
 
-With the fitted models, we can then use the posterior distribution to estimate the suitable probability of a species for any value of MAT.
-Given that we split each species distribution into cold and hot ranges, we can predict how suitable probability changes from the center towards the border.
+With the fitted models, we leveraged the posterior distribution to estimate the suitable probability of a species for any value of MAT under fundamental or realized niche for the cold and hot ranges.
 Specifically, we estimated suitable probability under four different MAT conditions encountered by the species: at the border and the center of each cold and hot range.
 We defined the border of the cold range as the minimum observed MAT for the focal species in the dataset, while the hot range was defined as the maximum observed MAT.
 The center location is defined as the centroid of MAT for the focal species.
-Although the center location has the same MAT for the cold and hot ranges, we need to keep both because the model is fitted separately for the cold and hot ranges.
-Finally, we estimate the suitable probability for each location under no competition (fundamental niche) and heterospecific competition (realized niche) conditions.
-We estimated suitable probability using the empirical cumulative distribution function over 1000 predictive draws.
+Although the center location has the same MAT for the cold and hot ranges, both are retained because the model is fitted separately for the cold and hot ranges.
+Finally, we estimated suitable probability for each location under no competition (fundamental niche) and heterospecific competition (realized niche) conditions, using the empirical cumulative distribution function over 1000 predictive draws.
 
 ```{r check_for_spatial_aggreation_in_the_temperature_variability, echo=FALSE,eval=FALSE}
 library(sf)
