@@ -929,6 +929,7 @@ sp_dt |>
     strip.background = element_blank()
   )
 
+
 ```
 
 For each species, we estimated the difference in suitable probability between the border and center (for climate) and between heterospecific and non-competition.
@@ -1137,7 +1138,7 @@ Overall, the relative difference in suitable probability from the center toward 
 ```{r diff_sp_hist,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-diff_sp_hist
 #| fig-width: 8
-#| fig-height: 4
+#| fig-height: 3.5
 #| fig-cap: "Difference in suitable probability for climate and competition effects over the cold and hot ranges. Negative values denote a decrease in species suitable probability from the center towards the distribution border, while positive values indicate an increase. Specifically, a negative value for climate at the hot (or cold) range signifies a reduction in suitable probability as temperature rises (or falls) towards the border."
 
 sp_dt |>
@@ -1177,16 +1178,18 @@ sp_dt |>
   group_by(species, border, sim, x) |>
   reframe(value = mean(value)) |>
   ggplot() +
-  aes(value, sim) +
-  aes(fill = after_stat(x)) +
+  aes(x = value, y = sim) +
+  aes(fill = value) +
   facet_wrap(~border) +
-  ggridges::geom_density_ridges_gradient(alpha = 0.7, color = 'grey') +
+  # stat_eye(alpha = 0.5, .width = 0, size = 7) +
+  geom_point(size = 2.5, shape = 21, color = 'grey', position = position_jitterdodge(seed = 15)) +
+  geom_boxplot(fill = 'transparent', outlier.color = 'transparent', color = 'black') +
+  # geom_violin(fill = 'transparent')+
   scale_fill_gradient2(
     midpoint = 0,
-    name = '',
-    breaks = c(-.4, 0, .4)
+    name = ''
   ) +
-  # geom_vline(xintercept = 0, linetype = 2, alpha = 0.7) +
+  geom_vline(xintercept = 0, linetype = 2, alpha = 0.3) +
   theme_classic() +
   theme(
     legend.position = 'none',
@@ -1255,7 +1258,7 @@ sp_dt |>
 ```{r sp_diff_over_MAT,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-sp_diff_over_MAT
 #| fig-width: 8
-#| fig-height: 6.5
+#| fig-height: 5.5
 #| fig-cap: "Relative difference in suitable probability between the center and border for climate and competition for 31 species located over the mean annual temperature gradient. The difference in suitable probability for the climate effect is marginalized under the no-competition condition. Species points are grouped by a Multivariate Normal Density function with 75% probability."
 
 sp_dt |>
