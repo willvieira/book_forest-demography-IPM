@@ -471,7 +471,7 @@ F_{\lambda}(x) = P(\lambda \le x) = \int_{-\infty}^{0} f(t)dt
 <div class="cell" data-hash="extinction_risk_cache/html/fig-sp_comp_vs_nocomp_d16094c587343e1e05cb99780e95ace4">
 
 </div>
-<div class="cell" data-hash="extinction_risk_cache/html/fig-sp_comp_vs_nocomp2_0b66cbb47aa31009fe3f91891af91a5c">
+<div class="cell" data-hash="extinction_risk_cache/html/fig-sp_comp_vs_nocomp2_296598d3eda5158b1b96cc77c24a2f7b">
 <div class="cell-output-display">
 <div id="fig-sp_comp_vs_nocomp2" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure">
@@ -482,7 +482,7 @@ F_{\lambda}(x) = P(\lambda \le x) = \int_{-\infty}^{0} f(t)dt
 </div>
 </div>
 <p>For each species, we estimated the difference in suitable probability between the border and center (for climate) and between heterospecific and non-competition. In <a href="#fig-diff_sp_raw">Figure&nbsp;<span>19.11</span></a>, we compare the suitable probability for each species under the climate or competition conditions, where each line and their respective color determines the amount of change in suitable probability.</p>
-<div class="cell" data-hash="extinction_risk_cache/html/fig-diff_sp_raw_5a0d2354667271a629cd0b8ae72099d6">
+<div class="cell" data-hash="extinction_risk_cache/html/fig-diff_sp_raw_3e04038a60401c460d17962b0d951612">
 <div class="cell-output-display">
 <div id="fig-diff_sp_raw" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure">
@@ -493,7 +493,7 @@ F_{\lambda}(x) = P(\lambda \le x) = \int_{-\infty}^{0} f(t)dt
 </div>
 </div>
 <p>We further estimated the relative effect of climate and competition on changing suitable probability from the center to the border of the species distribution (<a href="#fig-diff_sp_hist">Figure&nbsp;<span>19.12</span></a>). Specifically, we quantified the distinct contributions of temperature and competition to changes in suitable probability. Positive values of the relative difference signify an increase in suitable probability from the center towards the border, negative values indicate a decrease, and zero implies no net change. In the hot range, most species exhibited negative values of the relative difference in suitable probability, indicating a decline in suitability due to higher temperature and intensified competition toward the hot border of the species distribution. At the cold range, most species showed positive values for the competition effect, meaning a reduction in the effect of competition toward the cold border. However, the climate effect at the cold range showed a less clear pattern, with some species experiencing an increase and others a decrease in suitable probability as temperature decreased toward the cold range. Overall, the relative difference in suitable probability from the center toward the border was more influenced by climate rather than competition.</p>
-<div class="cell" data-hash="extinction_risk_cache/html/fig-diff_sp_hist_484d3a2955e1c0511f8794db1f9cb59a">
+<div class="cell" data-hash="extinction_risk_cache/html/fig-diff_sp_hist_8ff3fd8344d0f5f5ab516b85b3a45d19">
 <div class="cell-output-display">
 <div id="fig-diff_sp_hist" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure">
@@ -503,21 +503,32 @@ F_{\lambda}(x) = P(\lambda \le x) = \int_{-\infty}^{0} f(t)dt
 </div>
 </div>
 </div>
+<p>In our investigation of whether suitable probability decreases simultaneously at both borders (indicating a unimodal shape) or exhibits a linear pattern from one border to the other (<a href="#fig-diff_sp_hot_vs_cold">Figure&nbsp;<span>19.13</span></a>), we found distinct patterns under the climate and competition effects. For the climate effect, the majority of species demonstrated a decrease in suitable probability at one border while the other remained unchanged. Additionally, a few species displayed a clear linear pattern of decreasing suitable probability from the cold to the hot border, with only one species (<em>Betula papyrifera</em>) showing a pronounced unimodal shape. Conversely, under the competition effect, most species exhibited a decrease in suitable probability at the hot border and an increase at the cold border, indicating a linear rise in the impact of competition from the cold to the hot border of the distribution.</p>
+<div class="cell" data-hash="extinction_risk_cache/html/fig-diff_sp_hot_vs_cold_cba7b7fcb38f30b6ac3a09f320f6fd77">
+<div class="cell-output-display">
+<div id="fig-diff_sp_hot_vs_cold" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="extinction_risk_files/figure-html/fig-diff_sp_hot_vs_cold-1.png" class="img-fluid figure-img" width="768"></p>
+<p></p><figcaption class="figure-caption">Figure&nbsp;19.13: The relationship in the difference in suitable probability from the center to the border (<span class="math inline">\(\Delta\Lambda\)</span>) between the cold and hot borders. A species at the bottom-left area (both <span class="math inline">\(\Delta\Lambda\)</span> are negative) indicates an unimodal decrease in suitable probability at the borders. Conversely, species at the top-right square exhibit an inverse unimodal shape. In the top-left or bottom-right areas, suitable probability linearly decreases or increases from the cold toward the hot border, respectively. For the climate effect (left panel), species are colored following the centroid mean annual temperature among all observed plots. In the climate effect (left panel), species are color-coded based on the centroid of mean annual temperature among all observed plots. In the competition effect (right panel), species are classified by shade tolerance following <span class="citation" data-cites="burns1990silvics">Burns, Honkala, et al. (<a href="references.html#ref-burns1990silvics" role="doc-biblioref">1990</a>)</span>.</figcaption><p></p>
+</figure>
+</div>
+</div>
+</div>
 </section>
 <section id="suitable-probability-across-the-mean-annual-temperature-gradient" class="level3">
 <h3 class="anchored" data-anchor-id="suitable-probability-across-the-mean-annual-temperature-gradient">Suitable probability across the mean annual temperature gradient</h3>
 <p>We further investigated the potential dependency of climate and competition effects on the geographical location of the species. Specifically, we hypothesized that the impact of climate might be more pronounced for species distributed in hotter temperatures than those in colder temperatures. <!-- The @fig-sp_over_MAT1 shows the suitable probability distribution at the border for the cold and hot ranges over the MAT gradient.
 We can observe that heterospecific competition decreases the suitable probability almost similarly for all species across the temperature gradient.
-The only exception is for the cold range species located toward higher temperatures, which showed a relatively higher effect of competition than species located in cold temperatures (@fig-sp_over_MAT1 left panel). --> In <a href="#fig-sp_diff_over_MAT">Figure&nbsp;<span>19.13</span></a>, we evaluated the difference in suitable probability for climate and competition effects along the mean annual temperature gradient. Notably, the only condition showing a significant trend was the climate effect in the cold range (blue group at the top panel). Not surprisingly, suitable probability decreased as temperature declined toward the cold range, but this pattern was observed only for species located in colder conditions. Conversely, the suitable probability increased when species were situated in hotter conditions as temperature decreased toward the cold range.</p>
+The only exception is for the cold range species located toward higher temperatures, which showed a relatively higher effect of competition than species located in cold temperatures (@fig-sp_over_MAT1 left panel). --> In <a href="#fig-sp_diff_over_MAT">Figure&nbsp;<span>19.14</span></a>, we evaluated the difference in suitable probability for climate and competition effects along the mean annual temperature gradient. Notably, the only condition showing a significant trend was the climate effect in the cold range (blue group at the top panel). Not surprisingly, suitable probability decreased as temperature declined toward the cold range, but this pattern was observed only for species located in colder conditions. Conversely, the suitable probability increased when species were situated in hotter conditions as temperature decreased toward the cold range.</p>
 <div class="cell" data-hash="extinction_risk_cache/html/fig-sp_over_MAT1_266a66e29e6a60c0eb88ad06ca7af021">
 
 </div>
-<div class="cell" data-hash="extinction_risk_cache/html/fig-sp_diff_over_MAT_5dfdc5bae139f9d9c6d5f59550a2917e">
+<div class="cell" data-hash="extinction_risk_cache/html/fig-sp_diff_over_MAT_b80d4bd2972ba979a07bfead124fcc45">
 <div class="cell-output-display">
 <div id="fig-sp_diff_over_MAT" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure">
 <p><img src="extinction_risk_files/figure-html/fig-sp_diff_over_MAT-1.png" class="img-fluid figure-img" width="768"></p>
-<p></p><figcaption class="figure-caption">Figure&nbsp;19.13: Relative difference in suitable probability between the center and border for climate and competition for 31 species located over the mean annual temperature gradient. The difference in suitable probability for the climate effect is marginalized under the no-competition condition. Species points are grouped by a Multivariate Normal Density function with 75% probability.</figcaption><p></p>
+<p></p><figcaption class="figure-caption">Figure&nbsp;19.14: Relative difference in suitable probability between the center and border for climate and competition for 31 species located over the mean annual temperature gradient. The difference in suitable probability for the climate effect is marginalized under the no-competition condition. Species points are grouped by a Multivariate Normal Density function with 75% probability.</figcaption><p></p>
 </figure>
 </div>
 </div>
@@ -627,6 +638,9 @@ The only exception is for the cold range species located toward higher temperatu
 
 
 <div id="refs" class="references csl-bib-body hanging-indent" role="doc-bibliography" style="display: none">
+<div id="ref-burns1990silvics" class="csl-entry" role="doc-biblioentry">
+Burns, Russell M, Barbara H Honkala, et al. 1990. <span>“Silvics of North America: 1. Conifers; 2. Hardwoods Agriculture Handbook 654.”</span> <em>US Department of Agriculture, Forest Service, Washington, DC</em>.
+</div>
 <div id="ref-cmdstanr" class="csl-entry" role="doc-biblioentry">
 Gabry, Jonah, Rok Češnovar, and Andrew Johnson. 2023. <em>Cmdstanr: R Interface to ’CmdStan’</em>.
 </div>
