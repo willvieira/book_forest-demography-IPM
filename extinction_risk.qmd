@@ -949,6 +949,76 @@ sp_dt |>
   )
 ```
 
+While the negative effect of climate on suitable probability is evident in the above figure, distinguishing the individual effects of competition remains challenging.
+Hence, in @fig-effect_of_comp, we assessed the impact of competition on reducing suitable probability by subtracting the suitable probability under heterospecific competition from the suitable probability with no competition.
+Even when isolating the effect of climate, the negative impact of heterospecific competition on suitable probability increases toward the border of the hot range.
+
+```{r effect_of_comp,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-effect_of_comp
+#| fig-width: 7
+#| fig-height: 4
+#| fig-cap: "The effect of competition on suitable probability across the four range positions. Each species point is color-coded based on its shade tolerance following @burns1990silvics."
+
+spIds <- read_csv(
+  file.path(
+    readLines('_data.path'), 'species_id.csv'
+  )
+) |>
+mutate(
+  shade = factor(shade, levels = c('tolerant', 'intermediate', 'intolerant')),
+  shade_sylvics = factor(shade_sylvics, levels = c('very-tolerant',
+                                            'tolerant',
+                                            'intermediate',
+                                            'intolerant',
+                                            'very-intolerant'
+                                            )),
+  succession = factor(succession, levels = c('pioneer',
+                                              'intermediate',
+                                              'climax'))
+) |>
+filter(sp_to_analyze)
+
+sp_dt |>
+  select(species_id, iter, cond, border, range_pos, ext) |>
+  group_by(species_id, border, cond, range_pos) |>
+  reframe(
+    ext = mean(ext)
+  ) |>
+  pivot_wider(
+    names_from = cond,
+    values_from = ext,
+    names_prefix = 'cond_'
+  ) |>
+   mutate(
+    diff = cond_2 - cond_1,
+    y = paste(border, range_pos, sep = ' '),
+    y = factor(y, levels = rev(c('Hot border', 'Hot center', 'Cold center', 'Cold border')))
+  ) |>
+  left_join(
+    spIds,
+    by = c('species_id' = 'species_id_old')
+  ) |>
+  ggplot() +
+  aes(y, diff) +
+  geom_hline(yintercept = 0, alpha = 0.7) +
+  geom_boxplot(fill = 'transparent', outlier.shape = NA) +
+  geom_point(
+    aes(fill = shade_sylvics),
+    shape = 21, size = 2, alpha = .8, color = 'grey', position = position_jitterdodge(seed = 15)
+  ) +
+  scale_fill_manual(values = c("#20bc45", "#87bc45", "#edbf33", "#ea5545", "#ba0000")) +
+  geom_vline(xintercept = 2.5, linetype = 2, alpha = 0.7) +
+  theme_classic() +
+  theme(
+    legend.position = 'top'
+  ) +
+  labs(
+    y = 'Effect of competition on suitable probability',
+    x = '',
+    fill = NULL
+  )
+```
+
 For each species, we estimated the difference in suitable probability between the border and center (for climate) and between heterospecific and non-competition.
 In @fig-diff_sp_raw, we compare the suitable probability for each species under the climate or competition conditions, where each line and their respective color determines the amount of change in suitable probability.
 
