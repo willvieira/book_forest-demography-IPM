@@ -575,8 +575,27 @@ treeData |>
   aes(color = log(temp_var), fill = log(temp_var)) +
   geom_sf(size = 0.5, alpha = 0.7)
 
+# define which species have border matching with the dataset border
+# meaning it is not necessarily the species border
+db_range <- treeData |>
+  pull(bio_01_mean) |>
+  # drop_na() |>
+  range()
 
-
+treeData |>
+  filter(species_id %in% spIds$species_id_old) |>
+  group_by(species_id) |>
+  reframe(
+    cold_diff = abs(min(bio_01_mean) - db_range[1]),
+    hot_diff = abs(max(bio_01_mean) - db_range[2])
+  ) |>
+  ggplot() +
+  aes(cold_diff, hot_diff) +
+  geom_hline(yintercept = 0, linetype = 2, alpha = 0.7) +
+  geom_vline(xintercept = 0, linetype = 2, alpha = 0.7) +
+  geom_point() +
+  ggrepel::geom_label_repel(aes(label = species_id), size = 2) +
+  theme_classic()
 ```
 
 ## Results
