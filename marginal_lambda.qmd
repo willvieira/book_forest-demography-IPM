@@ -240,7 +240,7 @@ AME_sp |>
   # tune::coord_obs_pred() +  
   labs(
     x = 'ln(climate sensitivity)',
-    x = 'ln(competition sensitivity)'
+    y = 'ln(competition sensitivity)'
   )
 ```
 
