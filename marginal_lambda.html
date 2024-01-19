@@ -284,7 +284,7 @@ ul.task-list li input[type="checkbox"] {
 &amp;CCR_i = \text{ln} \frac{S_{comp, i}}{S_{clim, i}}
 \end{align*}
 \tag{18.2}\]</span></span></p>
-<p>Here, <span class="math inline">\(S\)</span> represents the total sensitivity to competition or climate. Negative <span class="math inline">\(CCR\)</span> values indicate higher sensitivity of <span class="math inline">\(\lambda\)</span> to climate, while positive values suggest the opposite. The code used to perform these analysis are hosted at the <a href="https://github.com/willvieira/forest-IPM/tree/master/simulations/covariates_perturbation"><code>forest-IPM</code></a> GitHub repository.</p>
+<p>Here, <span class="math inline">\(S\)</span> represents the total sensitivity to competition or climate. Negative <span class="math inline">\(CCR\)</span> values indicate higher sensitivity of <span class="math inline">\(\lambda\)</span> to climate, while positive values suggest the opposite. The code used to perform this analysis is hosted at the <a href="https://github.com/willvieira/forest-IPM/tree/master/simulations/covariates_perturbation"><code>forest-IPM</code></a> GitHub repository.</p>
 <section id="results" class="level2">
 <h2 class="anchored" data-anchor-id="results">Results</h2>
 <p>In <a href="#fig-ame">Figure&nbsp;<span>18.1</span></a>, we show the sensitivity of each species’ population growth rate to conspecific and heterospecific competition, temperature, and precipitation. Among all species, <span class="math inline">\(\lambda\)</span> is more sensitive to temperature, followed by conspecific and heterospecific competition.</p>
@@ -298,75 +298,97 @@ ul.task-list li input[type="checkbox"] {
 </div>
 </div>
 </div>
-<p>To test how the sensitivity to each covariate changed across the species range, we classified each plot into cold, center, or hot temperature ranges based on MAT. Cold range plots had MAT below the 10th MAT quantile, while hot range plots had temperatures higher than the 90th MAT quantile. Everything in between was classified as a center plot. We describe the sensitivity of <span class="math inline">\(\lambda\)</span> among all species grouped by each of the four covariates in <a href="#fig-ame_range">Figure&nbsp;<span>18.2</span></a>. There were no significant differences in <span class="math inline">\(\lambda\)</span> sensitivity among these ranges within each covariate.</p>
+<p>In <a href="#fig-comp_vs_clim">Figure&nbsp;<span>18.2</span></a>, we integrate temperature with precipitation (climate) and conspecific with heterospecific competition to explore the relationship between sensitivity to climate and sensitivity to competition. Overall, species with high sensitivity to climate also exhibited high sensitivity to competition. Furthermore, most species displayed higher sensitivity to climate than to competition, and this difference widened as sensitivity levels increased.</p>
+<div class="cell" data-hash="marginal_lambda_cache/html/fig-comp_vs_clim_0b770fa163518c25b287bbf5413c0d38">
+<div class="cell-output-display">
+<div id="fig-comp_vs_clim" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="marginal_lambda_files/figure-html/fig-comp_vs_clim-1.png" class="img-fluid figure-img" width="768"></p>
+<p></p><figcaption class="figure-caption">Figure&nbsp;18.2: Comparison of sensitivity to climate with sensitivity to competition for each of the 31 forest species. The smaller the values, the lower the sensitivity to a covariate. The blue line is drawn from a linear smooth model and the black line is identity line.</figcaption><p></p>
+</figure>
+</div>
+</div>
+</div>
+<p>To test how the sensitivity to each covariate changed across the species range, we classified each plot into cold, center, or hot temperature ranges based on MAT. Cold range plots had MAT below the 10th MAT quantile, while hot range plots had temperatures higher than the 90th MAT quantile. Everything in between was classified as a center plot. We describe the sensitivity of <span class="math inline">\(\lambda\)</span> among all species grouped by each of the four covariates in <a href="#fig-ame_range">Figure&nbsp;<span>18.3</span></a>. There were no significant differences in <span class="math inline">\(\lambda\)</span> sensitivity among these ranges within each covariate.</p>
 <div class="cell" data-hash="marginal_lambda_cache/html/fig-ame_range_b143e2f05c7ff3eaa29fe6a42587844d">
 <div class="cell-output-display">
 <div id="fig-ame_range" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure">
 <p><img src="marginal_lambda_files/figure-html/fig-ame_range-1.png" class="img-fluid figure-img" width="768"></p>
-<p></p><figcaption class="figure-caption">Figure&nbsp;18.2: Sensitivity of species population growth rate to each covariate grouped by the temperature range position. For each species, plots are classified as cold (MAT &lt; 10th quantile), hot (MAT &gt; 90th quantile), and center (10th &lt; MAT &lt; 90th quantile) given their average MAT across the years.</figcaption><p></p>
+<p></p><figcaption class="figure-caption">Figure&nbsp;18.3: Sensitivity of species population growth rate to each covariate grouped by the temperature range position. For each species, plots are classified as cold (MAT &lt; 10th quantile), hot (MAT &gt; 90th quantile), and center (10th &lt; MAT &lt; 90th quantile) given their average MAT across the years.</figcaption><p></p>
 </figure>
 </div>
 </div>
 </div>
-<p>We then merged conspecific with heterospecific competition and temperature with precipitation to assess the relative sensitivity between competition and climate following <a href="#eq-ccr">Equation&nbsp;<span>18.2</span></a>. The predominance of climate over competition was present in all three range positions, although <span class="math inline">\(\lambda\)</span> was more sensitive to competition in the cold range compared to the hot range (<a href="#fig-ccr">Figure&nbsp;<span>18.3</span></a>).</p>
+<p>We then merged conspecific with heterospecific competition and temperature with precipitation to assess the relative sensitivity between competition and climate following <a href="#eq-ccr">Equation&nbsp;<span>18.2</span></a>. The predominance of climate over competition was present in all three range positions, although <span class="math inline">\(\lambda\)</span> was more sensitive to competition in the cold range compared to the hot range (<a href="#fig-ccr">Figure&nbsp;<span>18.4</span></a>).</p>
 <div class="cell" data-hash="marginal_lambda_cache/html/fig-ccr_1538617881a71853013f0759eb2408c3">
 <div class="cell-output-display">
 <div id="fig-ccr" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure">
 <p><img src="marginal_lambda_files/figure-html/fig-ccr-1.png" class="img-fluid figure-img" width="672"></p>
-<p></p><figcaption class="figure-caption">Figure&nbsp;18.3: Relative sensitivity of species population growth rate to competition and climate grouped by the temperature range position. Negative values indicate higher sensitivity of <span class="math inline">\(\lambda\)</span> to climate, while positive values indicate higher sensitivity to competition.</figcaption><p></p>
+<p></p><figcaption class="figure-caption">Figure&nbsp;18.4: Relative sensitivity of species population growth rate to competition and climate grouped by the temperature range position. Negative values indicate higher sensitivity of <span class="math inline">\(\lambda\)</span> to climate, while positive values indicate higher sensitivity to competition.</figcaption><p></p>
 </figure>
 </div>
 </div>
 </div>
-<p>When analyzing the sensitivity at the species level, we observed higher temperature and precipitation sensitivity for species at the cold temperature ranges (<a href="#fig-tempVsLat">Figure&nbsp;<span>18.4</span></a>). This result indicates variability in <span class="math inline">\(\lambda\)</span> sensitivity with respect to their position in the temperature range.</p>
+<p>When analyzing the sensitivity at the species level, we observed higher temperature and precipitation sensitivity for species at the cold temperature ranges (<a href="#fig-tempVsLat">Figure&nbsp;<span>18.5</span></a>). This result indicates variability in <span class="math inline">\(\lambda\)</span> sensitivity with respect to their position in the temperature range.</p>
 <div class="cell" data-hash="marginal_lambda_cache/html/fig-tempVsLat_3b4ecc081354fe7bc04ed402516898cb">
 <div class="cell-output-display">
 <div id="fig-tempVsLat" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure">
 <p><img src="marginal_lambda_files/figure-html/fig-tempVsLat-1.png" class="img-fluid figure-img" width="720"></p>
-<p></p><figcaption class="figure-caption">Figure&nbsp;18.4: Sensitivity of species population growth rate to temperature and precipitation across their temperature range position. We defined each species’ temperature range position as the median Mean Annual Temperature across all observed plots.</figcaption><p></p>
+<p></p><figcaption class="figure-caption">Figure&nbsp;18.5: Sensitivity of species population growth rate to temperature and precipitation across their temperature range position. We defined each species’ temperature range position as the median Mean Annual Temperature across all observed plots.</figcaption><p></p>
 </figure>
 </div>
 </div>
 </div>
-<p>In <a href="#fig-compClimVsTemp">Figure&nbsp;<span>18.5</span></a>, we analyze how the sensitivity to competition and climate and their ratio change across the temperature range. We can observe considerable variability among the species. Overall, species have lower sensitivity to competition compared to climate, and sensitivity to competition seems to be more stable across the temperature range compared to climate sensitivity.</p>
+<p>In <a href="#fig-compClimVsTemp">Figure&nbsp;<span>18.6</span></a>, we analyze how the sensitivity to competition and climate and their ratio change across the temperature range. We can observe considerable variability among the species. Overall, species have lower sensitivity to competition compared to climate, and sensitivity to competition seems to be more stable across the temperature range compared to climate sensitivity.</p>
 <div class="cell" data-hash="marginal_lambda_cache/html/fig-compClimVsTemp_d0adfa97b7ddf9d999645aabbcc5d034">
 <div class="cell-output-display">
 <div id="fig-compClimVsTemp" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure">
 <p><img src="marginal_lambda_files/figure-html/fig-compClimVsTemp-1.png" class="img-fluid figure-img" width="864"></p>
-<p></p><figcaption class="figure-caption">Figure&nbsp;18.5: Sensitivity of species population growth rate to competition (green) and climate (yellow) along with their ratio across the species temperature range.</figcaption><p></p>
+<p></p><figcaption class="figure-caption">Figure&nbsp;18.6: Sensitivity of species population growth rate to competition (green) and climate (yellow) along with their ratio across the species temperature range.</figcaption><p></p>
 </figure>
 </div>
 </div>
 </div>
-<p>Although we could not see much difference in the sensitivity to each covariate across the cold, center, and hot range among all species together (<a href="#fig-ame_range">Figure&nbsp;<span>18.2</span></a>), when analyzing each species individually, there are significant changes in the sensitivity ratio between competition and climate across the temperature range (<a href="#fig-ccr-sp">Figure&nbsp;<span>18.6</span></a>).</p>
+<p>Although we could not see much difference in the sensitivity to each covariate across the cold, center, and hot range among all species together (<a href="#fig-ame_range">Figure&nbsp;<span>18.3</span></a>), when analyzing each species individually, there are significant changes in the sensitivity ratio between competition and climate across the temperature range (<a href="#fig-ccr-sp">Figure&nbsp;<span>18.7</span></a>).</p>
 <div class="cell" data-hash="marginal_lambda_cache/html/fig-ccr-sp_e27bbfcfca58f9f56252ddf94ec53726">
 <div class="cell-output-display">
 <div id="fig-ccr-sp" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure">
 <p><img src="marginal_lambda_files/figure-html/fig-ccr-sp-1.png" class="img-fluid figure-img" width="864"></p>
-<p></p><figcaption class="figure-caption">Figure&nbsp;18.6: Relative sensitivity of species population growth rate between competition and climate for cold (blue), center (green), and hot (red) temperature ranges.</figcaption><p></p>
+<p></p><figcaption class="figure-caption">Figure&nbsp;18.7: Relative sensitivity of species population growth rate between competition and climate for cold (blue), center (green), and hot (red) temperature ranges.</figcaption><p></p>
 </figure>
 </div>
 </div>
 </div>
-<p>Given the sensitivity to competition and climate as functions of the range position changes among the species (<a href="#fig-ccr-sp">Figure&nbsp;<span>18.6</span></a>), we extend <a href="#fig-ame_range">Figure&nbsp;<span>18.2</span></a> by adding the position of each species on the temperature range to answer the question on how the sensitivity to each covariate changes across the species range. For that, we calculated the median of MAT for each species for all plots within the cold, center, and hot ranges. This allowed us to account for the difference in range position between the species to avoid comparing, for instance, the cold range of a boreal species with the cold range of a temperature one. Overall, for the species and range classes, the sensitivity of <span class="math inline">\(\lambda\)</span> to climate was higher than to the competition covariates (<a href="#fig-sensBorder_temp">Figure&nbsp;<span>18.7</span></a>). Except for sensitivity to climate at the hot range, all the other groups followed the pattern of increase in sensitivity as the species’ range position was located towards the colder mean annual temperatures. At the hot range of the species, the sensitivity to competition decreased towards hotter temperatures, while the climate sensitivity remained constant across the range of MAT. At the cold range of the species, the sensitivity to both competition and climate increased towards colder temperatures, with a higher increase rate for the climate than competition. Finally, at the center, the sensitivity to climate and competition increased towards colder temperatures, but there was no clear distinction between the two covariates.</p>
+<p>Given the sensitivity to competition and climate as functions of the range position changes among the species (<a href="#fig-ccr-sp">Figure&nbsp;<span>18.7</span></a>), we extend <a href="#fig-ame_range">Figure&nbsp;<span>18.3</span></a> by adding the position of each species on the temperature range to answer the question on how the sensitivity to each covariate changes across the species range. For that, we calculated the median of MAT for each species for all plots within the cold, center, and hot ranges. This allowed us to account for the difference in range position between the species to avoid comparing, for instance, the cold range of a boreal species with the cold range of a temperature one. Overall, for the species and range classes, the sensitivity of <span class="math inline">\(\lambda\)</span> to climate was higher than to the competition covariates (<a href="#fig-sensBorder_temp">Figure&nbsp;<span>18.8</span></a>). Except for sensitivity to climate at the hot range, all the other groups followed the pattern of increase in sensitivity as the species’ range position was located towards the colder mean annual temperatures. At the hot range of the species, the sensitivity to competition decreased towards hotter temperatures, while the climate sensitivity remained constant across the range of MAT. At the cold range of the species, the sensitivity to both competition and climate increased towards colder temperatures, with a higher increase rate for the climate than competition. Finally, at the center, the sensitivity to climate and competition increased towards colder temperatures, but there was no clear distinction between the two covariates.</p>
 <div class="cell" data-hash="marginal_lambda_cache/html/fig-sensBorder_temp_19e78993c8a03e156df083fe92b9032d">
 <div class="cell-output-display">
 <div id="fig-sensBorder_temp" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure">
 <p><img src="marginal_lambda_files/figure-html/fig-sensBorder_temp-1.png" class="img-fluid figure-img" width="816"></p>
-<p></p><figcaption class="figure-caption">Figure&nbsp;18.7: Bottom panels describe the sensitivity of species population growth rate to competition (green) and climate (yellow) across the cold, center, and hot temperature ranges. The top panels show the log ratio between competition and climate sensitivities, where negative values mean climate sensitivity is relatively higher than competition. We defined each species’ temperature range position as the median Mean Annual Temperature across all observed plots for each cold, center, and hot range class. In the bottom panel, species points are grouped by a Multivariate Normal Density function with 75% probability, while in the top panel, the lines represent the 25, 50, and 75% quantile probabilities.</figcaption><p></p>
+<p></p><figcaption class="figure-caption">Figure&nbsp;18.8: Bottom panels describe the sensitivity of species population growth rate to competition (green) and climate (yellow) across the cold, center, and hot temperature ranges. The top panels show the log ratio between competition and climate sensitivities, where negative values mean climate sensitivity is relatively higher than competition. We defined each species’ temperature range position as the median Mean Annual Temperature across all observed plots for each cold, center, and hot range class. In the bottom panel, species points are grouped by a Multivariate Normal Density function with 75% probability, while in the top panel, the lines represent the 25, 50, and 75% quantile probabilities.</figcaption><p></p>
 </figure>
 </div>
 </div>
 </div>
-<p>To quantify the sensitivity difference between competition and climate, we analyze how the <span class="math inline">\(ln(CCR)\)</span> for the cold, center, and hot range changes across the temperature range position of each species (<a href="#fig-sensBorder_temp">Figure&nbsp;<span>18.7</span></a>). Overall, the relative sensitivity of <span class="math inline">\(\lambda\)</span> to climate than competition increases towards the cold and hot ranges. While at the hot range, the increase in sensitivity to climate was due to the decrease in sensitivity to competition, at the cold range, it was due to a higher increase rate of climate than the competition. This is why we can observe a higher rate of increase in the relative sensitivity to climate in the hot range compared to the cold range. When analyzing across the species, the relative sensitivity to competition was higher at the center of the MAT range regardless of the cold or hot range positions.</p>
+<p>To quantify the sensitivity difference between competition and climate, we analyze how the <span class="math inline">\(ln(CCR)\)</span> for the cold, center, and hot range changes across the temperature range position of each species (<a href="#fig-sensBorder_temp">Figure&nbsp;<span>18.8</span></a>). Overall, the relative sensitivity of <span class="math inline">\(\lambda\)</span> to climate than competition increases towards the cold and hot ranges. While at the hot range, the increase in sensitivity to climate was due to the decrease in sensitivity to competition, at the cold range, it was due to a higher increase rate of climate than the competition. This is why we can observe a higher rate of increase in the relative sensitivity to climate in the hot range compared to the cold range. When analyzing across the species, the relative sensitivity to competition was higher at the center of the MAT range regardless of the cold or hot range positions.</p>
 <div class="cell" data-hash="marginal_lambda_cache/html/fig-ccrVsTemp_4f3bd0844cddb76cb6b384d8643e27a4">
 
+</div>
+<p>Lastly, we analyzed how each species’ sensitivity to climate and competition changed from the cold to the hot border (<a href="#fig-hot_vs_cold">Figure&nbsp;<span>18.9</span></a>). The change in sensitivity between the cold and hot borders was contingent on the species’ position across the temperature range. For climate, species distributed toward colder temperature ranges often exhibited a decrease in sensitivity from the cold to the hot border. Conversely, most of the species located at the hot range distribution presented an increase in the sensitivity to climate at the hot border compared to the cold. Conversely, most species in the hot range distribution demonstrated an increase in sensitivity to climate at the hot border compared to the cold. For competition, most species presented a decrease in sensitivity from the cold to the hot border. Regarding competition, the majority of species displayed a decrease in sensitivity from the cold to the hot border regardless of their location in the temperature range. Furthermore, the decrease in sensitivity to competition from the cold to the hot border was more pronounced for species in colder temperatures.</p>
+<div class="cell" data-hash="marginal_lambda_cache/html/fig-hot_vs_cold_eb1e586a9abb96bc29e946f9c9219cbe">
+<div class="cell-output-display">
+<div id="fig-hot_vs_cold" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="marginal_lambda_files/figure-html/fig-hot_vs_cold-1.png" class="img-fluid figure-img" width="768"></p>
+<p></p><figcaption class="figure-caption">Figure&nbsp;18.9: Difference in sensitivity of species population growth rate to climate (left) and competition between the cold and hot range limits. Each species is represented by a connected line linking their cold (circle) and hot (triangle) range positions, colored according to the difference between the cold and hot sensitivities. Note that uncertainty in each sensitivity point estimation has been omitted for clarity.</figcaption><p></p>
+</figure>
+</div>
+</div>
 </div>
 </section>
 <section id="spatial-distribution-of-sensitivity-to-the-covariates" class="level2">
