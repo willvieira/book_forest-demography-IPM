@@ -124,7 +124,7 @@ $${#eq-ccr}
 
 Here, $S$ represents the total sensitivity to competition or climate.
 Negative $CCR$ values indicate higher sensitivity of $\lambda$ to climate, while positive values suggest the opposite.
-The code used to perform these analysis are hosted at the [`forest-IPM`](https://github.com/willvieira/forest-IPM/tree/master/simulations/covariates_perturbation) GitHub repository.
+The code used to perform this analysis is hosted at the [`forest-IPM`](https://github.com/willvieira/forest-IPM/tree/master/simulations/covariates_perturbation) GitHub repository.
 
 ## Results
 
@@ -196,6 +196,52 @@ AME_sp |>
 p2
 
 ggarrange(p1, p2, ncol = 2)
+```
+
+In @fig-comp_vs_clim, we integrate temperature with precipitation (climate) and conspecific with heterospecific competition to explore the relationship between sensitivity to climate and sensitivity to competition.
+Overall, species with high sensitivity to climate also exhibited high sensitivity to competition.
+Furthermore, most species displayed higher sensitivity to climate than to competition, and this difference widened as sensitivity levels increased.
+
+```{r fig-comp_vs_clim,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-comp_vs_clim
+#| fig-width: 8
+#| fig-height: 4
+#| fig-cap: "Comparison of sensitivity to climate with sensitivity to competition for each of the 31 forest species. The smaller the values, the lower the sensitivity to a covariate. The blue line is drawn from a linear smooth model and the black line is identity line."
+
+AME_sp |>
+  mutate(
+    sens_comp = par.BA_het + par.BA_con,
+    sens_clim = par.temp + par.prec
+  ) |>
+  select(species_id, contains('sens')) |>
+  group_by(species_id) |>
+  reframe(
+    sens_comp = mean(sens_comp),
+    sens_clim = mean(sens_clim)
+  ) |>
+  left_join(
+    spIds,
+    by = c('species_id' = 'species_id_old')
+  ) |>
+  # pivot_longer(cols = contains('sens')) |>
+  ggplot() +
+  aes(log(sens_clim), log(sens_comp)) +
+  geom_point() +
+  # scale_color_manual(values = c("#20bc45", "#87bc45", "#edbf33", "#ea5545", "#ba0000")) +
+  geom_smooth(method = 'lm') +
+  ggrepel::geom_text_repel(
+    aes(label = species_name),
+    size = 2.5,
+    fontface = 'italic',
+    alpha = .8
+  ) +
+  theme_classic() +
+  geom_abline(slope = 1, intercept = 0, alpha = 0.6) +
+  # tune::coord_obs_pred() +  
+  labs(
+    x = 'ln(climate sensitivity)',
+    x = 'ln(competition sensitivity)'
+  )
 ```
 
 To test how the sensitivity to each covariate changed across the species range, we classified each plot into cold, center, or hot temperature ranges based on MAT.
@@ -584,6 +630,125 @@ out |>
     y = 'Competition/climate ratio',
     color = ''
   )
+```
+
+Lastly, we analyzed how each species' sensitivity to climate and competition changed from the cold to the hot border (@fig-hot_vs_cold).
+The change in sensitivity between the cold and hot borders was contingent on the species' position across the temperature range.
+For climate, species distributed toward colder temperature ranges often exhibited a decrease in sensitivity from the cold to the hot border.
+Conversely, most of the species located at the hot range distribution presented an increase in the sensitivity to climate at the hot border compared to the cold.
+Conversely, most species in the hot range distribution demonstrated an increase in sensitivity to climate at the hot border compared to the cold.
+For competition, most species presented a decrease in sensitivity from the cold to the hot border.
+Regarding competition, the majority of species displayed a decrease in sensitivity from the cold to the hot border regardless of their location in the temperature range.
+Furthermore, the decrease in sensitivity to competition from the cold to the hot border was more pronounced for species in colder temperatures.
+
+```{r fig-hot_vs_cold,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-hot_vs_cold
+#| fig-width: 8
+#| fig-height: 4
+#| fig-cap: "Difference in sensitivity of species population growth rate to climate (left) and competition between the cold and hot range limits. Each species is represented by a connected line linking their cold (circle) and hot (triangle) range positions, colored according to the difference between the cold and hot sensitivities. Note that uncertainty in each sensitivity point estimation has been omitted for clarity."
+
+out |>
+  # three species that had the lowest AME (low sensitivity to covariates)
+  # filter(!species_id %in% c('NAQUEPRI', '19290QUEALB', '27821NYSSYL')) |>
+  # filter(species_id == '18032ABIBAL') |>
+  mutate(
+    clim = log(par.temp + par.prec),
+    comp = log(par.BA_con + par.BA_het),
+    ccr = comp - clim
+  ) |>
+  left_join(plotBorder_class) |>
+  select(species_id, border_cl, rep, clim, comp) |>
+  group_by(species_id, border_cl) |>
+  reframe(
+    Climate = mean(clim),
+    Competition = mean(comp)
+  ) |>
+  filter(border_cl != 'Center') |>
+  pivot_longer(
+    cols = c(Climate, Competition),
+    names_to = 'covariable'
+  ) |>
+  pivot_wider(names_from = border_cl, values_from = value) |>
+  mutate(diff = Cold - Hot) |>
+  pivot_longer(cols = c(Cold, Hot), names_to = 'border_cl') |> 
+  left_join(    
+    treeData |>
+      left_join(plotBorder_class) |>
+      group_by(species_id, border_cl) |>
+      reframe(
+        range_pos = median(bio_01_mean, na.rm = TRUE)
+      ) |>
+      mutate(range_pos = range_pos + rnorm(n(), 0, 0.001))
+  ) |>
+  ggplot() + 
+  aes(range_pos, value) +
+  facet_wrap(~covariable) +
+  geom_line(aes(color = diff, group = species_id)) +
+  scale_color_gradient2() +
+  geom_point(aes(shape = border_cl, fill = diff), size = 2.5, alpha = 0.8) +
+  scale_shape_manual(values = c(21, 24)) +
+  scale_fill_gradient2() +
+  theme_classic() +
+  labs(
+    x = 'Mean annual temperature (°C)',
+    y = 'ln(Sensitivity)',
+    color = 'Cold - Hot',
+    shape = 'Border',
+    fill = 'Cold - Hot'
+  )
+
+# out |>
+#   # three species that had the lowest AME (low sensitivity to covariates)
+#   # filter(!species_id %in% c('NAQUEPRI', '19290QUEALB', '27821NYSSYL')) |>
+#   # filter(species_id == '18032ABIBAL') |>
+#   mutate(
+#     clim = log(par.temp + par.prec),
+#     comp = log(par.BA_con + par.BA_het),
+#     ccr = comp - clim
+#   ) |>
+#   left_join(plotBorder_class) |>
+#   select(species_id, border_cl, rep, clim, comp) |>
+#   group_by(species_id, border_cl, rep) |>
+#   reframe(
+#     clim = mean(clim),
+#     comp = mean(comp)
+#   ) |>
+#   pivot_longer(cols = c(clim, comp)) |>
+#   pivot_wider(
+#     names_from = border_cl,
+#     values_from = value
+#   ) |>
+#   mutate(
+#     diff = Cold - Hot
+#   ) |>
+#   select(!c(Cold, Center, Hot)) |>
+#   left_join(    
+#     treeData |>
+#       group_by(species_id) |>
+#       reframe(
+#         range_pos = median(bio_01_mean, na.rm = TRUE)
+#       ) |>
+#       mutate(range_pos = range_pos + rnorm(n(), 0, 0.001))
+#   ) |>
+#   ggplot() + 
+#   aes(range_pos, diff) +
+#   aes(color = name, fill = name) +
+#   stat_pointinterval() +
+#   ggdensity::geom_hdr(
+#       aes(color = NULL),
+#       probs = .75, alpha = .4,
+#       method = 'mvnorm'
+#     ) +
+#   geom_hline(yintercept = 0, alpha = 0.7) +
+#   scale_color_manual(values = c('#d8b365', '#5ab4ac')) +
+#   scale_fill_manual(values = c('#d8b365', '#5ab4ac')) +
+#   theme_classic() +
+#   labs(
+#     x = 'Mean annual temperature (°C)',
+#     y = 'Difference in sensitivity between cold and hot border',
+#     color = NULL, fill = NULL
+#   ) +
+#   theme(legend.position = 'top')
 ```
 
 ## Spatial Distribution of sensitivity to the covariates
