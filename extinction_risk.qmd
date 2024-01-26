@@ -911,8 +911,6 @@ sp_dt |>
 #| fig-height: 4
 #| fig-cap: "Suitable probability for the 31 forest species in their distribution from the cold to the hot border of the mean annual temperature gradient. Note that we omitted the parameter uncertainty of each species in this figure to avoid overlap and increase clarity."
 
-xLabel_order = c('Cold.border', 'Cold.center', 'Hot.center', 'Hot.border')
-
 sp_dt |>
   select(species_id, iter, cond, range_pos, border, ext) |>
   mutate(
@@ -924,7 +922,17 @@ sp_dt |>
   ) |>
   mutate(
     gp = factor(interaction(border, range_pos), levels = xLabel_order)
-  ) |>
+  ) ->
+plot_dt
+
+# get ABIBAL example to help undertand the figure
+plot_dt |>
+  filter(species_id == '18032ABIBAL') ->
+abibal
+ 
+xLabel_order = c('Cold.border', 'Cold.center', 'Hot.center', 'Hot.border')
+
+plot_dt |>
   ggplot() +
   aes(gp, ext) +
   # aes(color = factor(cond, levels = c('No competition', 'Heterospecific competition'))) +
@@ -933,20 +941,30 @@ sp_dt |>
   geom_boxplot(fill = 'transparent', outlier.color = 'transparent') +
   scale_color_manual(values = c('#5ab4ac', '#d8b365')) +
   geom_vline(xintercept = 2.5, linetype = 2, alpha = 0.7) +
+  # add abibal
+  geom_point(
+    data = abibal,
+    aes(gp, ext, fill = cond),
+    color = 'red',
+    position = position_jitterdodge()
+  ) +
   theme_classic() +
   scale_x_discrete(
     breaks = xLabel_order,
-    labels = c('Cold border', 'Cold center', 'Hot center', 'Hot border')
+    labels = c('Border', 'Center', 'Center', 'Border')
   ) +
   labs(
     y = expression('Suitable probability ('~Lambda~')'),
     x = "Species' relative position in the mean annual temperature gradient",
-    color = NULL,
+    color = NULL, fill = NULL
   ) +
   theme(
     legend.position = 'top',
     strip.background = element_blank()
-  )
+  ) +
+  annotate(geom = 'text', x = 1.5, y = 1.08, label = 'Cold') +
+  annotate(geom = 'text', x = 3.5, y = 1.08, label = 'Hot') +
+  coord_cartesian(ylim = c(0, 1), clip = 'off')
 ```
 
 While the negative effect of climate on suitable probability is evident in the above figure, distinguishing the individual effects of competition remains challenging.
