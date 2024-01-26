@@ -911,6 +911,8 @@ sp_dt |>
 #| fig-height: 4
 #| fig-cap: "Suitable probability for the 31 forest species in their distribution from the cold to the hot border of the mean annual temperature gradient. Note that we omitted the parameter uncertainty of each species in this figure to avoid overlap and increase clarity."
 
+xLabel_order = c('Cold.border', 'Cold.center', 'Hot.center', 'Hot.border')
+
 sp_dt |>
   select(species_id, iter, cond, range_pos, border, ext) |>
   mutate(
@@ -930,8 +932,6 @@ plot_dt |>
   filter(species_id == '18032ABIBAL') ->
 abibal
  
-xLabel_order = c('Cold.border', 'Cold.center', 'Hot.center', 'Hot.border')
-
 plot_dt |>
   ggplot() +
   aes(gp, ext) +
