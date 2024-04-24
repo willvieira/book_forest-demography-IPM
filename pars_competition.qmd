@@ -374,3 +374,160 @@ p2
 
 ggarrange(p1, p2, ncol = 2)
 ```
+
+
+## How does CNDD relate to species latitude and abundance patterns?
+
+This is mostly inspired by @hulsmann2024, where they test many hypotheses around conspecific density dependence (CNDD) around the world.
+Their main finding is that CNDD is stronger in the tropics compared to temperature species, but only for low or intermediate abundant species.
+
+```{r CNDDvsLat,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-CNDDvsLat
+#| fig-width: 8.5
+#| fig-height: 5
+#| fig-cap: "Posterior distribution of the density dependence parameter affecting the annual survival rate of recruitment individuals."
+
+pars_growth |>
+  mutate(
+    Con_Growth = Beta,
+    Het_Growth = Beta * theta
+  ) |>
+  select(!c(Beta, theta)) |>
+  group_by(species_id) |>
+  mutate(iter = 1:n()) |>
+  left_join(
+    pars_survival |>
+      mutate(
+        Con_Survival = Beta,
+        Het_Survival = Beta * theta
+      ) |>
+      select(!c(Beta, theta)) |>
+      group_by(species_id) |>
+      mutate(iter = 1:n())
+  ) |>
+  left_join(
+    pars_rec |>
+      mutate(
+        Con_Recruit = -beta_p,
+        Het_Recruit = NA
+      ) |>
+      select(!c(beta_p, optimal_BA, sigma_BA)) |>
+      group_by(species_id) |>
+      mutate(iter = 1:n())
+  ) |>
+  pivot_longer(
+    cols = c(contains('Het_'), contains('Con_')),
+    names_to = c('comp', 'vr'),
+    names_sep = '_'
+  ) |>
+  mutate(
+    comp = case_match(
+      comp,
+      'Con' ~ 'Conspecific',
+      'Het' ~ 'Heterospecific'
+    ),
+    vr = factor(vr, levels = c('Growth', 'Survival', 'Recruit'))
+  ) |>
+  left_join(
+    treeData |>
+      group_by(species_id) |>
+      reframe(lat_mean = median(latitude)) 
+  ) |>
+  ggplot() +
+  aes(lat_mean, value) +
+  aes(color = comp, fill = comp) +
+  facet_wrap(~vr) +
+  stat_pointinterval() +
+  ggdensity::geom_hdr(
+    aes(color = NULL),
+    probs = .75, alpha = .4,
+    method = 'mvnorm'
+  ) +
+  scale_color_manual(values = c('#ef8a62', '#67a9cf')) +
+  scale_fill_manual(values = c('#ef8a62', '#67a9cf')) +
+  geom_hline(yintercept = 0, linetype = 2) +
+  theme_classic() +
+  labs(
+    x = 'Median latitude',
+    y = 'Density dependence',
+    color = NULL,
+    fill = NULL
+  ) +
+  theme(legend.position = 'top')
+```
+
+
+```{r CNDDvsAbund,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+#| label: fig-CNDDvsAbund
+#| fig-width: 8.5
+#| fig-height: 5
+#| fig-cap: "Posterior distribution of the density dependence parameter affecting the annual survival rate of recruitment individuals."
+
+pars_growth |>
+  mutate(
+    Con_Growth = Beta,
+    Het_Growth = Beta * theta
+  ) |>
+  select(!c(Beta, theta)) |>
+  group_by(species_id) |>
+  mutate(iter = 1:n()) |>
+  left_join(
+    pars_survival |>
+      mutate(
+        Con_Survival = Beta,
+        Het_Survival = Beta * theta
+      ) |>
+      select(!c(Beta, theta)) |>
+      group_by(species_id) |>
+      mutate(iter = 1:n())
+  ) |>
+  left_join(
+    pars_rec |>
+      mutate(
+        Con_Recruit = -beta_p,
+        Het_Recruit = NA
+      ) |>
+      select(!c(beta_p, optimal_BA, sigma_BA)) |>
+      group_by(species_id) |>
+      mutate(iter = 1:n())
+  ) |>
+  pivot_longer(
+    cols = c(contains('Het_'), contains('Con_')),
+    names_to = c('comp', 'vr'),
+    names_sep = '_'
+  ) |>
+  mutate(
+    comp = case_match(
+      comp,
+      'Con' ~ 'Conspecific',
+      'Het' ~ 'Heterospecific'
+    ),
+    vr = factor(vr, levels = c('Growth', 'Survival', 'Recruit'))
+  ) |>
+  left_join(
+    treeData |>
+      group_by(species_id) |>
+      reframe(BA_plot_mean = median(BA_plot, na.rm = T)) 
+  ) |>
+  ggplot() +
+  aes(BA_plot_mean, value) +
+  aes(color = comp, fill = comp) +
+  facet_wrap(~vr) +
+  stat_pointinterval() +
+  ggdensity::geom_hdr(
+    aes(color = NULL),
+    probs = .75, alpha = .4,
+    method = 'mvnorm'
+  ) +
+  scale_color_manual(values = c('#ef8a62', '#67a9cf')) +
+  scale_fill_manual(values = c('#ef8a62', '#67a9cf')) +
+  geom_hline(yintercept = 0, linetype = 2) +
+  theme_classic() +
+  labs(
+    x = 'Median BA plot',
+    y = 'Density dependence',
+    color = NULL,
+    fill = NULL
+  ) +
+  theme(legend.position = 'top')
+```
