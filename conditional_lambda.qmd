@@ -16,7 +16,7 @@ When analyzing temperature, precipitation was held at its optimal condition, and
 ```{r,include=FALSE,echo=FALSE}
 Echo=FALSE
 Eval=TRUE
-Cache=TRUE
+Cache=FALSE
 Warng=FALSE
 Msg=FALSE
 library(tidyverse)
@@ -97,6 +97,7 @@ lambdas |>
       'het' ~ 'Heterospecific'
     )
   ) |>
+  filter(species_id != '18032ABIBAL') |>
   left_join(
     spIds,
     by = c('species_id' = 'species_id_old')
@@ -107,7 +108,7 @@ lambdas |>
     sd_lambda = sd(lambda),
     ci_9 = mean_lambda + qt( c(0.9), n() - 1) * sd_lambda,
     ci_1 = mean_lambda + qt( c(0.1), n() - 1) * sd_lambda
-  ) |> 
+  ) |>
   ggplot() +
   aes(comp, mean_lambda) +
   geom_ribbon_interactive(aes(ymin = ci_1, ymax = ci_9), alpha = 0.3,color=NA) +
@@ -158,13 +159,14 @@ lambdas |>
     ),
     comp = factor(comp, levels = c('Low competition', 'High competition'))
   ) |>
+  filter(species_id != '18032ABIBAL') |>
   left_join(
     spIds,
     by = c('species_id' = 'species_id_old')
   ) |>
   group_by(species_name, var, comp, clim) |>
   reframe(
-    mean_lambda = mean(lambda),
+    mean_lambda = mean(log(lambda)),
     sd_lambda = sd(lambda),
     ci_9 = mean_lambda + qt( c(0.9), n() - 1) * sd_lambda,
     ci_1 = mean_lambda + qt( c(0.1), n() - 1) * sd_lambda
@@ -192,13 +194,14 @@ clim_dt |>
   geom_line_interactive() +
   aes(tooltip = species_name, data_id = species_name) +
   facet_grid(~comp) +
-  geom_hline(yintercept = 1, linetype = 2, alpha = 0.5) +
+  geom_hline(yintercept = 0, linetype = 2, alpha = 0.5) +
   theme_classic() +
   labs(
     x = 'Mean annual temperature',
     y = expression('ln('~lambda~')')
   ) +
-  theme(legend.position = 'none') ->
+  theme(legend.position = 'none') +
+  ylim(-0.05, 0.11) ->
 p_temp
 
 girafe(
@@ -233,13 +236,14 @@ clim_dt |>
   geom_line_interactive() +
   aes(tooltip = species_name, data_id = species_name) +
   facet_grid(~comp) +
-  geom_hline(yintercept = 1, linetype = 2, alpha = 0.5) +
+  geom_hline(yintercept = 0, linetype = 2, alpha = 0.5) +
   theme_classic() +
   labs(
     x = 'Mean annual precipitation',
     y = expression('ln('~lambda~')')
   ) +
-  theme(legend.position = 'none') ->
+  theme(legend.position = 'none')  +
+  ylim(-0.05, 0.11)->
 p_prec
 
 girafe(
