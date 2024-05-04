@@ -587,3 +587,58 @@ tibble(lvs) |>
 for(sp in spIds$species_id_old)
   plot_spatial_rf(sp)
 ```
+
+
+```{r,eval=FALSE,echo=FALSE}
+# Figure for conceptual distribution of random effects
+
+library(tmap)
+data(World)
+
+col_vec <- c(
+  rgb(126, 67, 29, 255, maxColorValue = 255),
+  rgb(126, 67, 29, 204, maxColorValue = 255),
+  rgb(126, 67, 29, 127, maxColorValue = 255),
+  rgb(126, 67, 29, 25, maxColorValue = 255),
+  rgb(92, 124, 62, 25, maxColorValue = 255),
+  rgb(92, 124, 62, 127, maxColorValue = 255),
+  rgb(92, 124, 62, 204, maxColorValue = 255),
+  rgb(92, 124, 62, 255, maxColorValue = 255)
+)
+
+plot_rf <- readRDS(file.path('data', 'plot_mean_ls.RDS'))[['growth']] |>
+  filter(species_id == '28728ACERUB') |>
+  mutate(value = cut(value, c(-2.5, -1.5, -.5, -.25, 0, .25, .5, 1.5, 2.5), include.lowest = TRUE))
+
+plot_location |>
+  filter(plot_id %in% plot_rf$plot_id) |>
+  # add fake plot to increase northen limit
+  rbind(
+    tibble(
+      plot_id = c('fake1', 'fake2'),
+      longitude = c(-63, -62),
+      latitude = c(50, 22)
+    )
+  ) |>
+  drop_na() |>
+  st_as_sf(coords = c('longitude', 'latitude'), crs = 4326) ->
+plot_loc
+
+World |>
+  filter(name %in% c('United States', 'Canada')) |>
+  st_crop(plot_loc) |>
+  ggplot() +
+  geom_sf(linewidth = 0.7) +
+  geom_sf(
+    data = plot_loc |> left_join(plot_rf) |> drop_na(),
+    aes(color = value, fill = value),
+    size = 1.1, shape = 21
+  ) +
+  scale_color_manual(values = col_vec) +
+  scale_fill_manual(values = col_vec) +
+  theme_void() +
+  theme(legend.position = 'none') ->
+p
+ggsave('map_randomEffect.png', p, bg = 'transparent')
+
+```
