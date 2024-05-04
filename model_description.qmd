@@ -129,6 +129,60 @@ ggpubr::ggarrange(
 
 ```
 
+```{r,echo=FALSE,eval=FALSE}
+# Code to generate fig for presentation
+
+r <- exp(c(-5, -4, -3))
+linf <- c(900, 1200)
+
+labels <- c(
+  `900` = "Z[infinity] ~  90",
+  `1200` = "Z[infinity] ~  120"
+)
+
+expand_grid(
+    r = r,
+    Linf = linf,
+  ) |>
+  rowwise() |>
+  expand_grid(Time = 1:500) |>
+  mutate(
+    Lt = Linf * (1 - exp(-r * Time))/10,
+  ) |>
+  group_by(r, Linf) |> 
+  mutate( 
+      Lt_t0 = lag(Lt),
+      growth = Lt - Lt_t0,
+      Lt_t0 = NULL
+  ) |>
+  drop_na() ->
+dt 
+
+dt |>
+  ggplot() +
+  aes(Time, Lt) +
+  aes(group = log(r), color = factor(log(r))) +
+  facet_wrap(
+    ~Linf,
+    labeller = labeller(Linf = as_labeller(labels, label_parsed))
+  ) +
+  geom_path(size = 1.2) +
+  theme_classic() +
+  labs(
+    x = expression(Delta~'time'),
+    y = 'Size (cm)',
+    color = 'ln(r)'
+  ) +
+  theme(
+    strip.background = element_blank(),
+    strip.text = element_text(size = rel(0.9))
+  ) +
+  scale_color_brewer(palette = "Oranges") +
+  scale_y_continuous(labels = scales::number_format(accuracy = 0.1)) ->
+p
+ggsave('../talk_PhDdefence/images/growth_example.png', p, width = 7, height = 3)
+```
+
 ## Survival model
 
 The chance of a mortality event ($M$) for an individual $i$ within the time interval between $t$ and $t+\Delta t$ is modeled as a Bernoulli distribution:
@@ -168,6 +222,29 @@ tibble(
     )
 
 ```
+
+```{r,echo=FALSE, eval=FALSE}
+# figure for presentation
+
+tibble(
+    psi = c(3, 4, 5)
+  ) |>
+  group_by(psi) |>
+  expand_grid(deltaYear = seq(0, 750, 1)) |>
+  mutate(long = 1/(1 + exp(-psi))^deltaYear) |>
+  ggplot(aes(x = deltaYear,  y = long, color = factor(psi))) +
+    geom_path(size = 1.2) +
+    scale_color_brewer(palette = "Oranges") +
+    theme_classic() +
+    labs(
+      x = expression(Delta~'time'),
+      y = 'Survival probability',
+      color = expression(psi)
+    ) ->
+p
+ggsave('../talk_PhDdefence/images/survival_example.png', p, width = 6, height = 3)
+```
+
 
 ## Recruitment model
 
@@ -225,6 +302,47 @@ expand_grid(
     y = 'Mean number of ingrowth',
     color = expression(phi)
   )
+
+```
+
+```{r, eval=FALSE,echo=FALSE}
+# figure for presentation
+expand_grid(
+    phi = -c(9, 8, 7),
+    rho = -c(7, 3),
+    plot_size = 168
+  ) |>
+  mutate(
+    rho_label = paste0('ρ = ', as.character(round(exp(-exp(rho)), 3))),
+    phi_label = case_match(
+      phi,
+      -9 ~ '1e-4',
+      -8 ~ '3e-4',
+      -7 ~ '9e-4'
+    )
+  ) |>
+  rowwise() |>
+  expand_grid(deltaYear = seq(0, 50, .1)) |>
+  ungroup() |>
+  mutate(
+    lambda = exp(phi) *
+             plot_size *
+             (1 - exp(-exp(rho))^deltaYear)/(1 - exp(-exp(rho)))
+  ) |>
+  ggplot() +
+  aes(deltaYear, lambda) +
+  aes(color = phi_label) +
+  facet_wrap(~ rho_label) +
+  geom_path(size = 1.2) +
+  scale_color_brewer(palette = "Oranges") +
+  theme_classic() + 
+  labs(
+    x = expression(Delta~'time'),
+    y = 'Mean number of ingrowth',
+    color = expression(phi)
+  ) ->
+p
+ggsave('../talk_PhDdefence/images/recruit_example.png', p, width = 7, height = 3)
 
 ```
 
