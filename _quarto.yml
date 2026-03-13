@@ -23,25 +23,26 @@ book:
     - index.qmd
     - introduction.qmd
     - db.qmd
-    - part: Demographic models
+    - part: Demographic models evaluation
       chapters:
       - model_description.qmd
       - covariates_description.qmd
       - model_fit.qmd
       - model_comparison.qmd
       - parameters_descr.qmd
-    - part: Demographic model evaluation
-      chapters:
       - pars_intercept.qmd
       - pars_randomEffect.qmd
       - pars_competition.qmd
       - pars_climate.qmd
       - pars_effectSize.qmd
       - pars_condEffect.qmd
-    - part: Using demographic models to infer population level performance
+    - part: From demographic rates to population dynamics
       chapters:
       - ipm_description.qmd
       - guide_IPM.qmd
+      - deep_dive_IPM.qmd
+    - part: Using the IPM
+      chapters:
       - sens_analysis.qmd
       - conditional_lambda.qmd
       - marginal_lambda.qmd
