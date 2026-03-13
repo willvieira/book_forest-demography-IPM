@@ -101,7 +101,6 @@ pars <- parameters(mod, draw = "mean")
 ```{r parameters-draw}
 # Reproducible random draw: fix seed
 pars_r <- parameters(mod, draw = "random", seed = 42L)
-pars_r$seed  # 42 — saved for you
 
 # Specific posterior draw (e.g., draw #137)
 pars_137 <- parameters(mod, draw = 137L)
@@ -260,6 +259,60 @@ lam
 
 The return value is an `ipm_lambda` object: a named numeric vector with one $\lambda$ per focal species.
 Use `summary(lam)` to see whether each species is growing ($\lambda > 1$), stable ($\lambda = 1$), or declining ($\lambda < 1$).
+
+## Reproducibility {#sec-reproducibility}
+
+Every `ipm_lambda` and `ipm_projection` object carries a `$conditions` record that captures the exact parameter draw, seed, and climate values used to produce the result.
+This makes any analysis self-documenting — you can always recover the exact inputs from the output alone.
+
+```{r reproducibility-inspect}
+# The conditions record is embedded in the projection object
+proj$conditions$draw_type   # "mean", "random", or "user_defined"
+proj$conditions$draw        # integer draw index (NULL for "mean")
+proj$conditions$seed        # seed used (NULL for "mean")
+proj$conditions$MAT         # climate MAT (numeric or "function(t)")
+proj$conditions$MAP         # climate MAP
+```
+
+`summary()` prints these alongside the demographic results:
+
+```{r reproducibility-summary}
+summary(proj)
+```
+
+**Reproducible random draws.**
+When `draw = "random"`, a seed is auto-generated and stored in both `pars$seed` and `proj$conditions$seed`.
+To reproduce a specific run:
+
+```{r reproducibility-random, eval=FALSE}
+# First run — seed auto-generated and saved in the output
+pars_r    <- parameters(mod, draw = "random")
+proj_run1 <- project(mod, pars_r, s, env, ctrl)
+saved_seed <- proj_run1$conditions$seed
+
+# Reproduce the identical run later using the saved seed
+pars_r2   <- parameters(mod, draw = "random", seed = saved_seed)
+proj_run2 <- project(mod, pars_r2, s, env, ctrl)
+# proj_run1$summary and proj_run2$summary are identical
+```
+
+**Pinning a specific draw.**
+To share a reproducible result without saving a seed, use an integer draw index.
+The index is stored in the output and is sufficient to reproduce the run:
+
+```{r reproducibility-pinned, eval=FALSE}
+pars_pinned <- parameters(mod, draw = 137L)  # always draw #137 from the posterior
+proj_pinned <- project(mod, pars_pinned, s, env, ctrl)
+proj_pinned$conditions$draw   # 137 — embedded in the output
+```
+
+**`ipm_lambda` conditions** are stored as an attribute on the named numeric vector:
+
+```{r reproducibility-lambda, eval=FALSE}
+lam <- lambda(mod, pars_r, s, env)
+attr(lam, "conditions")$seed   # same seed as pars_r$seed
+attr(lam, "conditions")$MAT    # climate conditions at time of call
+```
 
 ## Plot-level random effects {#sec-random-effects}
 
