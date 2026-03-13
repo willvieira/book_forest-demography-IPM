@@ -1,0 +1,149 @@
+---
+title: "Deep dive: multi-species IPMs and the forestIPM roadmap"
+---
+
+This chapter extends the single-species quick start in @sec-quickstart to cover multi-species IPMs, time-varying climate, and the development roadmap for the `forestIPM` package.
+
+# Multi-species IPMs {#sec-deepdive}
+
+Running a multi-species IPM requires only one change to the quick-start workflow: include multiple `species_id` values in the `stand()` call.
+Here we build a two-species stand combining *Abies balsamea* (ABIBAL) and *Acer rubrum* (ACERUB), a common mixedwood assemblage in eastern North America.
+
+```{r multisp-setup}
+library(forestIPM)
+
+# Two-species stand on a 400 m² plot
+s_multi <- stand(
+  data.frame(
+    size_mm    = c(150, 200, 180, 350, 280),
+    species_id = c("ABIBAL", "ABIBAL", "ACERUB", "ACERUB", "ABIBAL"),
+    plot_size  = 400
+  )
+)
+s_multi
+```
+
+`species_model()` detects both species automatically and loads their respective fitted models.
+The interspecific competition between them is captured internally via the basal area competition terms.
+
+```{r multisp-run, eval=FALSE}
+mod_multi  <- species_model(s_multi)
+pars_multi <- parameters(mod_multi, draw = "mean")
+env_multi  <- env_condition(MAT = 8, MAP = 1200)
+ctrl_multi <- control(years = 100, compute_lambda = TRUE, progress = FALSE)
+
+proj_multi <- project(mod_multi, pars_multi, s_multi, env_multi, ctrl_multi)
+```
+
+```{r multisp-plot, eval=FALSE}
+#| label: fig-multisp
+#| fig-cap: "Lambda trajectories for ABIBAL (balsam fir) and ACERUB (red maple) in a mixed stand."
+plot(proj_multi, type = "lambda")
+```
+
+The plot shows $\lambda$ trajectories for each species.
+Species with a competitive advantage under the given climate and density conditions will maintain $\lambda > 1$ longer before density-dependence brings them to equilibrium.
+
+## Exploring species availability
+
+If you are unsure which species IDs are available, use `supported_species()` to browse the full list:
+
+```{r supported}
+supported_species()
+```
+
+You can filter for species in a particular region or taxonomic group and use the resulting `species_id` values directly in `stand()`.
+
+# Time-varying climate {#sec-time-varying}
+
+A single `env_condition()` object represents a static climate — useful for exploring steady-state behaviour.
+To simulate climate change, you iterate over a sequence of conditions, running `project()` for each step and chaining the outputs.
+
+The pattern below shows how to explore the effect of a gradual 6 °C warming over 60 years by stepping through annual `MAT` values:
+
+```{r climate-loop, eval=FALSE}
+library(forestIPM)
+
+# Define a 60-year warming trajectory from MAT=6 to MAT=12
+mat_sequence <- seq(6, 12, length.out = 60)
+
+# Build baseline stand and model
+s    <- stand(data.frame(size_mm = c(150, 200, 350), species_id = "ABIBAL", plot_size = 400))
+mod  <- species_model(s)
+pars <- parameters(mod, draw = "mean")
+ctrl_1yr <- control(years = 1, compute_lambda = TRUE, progress = FALSE)
+
+# Iterate: update climate each year
+results <- vector("list", length(mat_sequence))
+for (i in seq_along(mat_sequence)) {
+  env_i       <- env_condition(MAT = mat_sequence[i], MAP = 1200)
+  results[[i]] <- project(mod, pars, s, env_i, ctrl_1yr)
+  # Update stand state from previous projection output
+  s <- results[[i]]$stand_end
+}
+
+# Inspect lambda at each step
+lambdas_warming <- sapply(results, function(r) r$summary$lambda)
+plot(mat_sequence, lambdas_warming, type = "l",
+     xlab = "MAT (°C)", ylab = expression(lambda),
+     main = "ABIBAL response to warming")
+abline(h = 1, lty = 2, col = "grey50")
+```
+
+This approach lets you ask ecological questions such as:
+"At what temperature does *Abies balsamea* cross $\lambda = 1$ (transition from growing to declining population)?"
+
+The same pattern applies to MAP gradients or combined MAT + MAP shifts.
+
+# Propagating parameter uncertainty {#sec-uncertainty}
+
+The posterior distribution of each demographic model contains thousands of MCMC samples.
+To propagate uncertainty into your projections, replace `draw = "mean"` with a sample index:
+
+```{r uncertainty, eval=FALSE}
+# Draw 50 random posterior samples
+lambda_samples <- replicate(50, {
+  pars_i <- parameters(mod, draw = sample.int(1000L, 1L))
+  lam_i  <- lambda(mod, pars_i, s, env, ctrl)
+  lam_i[["ABIBAL"]]$asymptotic_lambda
+})
+
+hist(lambda_samples, xlab = expression(lambda), main = "Posterior distribution of asymptotic lambda")
+abline(v = 1, lty = 2)
+```
+
+For computationally intensive analyses (e.g., 1000 draws × multi-species projections), consider parallelising over draws with `parallel::mclapply()` or `future.apply::future_lapply()`.
+
+# Roadmap: what comes next {#sec-roadmap}
+
+The `forestIPM` package is under active development.
+Below is the planned feature roadmap, ordered by implementation phase.
+
+## v2 — Coexistence analysis and CI
+
+- **Multi-species coexistence IPM**: a community kernel supporting invasion analysis.
+  Given a resident species at equilibrium, run an invader species at low density and measure its invasion growth rate.
+  This directly links to the coexistence theory chapters in this book (see @sec-conditional_lambda and @sec-marginal_lambda).
+- **GitHub Actions CI**: matrix build (R 4.2, 4.3, 4.4 × Linux, macOS, Windows) and `covr` coverage report on every pull request.
+- **`lambda()` vectorisation**: batch computation of $\lambda$ over a grid of climate and competition conditions without re-building model objects.
+
+## v3 — Remote data and ML decoder
+
+- **Parquet parameter backend**: model parameters will be hosted remotely (AWS S3 or equivalent) as a columnar Parquet file, enabling partial reads via Arrow without downloading the full 300 MB dataset.
+  `parameters()` will transparently fetch only the rows needed for the requested species and draw.
+- **ML decoder for new locations**: a learned spatial model that maps latitude/longitude (and optionally plot covariates) to plot-level random effects.
+  This will enable projections at any arbitrary location in eastern North America — not just plots with inventory data.
+  Planned architecture: a shallow neural network trained on the posterior random effects from the hierarchical model.
+
+## CRAN submission
+
+The package is targeted for CRAN submission after the remote data layer (v3) is stable.
+Prerequisites: passing `R CMD check` with zero errors and warnings, vignettes that render without internet dependency, and `covr` coverage ≥ 80 %.
+
+# Cross-references {#sec-xrefs}
+
+- IPM theory and kernel construction: @sec-ipm_description
+- Sensitivity analysis: @sec-sens_analysis
+- Conditional $\lambda$ (climate × competition surfaces): @sec-conditional_lambda
+- Marginal $\lambda$ (integrated across the range): @sec-marginal_lambda
+- Extinction risk: @sec-extinction_risk

@@ -1,313 +1,147 @@
-# A guide to use the forest-IPM code {#sec-ipm_guide}
+---
+title: "Using the forestIPM package"
+---
 
-The `forest-IPM` code is available in this GitHub repository: <https://github.com/willvieira/forest-IPM>.
-This repository contains a collection of `R` functions designed for implementing the vital rates and Kernel functions and the necessary data parameters for the 31 fitted species.
-Below, I will briefly overview how to load and execute these functions and outline the results you can expect from the model.
+The `forestIPM` package provides a clean R interface for running Integral Projection Models (IPMs) for 31 tree species in eastern North America.
+This guide walks through the complete workflow — from installing the package to projecting a population forward in time and visualizing the results.
 
-Before we begin, we need to access the set of parameters for each species-demographic model.
-As described in @sec-parameters, the parameters are stored in an ownCloud folder, which you can access through this link: [Parameter Dataset](https://doc.ielab.usherbrooke.ca/s/83YSAiLAGeLm682).
-Once you have downloaded the parameters, you need to specify the path location where the parameters are stored.
-To do this, create a file named `_data.path` and place it at the root of your project.
+# Part 1: Quick start {#sec-quickstart}
 
-## Loading the functions and parameters
+## Setup
 
-We start by sourcing the IPM-specific functions directly from GitHub:
+Install the package from GitHub:
 
-```{r loadRfunc}
-suppressPackageStartupMessages(library(tidyverse))
-
-baseURL <- 'https://raw.githubusercontent.com/willvieira/forest-IPM/master/R/'
-# source the three R scripts with the IPM functions
-c('vital_rates.R', 'kernel.R', 'BasalArea_competition.R') |>
-  walk(~source(paste0(baseURL, .x)))
+```{r install, eval=FALSE}
+# install.packages("devtools")
+devtools::install_github("willvieira/forest-IPM")
 ```
 
-The first wrapper function is the `getPars_sp()`, which loads species-specific parameters.
-The `sp` and `path` arguments define the species based on their ID, as outlined in @tbl-tabSpecies, and specify the location path where these parameters are stored.
-The `method` argument allows you to specify whether you wish to load the `mean` value or a `random` draw from the posterior distribution for each parameter.
-The `model` argument defines which specific model you want to download the parameters.
-However, the IPM functions are currently available only for the complete model, so this argument should remain `intcpt_plot_comp_clim`.
-
-```{r loadPar}
-pars_abibal <- getPars_sp(
-  sp = '18032ABIBAL',
-  method = 'mean', # `mean` or `random`
-  model = 'intcpt_plot_comp_clim',
-  path = file.path(readLines('_data.path'), 'output_sim_processed')
-)
+```{r load}
+library(forestIPM)
 ```
 
-The `pars_abibal` object is a simple list for each vital rate with named vectors representing the parameters associated with that particular vital rate.
+To see all 31 supported species, call `supported_species()`:
 
-```{r}
-(pars_abibal)
+```{r species}
+supported_species()
 ```
 
-## Defining model conditions
+Each row lists the species ID (e.g., `ABIBAL` for *Abies balsamea* — balsam fir), the common name, and the taxonomic group.
+The species ID is the key you will use throughout the API.
 
-Let us establish the initial community structure based on the size of *individuals*.
-Populations are characterized by density functions that describe the distribution of individuals across the size range covered by the IPM ($[L, U]$).
-In this context, we set the lower threshold of the size distribution ($L$) to 127 mm in dbh, following the FIA protocol.
-As the von Bertalanffy growth model incorporates a parameter that determines the size at which the growth rate converges to zero ($\zeta_{\infty}$), we define the upper boundary of the size distribution to be the species-specific $\zeta_{\infty}$.
-The `h` argument specifies the bin size in millimeters for the discretized kernel, while `N` represents the total population size, defined as $\int_L^{\zeta_{\infty}} n(z) \mathrm{d}z$.
-Given that this approach generates distributions randomly, the `accuracy` threshold determines the acceptance of the brute force approximation of the integral to match the expected population size `N`.
-Finally, the `meanSize` and `sdSize` are the parameters in the natural scale of the lognormal distribution used to generate random size distribution.
+## Single-species IPM for balsam fir (ABIBAL)
 
-```{r startN}
-N_sp <- init_pop(
-  params = pars_abibal,
-  L = 127,
-  h = 1,
-  N = 10,
-  accuracy = 0.001,
-  meanSize = 130,
-  sdSize = 1.8
-)
-```
+The `forestIPM` workflow is built around five constructors and two engines.
+The constructors capture the ecological context (the stand, the model, the parameters, the climate, and the simulation settings) while the engines run the actual computation.
 
-The `N_sp` object is also a list composed of the (i) species-specific mesh points (needed internally to build the kernel), the density function describing the distribution of individuals, and the `h` bin size.
+**Step 1 — Define the stand.**
+A stand is a collection of trees described by their size (mm DBH) and species identity.
+Here we start a small population of *Abies balsamea* with three trees of different sizes on a 400 m² plot:
 
-```{r printN}
-#| label: fig-sizeDist
-#| fig-cap: "Density function of size distribution across the $[L, U]$ kernerl threshold. This is stored in the `N_sp$Nvec` object. The dots are the discretized bin values."
-#| code-fold: true
-
-N_sp |>
-  enframe() |>
-  filter(name == 'Nvec') |>
-  unnest(value) |>
-  mutate(x = 127:(n() + 126)) |>
-  ggplot(aes(x, value)) +
-  geom_point(alpha = 0.5) +
-  geom_path() +
-  theme_minimal() +
-  labs(
-    x = 'Size (mm)',
-    y = 'Density'
-  )  
-```
-
-Additionally, we need to create a second structured population vector for the heterospecific species.
-This vector will represent the size distribution of all species other than the focal species and will be used to compute the heterospecific competition effect.
-
-While we could use the `init_pop()` function as described above, with similar parameters except for the `N`, which can take any desired value, we will introduce a second approach.
-This alternative method allows us to approximate a continuous population vector based on observed dbh measurements.
-Given that we already have an object from the `init_pop()` function, we need to feed the `dbh_to_sizeDist()` function with the observed dbh values and the output of the `init_pop()` function as follows:
-
-```{r sizeComp}
-# generate random observed values of dbh
-obs_dbh <- runif(2, 127, 500)
-# create a continuous population vector based on observed dbh measurements
-N_het <- dbh_to_sizeDist(
-  dbh = obs_dbh,
-  N_intra = N_sp
-)
-```
-
-The final condition parameters necessary to run the IPM model are:
-
-```{r}
-delta_time = 1            # the time interval from $t$ to $t+1$. Usually set to 1.
-plotSize = 200            # plot size in squared meters
-Temp = 0.3                # mean annual temperature scaled between 0 and 1
-Prec = 0.8                # mean annual precipitation scaled between 0 and 1
-plot_random = rep(0, 3)   # plot random effects for c(growth, survival, and recruitment)
-```
-
-
-## Run the IPM
-
-The primary function of the forest IPM is the `mkKernel()`.
-
-```{r kernel}
-K_abibal = mkKernel(
-  Nvec_intra = N_sp,
-  Nvec_inter = N_het,
-  delta_time = delta_time,
-  plotSize = plotSize,
-  Temp = Temp,
-  Prec = Prec,
-  pars = pars_abibal,
-  plot_random = plot_random
-)
-```
-
-The `K_abibal` object is a list of the $P$, $F$, and $K$ matrices of dimension $z^2$ as described in @eq-ipm2.
-This kernel object is the core output of the IPM model, serving as the foundation for projecting populations over time or calculating the asymptotic population growth rate ($\lambda$) and other metrics.
-
-We can extract the asymptotic population growth rate ($\lambda$) using the leading eigen value of the matrix $k$:
-
-```{r}
-(max(Re(eigen(K_abibal$K)$values)))
-```
-
-Given that our matrix is density-dependent, we can project the population vector over time by continuously updating the Kernel at each time step to account for the evolving size distribution of individuals.
-In the following code, we demonstrate a simple loop to trace the evolving population over time while assuming that there is only conspecific density-dependence (`N_het = 0`).
-Note that this code is slow and can take 5-10 minutes to run due to the slow `eigen()` computation.
-
-```{r runIPM,eval=FALSE}
-set.seed(0.0)
-
-# Initial population size (small)
-N_sp <- init_pop(
-  params = pars_abibal,
-  L = 127,
-  h = 1,
-  N = 1
-)
-
-# define no heterospecific competition
-N_het <- init_pop(
-  params = pars_abibal,
-  L = 127,
-  h = 1,
-  N = 0
-)
-
-# generate initial Kernel
-K0 = mkKernel(
-  Nvec_intra = N_sp,
-  Nvec_inter = N_het,
-  delta_time = delta_time,
-  plotSize = plotSize,
-  Temp = Temp,
-  Prec = Prec,
-  pars = pars_abibal,
-  plot_random = plot_random
-)
-
-
-time_max = 200
-# vector to save lambda over time
-lambdas = max(Re(eigen(K0$K)$values))
-# matrix to save size distribution
-ntmat = matrix(0, nrow = length(N_sp$Nvec), ncol = time_max)
-ntmat[, 1] <- N_sp$Nvec
-
-for(Time in 2:time_max)
-{
-  # update the state
-  ntmat[, Time] <- K0$K %*% ntmat[, Time - 1]
-  N_sp$Nvec <- ntmat[, Time]
-
-  # update the kernel
-  K0 <- mkKernel(
-    Nvec_intra = N_sp,
-    Nvec_inter = N_het,
-    delta_time = delta_time,
-    plotSize = plotSize,
-    Temp = Temp,
-    Prec = Prec,
-    pars = pars_abibal,
-    plot_random = plot_random
+```{r stand}
+s <- stand(
+  data.frame(
+    size_mm    = c(150, 200, 350),
+    species_id = "ABIBAL",
+    plot_size  = 400
   )
-
-  # calculate pop growth rate
-  lambdas[Time] = max(Re(eigen(K0$K)$values))
-
-  cat(' Time step', Time, 'of', time_max, '(', round(Time/time_max * 100, 1), '%)\r')
-}
+)
+s
 ```
 
-```{r loadExampleRunIPM,echo=FALSE}
-out <- readRDS(file.path('data', 'out_IPM_guide.RDS'))
-lambdas <- out$lambdas
-ntmat <- out$ntmat
+The minimum DBH threshold is 127 mm (the FIA inventory protocol lower limit).
+
+**Step 2 — Load the species model.**
+`species_model()` reads the fitted Bayesian hierarchical model for the species present in the stand:
+
+```{r model}
+mod <- species_model(s)
 ```
 
-For each time iteration, we saved the focal species' size ($z$) distribution and the population growth rate ($\lambda$).
-We can visualize how each measure involved time for these species-specific conditions.
-In @fig-guideLambda and @fig-guideSizeDist, we can visualize how $\lambda$ and the size density distribution evolve.
+**Step 3 — Extract parameters.**
+`parameters()` returns a parameter set from the posterior distribution.
+Use `draw = "mean"` for the posterior mean (deterministic, useful for exploration) or `draw = 1L` for a single posterior sample (for uncertainty propagation):
 
-```{r,warning=FALSE,message=FALSE}
-#| code-fold: true
+```{r parameters}
+pars <- parameters(mod, draw = "mean")
+```
+
+**Step 4 — Set climate conditions.**
+`env_condition()` defines the environmental conditions under which the IPM will run.
+Here we use a temperate broadleaf climate (MAT = 8 °C, MAP = 1200 mm):
+
+```{r env}
+env <- env_condition(MAT = 8, MAP = 1200)
+```
+
+**Step 5 — Configure the simulation.**
+`control()` sets the number of years to project, whether to compute $\lambda$ at each step, and whether to show a progress bar:
+
+```{r control}
+ctrl <- control(years = 100, compute_lambda = TRUE, progress = FALSE)
+```
+
+**Run the projection.**
+`project()` advances the population forward in time, updating the kernel at every step to account for the current size distribution (density-dependent dynamics):
+
+```{r project, eval=FALSE}
+proj <- project(mod, pars, s, env, ctrl)
+```
+
+```{r project-load, echo=FALSE}
+# Load precomputed output to avoid slow render
+out  <- readRDS(file.path("data", "out_IPM_guide.RDS"))
+proj <- out$proj
+```
+
+The `proj` object is of class `ipm_projection`.
+Calling `plot()` on it renders three diagnostic panels at once:
+
+```{r plot-all}
+#| label: fig-projAll
+#| fig-cap: "Population dynamics of *Abies balsamea* over 100 years under temperate broadleaf conditions. Left: population size over time. Centre: size distribution over time (animated slider). Right: phase portrait of $\\lambda$ vs population size."
+plot(proj)
+```
+
+## Lambda trajectory {#sec-lambda}
+
+```{r plot-lambda}
 #| label: fig-guideLambda
-#| fig-cap: "Population size (left panel) and population growth rate (right panel) over time."
-
-ntmat |>
-  as_tibble() |>
-  pivot_longer(cols = everything(), values_to = 'Density') |>
-  mutate(Time = parse_number(name)) |>
-  group_by(Time) |>
-  reframe(N = sum(Density)) |>
-  left_join(
-    lambdas |>
-      enframe(name = 'Time') |>
-      rename(lambda = value)
-  ) |>
-  pivot_longer(cols = c(N, lambda)) |>
-  mutate(
-    name = factor(name, levels = c('N', 'lambda'), labels = c(expression(textstyle('Population size')), expression(lambda)))
-  ) |>
-  ggplot() +
-  aes(Time, value) +
-  facet_wrap(
-    ~name,
-    scales = 'free_y',
-    labeller = label_parsed
-  ) +
-  geom_path(linewidth = 1.2) +
-  theme_classic() +
-  labs(
-    y = NULL
-  )
+#| fig-cap: "Population growth rate ($\\lambda$) over time. Values above 1 indicate growth; below 1 indicate decline."
+plot(proj, type = "lambda")
 ```
 
-```{r}
-#| code-fold: true
+The population growth rate $\lambda$ starts above 1 when the stand is sparse (low competition) and converges toward 1 as the population reaches carrying capacity.
+
+## Size distribution over time {#sec-sizedist}
+
+```{r plot-sizedist}
 #| label: fig-guideSizeDist
-#| fig-cap: "Population size distribution over time."
-
-suppressPackageStartupMessages(library(plotly))
-
-ntmat |>
-  as.data.frame() |>
-  pivot_longer(cols = everything(), values_to = 'Density') |>
-  mutate(Time = parse_number(name)) |>
-  group_by(Time) |>
-    mutate(x = 127:(n() + 126)) |>
-  ggplot() +
-  aes(x, Density) +
-  aes(group = name) +
-  aes(frame = Time) +
-  geom_path() +
-  theme_classic() +
-  xlab('Size (mm)') ->
-p
-
-ggplotly(p) |>
-  animation_opts(frame = 50) |>
-  animation_slider(
-    hide = FALSE,
-    currentvalue = list(prefix = "Time step: ", font = list(color = 'black'))
-  ) |>
-  animation_button(
-    x = 0.9, xanchor = 'left', y = 1, yanchor = 'top'
-  ) 
-
+#| fig-cap: "Size distribution of *Abies balsamea* across the modelled DBH range over 100 years. Use the slider to step through time."
+plot(proj, type = "size_dist")
 ```
 
-We can also see how these two quantities interact over time.
+The size structure shifts rightward over time as the cohort matures and small trees die or grow into larger size classes.
 
-```{r}
-#| code-fold: true
+## Lambda vs population size {#sec-lambdavsn}
+
+```{r plot-lambdavsn}
 #| label: fig-lambdaVsN
-#| fig-cap: "Correlation between population growth rate and total population size over time."
-
-ntmat |>
-  as.data.frame() |>
-  pivot_longer(cols = everything())  |>
-  group_by(name) |>
-  reframe(N = sum(value)) |>
-  mutate(Time = parse_number(name)) |>
-  arrange(Time) |>
-  bind_cols(lambda = lambdas) |>
-  ggplot() +
-  aes(N, lambda) +
-  aes(color = Time) +
-  geom_path(linewidth = 1.2) +
-  theme_classic() +
-  labs(x = 'Population size', y = expression(lambda)) +
-  geom_hline(yintercept = 1, alpha = 0.2)
+#| fig-cap: "Phase portrait of population growth rate ($\\lambda$) against total population size over time. Colour gradient indicates time."
+plot(proj, type = "lambda_vs_n")
 ```
 
+This phase portrait shows the classic density-dependent trajectory: $\lambda$ is high when population size is low and declines as intraspecific competition intensifies, eventually stabilising near $\lambda = 1$.
+
+# Part 2: Deep dive (bridge to next chapter) {#sec-deepdive-bridge}
+
+The quick start above covers a single species under static climate conditions.
+For more advanced use cases — running multi-species IPMs, simulating climate warming scenarios, and an overview of planned package extensions — see @sec-deepdive in the next chapter.
+
+Briefly, `forestIPM` supports:
+
+- **Multi-species stands**: pass a `data.frame` with multiple `species_id` values to `stand()`; `species_model()` and `project()` handle the rest.
+- **Time-varying climate**: loop over `env_condition()` calls with different `MAT`/`MAP` values to simulate climate trajectories.
+- **Posterior uncertainty**: replace `draw = "mean"` with `draw = i` (integer) to sample different posterior draws and propagate uncertainty.
+
+For details on all three patterns and the package roadmap (ML decoder for new locations, coexistence IPM, CRAN submission), continue to [Deep dive](deep_dive_IPM.qmd).
