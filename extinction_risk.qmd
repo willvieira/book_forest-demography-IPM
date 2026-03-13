@@ -731,6 +731,138 @@ p2
 ggarrange(p1, p2, ncol = 2)
 ```
 
+```{r,echo=FALSE, eval=FALSE}
+# figure for presentation
+db_sim_hot |>
+  filter(cond == 2) |>
+  bind_rows(
+    db_sim_cold |>
+      filter(cond == 2)
+  ) |>
+  ggplot() +
+  aes(temp, log(lambda)) +
+  geom_point(size = 0.3, alpha = .8) +
+  theme_classic() +
+  labs(
+    x = 'Mean annual temperature (°C)',
+    y = expression('ln('~lambda~')'),
+    subtitle = 'Abies balsamea'
+  ) +
+  theme(
+    strip.background = element_blank(),
+    legend.position = 'none',
+    plot.subtitle = element_text(face = 'italic')
+  ) +
+  ylim(yLim) ->
+p
+ggsave('../talk_PhDdefence/images/lambda_vs_temp_abibal.png', p, width = 5.5, height = 3.5)
+
+
+out_pars |>
+  filter(species_id == Sp & border == 'cold' & sim == 2 & cond == 2) |>
+  select(cond, iter, par, value) |>
+  pivot_wider(names_from = par, values_from = value) |>
+  group_by(cond, iter) |>
+  expand_grid(
+    temp = seq(temp_range_cold[1], temp_range_cold[2], length.out = 200)
+  ) |>
+  mutate(
+    lambda = sn::rsn(n(), beta_mean * temp + inter, exp(sigma_inter + beta_sigma * temp), alpha)
+  ) |>
+  bind_cols(pos = 'Cold') |>
+  bind_rows(
+    out_pars |>
+      filter(species_id == Sp & border == 'hot' & sim == 2 & cond == 2) |>
+      select(cond, iter, par, value) |>
+      pivot_wider(names_from = par, values_from = value) |>
+      group_by(cond, iter) |>
+      expand_grid(
+        temp = seq(temp_range_hot[1], temp_range_hot[2], length.out = 200)
+      ) |>
+      mutate(
+        lambda = sn::rsn(n(), beta_mean * temp + inter, exp(sigma_inter + beta_sigma * temp), alpha)
+      ) |>
+      bind_cols(pos = 'Hot')
+  ) |>
+  ggplot() +
+  aes(temp, lambda) +
+  facet_wrap(~pos, scales = 'free_x') +
+  geom_point(
+    data = db_sim_cold |>
+      filter(cond == 2) |>
+      filter(temp >= temp_range_cold[1] & temp <= temp_range_cold[2]) |>
+      bind_cols(pos = 'Cold') |>
+      bind_rows(
+        db_sim_hot |>
+          filter(cond == 2) |>
+          filter(temp >= temp_range_hot[1] & temp <= temp_range_hot[2]) |>
+          bind_cols(pos = 'Hot')
+      ) |>
+      group_by(pos) |>
+      slice_sample(n = 1e4),
+    aes(temp, log(lambda)),
+    alpha = 0.4, size = 0.3
+  ) +
+  stat_lineribbon(.width = 0.9, alpha = 0.6) +
+  scale_fill_manual(values = c('#d8b365')) +
+  geom_hline(yintercept = 0, linetype = 2) +
+  theme_classic() +
+  theme(
+    plot.title = element_text(face = 'italic'),
+    legend.position = 'none',
+    strip.background = element_blank(),
+    plot.subtitle = element_text(face = 'italic')
+  ) +
+  labs(
+    x = 'Mean annual temperature (°C)',
+    y = expression('ln('~lambda~')'),
+    subtitle = 'Abies balsamea'
+  ) +
+  ylim(yLim) ->
+p
+ggsave('../talk_PhDdefence/images/lambda_vs_temp_abibal_model.png', p, width = 6, height = 3.5)
+
+
+out_pars |>
+  filter(species_id == Sp & border == 'cold' & sim == 2 & cond == 2) |>
+  select(cond, iter, par, value) |>
+  pivot_wider(names_from = par, values_from = value) |>
+  group_by(cond, iter) |>
+  expand_grid(
+    temp = seq(temp_range_cold[1], temp_range_cold[2], length.out = 200)
+  ) |>
+  mutate(
+    lambda = sn::rsn(n(), beta_mean * temp + inter, exp(sigma_inter + beta_sigma * temp), alpha)
+  ) |>
+  ggplot() +
+  aes(temp, lambda) +
+  geom_point(
+    data = db_sim_cold |>
+      filter(cond == 2) |>
+      filter(temp >= temp_range_cold[1] & temp <= temp_range_cold[2]),
+    aes(temp, log(lambda)),
+    alpha = 0.7, size = 0.5
+  ) +
+  stat_lineribbon(.width = 0.9, alpha = 0.6) +
+  scale_fill_manual(values = c('#d8b365')) +
+  geom_hline(yintercept = 0, linetype = 2) +
+  theme_classic() +
+  theme(
+    plot.title = element_text(face = 'italic'),
+    legend.position = 'none',
+    strip.background = element_blank(),
+    plot.subtitle = element_text(face = 'italic')
+  ) +
+  labs(
+    x = 'Mean annual temperature (°C)',
+    y = 'Population growth rate',
+    subtitle = 'Abies balsamea'
+  ) +
+  ylim(yLim) ->
+p
+ggsave('../talk_PhDdefence/images/lambda_vs_temp_abibal_exp1.png', p, width = 5, height = 3.5)
+```
+
 We can estimate the suitable probability using the empirical cumulative distribution approach (@eq-sp) from the linear model predictions.
 The @fig-sp-example shows the suitable probability expected over the mean annual temperature of the same species.
 As expected, the suitable probability was reduced toward the cold border and was lower under heterospecific competition (yellow curve).
@@ -967,6 +1099,88 @@ plot_dt |>
   coord_cartesian(ylim = c(0, 1), clip = 'off')
 ```
 
+```{r,eval=FALSE,echo=FALSE}
+# figure for presentation
+plot_dt |>
+  ggplot() +
+  aes(gp, ext) +
+  # aes(color = factor(cond, levels = c('No competition', 'Heterospecific competition'))) +
+  aes(color = cond) +
+  geom_point(position = position_jitterdodge()) +
+  geom_boxplot(fill = 'transparent', outlier.color = 'transparent') +
+  scale_color_manual(values = c('#5ab4ac', '#d8b365')) +
+  geom_vline(xintercept = 2.5, linetype = 2, alpha = 0.7) +
+  theme_classic() +
+  scale_x_discrete(
+    breaks = xLabel_order,
+    labels = c('Border', 'Center', 'Center', 'Border')
+  ) +
+  labs(
+    y = expression('Suitable probability ('~Lambda~')'),
+    x = "Relative position in the mean annual temperature gradient",
+    color = NULL, fill = NULL
+  ) +
+  theme(
+    legend.position = 'top',
+    strip.background = element_blank()
+  ) +
+  annotate(geom = 'text', x = 1.5, y = 1.08, label = 'Cold') +
+  annotate(geom = 'text', x = 3.5, y = 1.08, label = 'Hot') +
+  coord_cartesian(ylim = c(0, 1), clip = 'off') ->
+p
+ggsave('../talk_PhDdefence/images/suitable_probability_4position.png', p, width = 7, height = 3.5)
+```
+
+```{r,eval=FALSE,echo=FALSE}
+for(Cond in 1:2) {
+sp_dt |>
+  filter(range_pos == 'border') |>
+  select(species_id, cond, border, ext) |>
+  group_by(species_id, border, cond) |>
+  reframe(ext = mean(ext)) |>
+  pivot_wider(
+    names_from = border,
+    values_from = ext
+  ) |>
+  mutate(
+    diff = Cold - Hot
+  ) |>
+  pivot_longer(cols = c(Cold, Hot), names_to = 'border') |>
+  # filter(species_id == '18032ABIBAL') |>
+  left_join(
+    sp_dt |> 
+      filter(range_pos == 'border')  |>
+      select(species_id, border, temp) |> 
+      distinct(),
+    relationship = 'many-to-many'
+  ) |>
+  filter(cond == Cond) |>
+  ggplot() +
+  aes(temp, value) +
+  aes(color = diff) +
+  aes(shape = border) +
+  # transition_states(cond, transition_length = 2, wrap = FALSE) +
+  geom_point(aes(shape = border, fill = diff), size = 2.5, alpha = 0.8) +
+  geom_line(aes(color = diff, group = species_id)) +
+  scale_color_gradient2() +
+  scale_shape_manual(values = c(21, 24)) +
+  scale_fill_gradient2() +
+  theme_classic() +
+  labs(
+    x = 'Mean annual temperature (°C)',
+    y = 'Suitable probability',
+    color = 'Cold - Hot',
+    shape = 'Border',
+    fill = 'Cold - Hot'
+  ) ->
+p
+ggsave(paste0('../talk_PhDdefence/images/suitable_probability_cond', Cond, '.png'), p, width = 6, height = 3.5)
+}
+
+animate(p, height = 3.5, width = 6, units = "in", res = 300)
+anim_save(filename = '../talk_PhDdefence/images/suitable_probability.gif')
+```
+
 While the negative effect of climate on suitable probability is evident in the above figure, distinguishing the individual effects of competition remains challenging.
 Hence, in @fig-effect_of_comp, we assessed the impact of competition on reducing suitable probability by subtracting the suitable probability under heterospecific competition from the suitable probability with no competition.
 Even when isolating the effect of climate, the negative impact of heterospecific competition on suitable probability increases toward the border of the hot range.
@@ -1036,6 +1250,52 @@ sp_dt |>
     fill = NULL
   )
 ```
+
+```{r,echo=FALSE,eval=FALSE}
+
+sp_dt |>
+  select(species_id, iter, cond, border, range_pos, ext) |>
+  group_by(species_id, border, cond, range_pos) |>
+  reframe(
+    ext = mean(ext)
+  ) |>
+  pivot_wider(
+    names_from = cond,
+    values_from = ext,
+    names_prefix = 'cond_'
+  ) |>
+   mutate(
+    diff = cond_2 - cond_1,
+    y = paste(border, range_pos, sep = ' '),
+    y = factor(y, levels = rev(c('Hot border', 'Hot center', 'Cold center', 'Cold border')))
+  ) |>
+  left_join(
+    spIds,
+    by = c('species_id' = 'species_id_old')
+  ) |>
+  ggplot() +
+  aes(y, diff) +
+  geom_hline(yintercept = 0, alpha = 0.7) +
+  geom_boxplot(fill = 'transparent', outlier.shape = NA) +
+  geom_point(
+    aes(fill = shade_sylvics),
+    shape = 21, size = 2, alpha = .8, color = 'grey', position = position_jitterdodge(seed = 15)
+  ) +
+  scale_fill_manual(values = c("#20bc45", "#87bc45", "#edbf33", "#ea5545", "#ba0000")) +
+  geom_vline(xintercept = 2.5, linetype = 2, alpha = 0.7) +
+  theme_classic() +
+  theme(
+    legend.position = 'top'
+  ) +
+  labs(
+    y = 'Effect of competition on suitable probability',
+    x = 'Relative position in the mean annual temperature gradient',
+    fill = NULL
+  ) ->
+p
+ggsave('../talk_PhDdefence/images/suitable_probability_comp.png', p, width = 7, height = 3.5)
+```
+
 
 For each species, we estimated the difference in suitable probability between the border and center (for climate) and between heterospecific and non-competition.
 In @fig-diff_sp_raw, we compare the suitable probability for each species under the climate or competition conditions, where each line and their respective color determines the amount of change in suitable probability.

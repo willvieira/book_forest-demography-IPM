@@ -641,4 +641,25 @@ World |>
 p
 ggsave('map_randomEffect.png', p, bg = 'transparent')
 
+# figure for paper
+#~~~~~~~~~~~~~~~~~~~~~~~
+
+# Get high-resolution country boundaries for North America
+north_america_hd <- rnaturalearth::ne_countries(
+  continent = "North America",
+  scale = 10,
+  returnclass = "sf"
+)
+
+north_america_hd |>
+  filter(sovereignt %in% c("United States of America", "Canada")) |>
+  st_crop(
+    plot_loc |>
+      st_bbox() |>
+      st_as_sfc() |>
+      st_buffer(dist = 8e5)
+  ) |>
+  ggplot() +
+  geom_sf(linewidth = 0.4, fill = "#F5F5F5") +
+  theme_classic()
 ```

@@ -220,6 +220,51 @@ tibble(
   )
 ```
 
+```{r,eval=FALSE, echo=FALSE}
+# figure for presentation
+
+tibble(
+    beta = -c(0.02, 0.05),
+    theta = c(0.5, 1.5),
+    group = c("1", "2")
+  ) |>
+  group_by(group) |>
+  expand_grid(BAL = seq(0, 80, 0.1)) |>
+  mutate(
+    Conspecific_eff = exp(beta * BAL),
+    Heterospecific_eff = exp(beta * theta * BAL)
+  ) |>
+  pivot_longer(cols = contains('eff')) |>
+  mutate(
+    name = gsub('_eff', '', name),
+    group = case_match(
+      group,
+      "1" ~ "beta~'='~'-0.02;'~theta~'='~'0.5'",
+      "2" ~ "beta~'='~'-0.05;'~theta~'='~'1.5'"
+    )) |>
+  ggplot() +
+  aes(BAL, value) +
+  aes(color = name) +
+  facet_wrap(~group, labeller = label_parsed) +
+  geom_path(linewidth = 1) +
+  # geom_hline(yintercept = 0, alpha = 0.6, linetype = 3) +
+  labs(
+    x = expression('Basal area of larger individuals ('~m^2~ha^-1~')'),
+    y = expression('Effect on Growth/Survival/Recruit'),
+    color = '' 
+  ) +
+  scale_color_manual(
+    values = met.brewer('Juarez', 2)
+  ) +
+  theme_classic() +
+  theme(
+    legend.position = 'top',
+    strip.background = element_blank()
+  ) ->
+p
+ggsave('../talk_PhDdefence/images/competition_example.png', p, width = 7, height = 3.5)
+```
+
 For the recruitment model, conspecific and heterospecific BAL affect different components of the model.
 Conspecific BAL, or the total conspecific plot basal area (as recruitment is necessarily smaller than any adult individual), has an unimodal effect on the annual ingrowth rate ($\phi$).
 This effect is characterized by an optimal basal area for ingrowth at $\delta^{\phi}$ and an increased effect controlled by the parameter $\sigma^{\phi}$:
@@ -376,4 +421,43 @@ tibble(
   theme(
     legend.position = 'top'
   )
+```
+
+```{r,eval=FALSE,echo=FALSE}
+
+tibble(
+    opt_clim = c(0, 0.5, 0.5),
+    sigma_clim = c(.5, .3, 1),
+    group = c('A', 'B', 'C')
+  ) |>
+  group_by(group) |>
+  expand_grid(clim = seq(0, 1, 0.01)) |>
+  mutate(
+    clim_eff = exp(-((clim - opt_clim)/sigma_clim)^2)
+  ) |>
+  ggplot() +
+  aes(clim, clim_eff) +
+  aes(color = group) +
+  geom_path(linewidth = 1) +
+  labs(
+    x = 'Climate variable (scaled)',
+    y = expression('Effect on Growth/Survival/Recruit'),
+    color = '' 
+  ) +
+  scale_color_manual(
+    values = met.brewer('Juarez', 4),
+    labels = c(
+      expression(xi~'='~'0;'~sigma~'='~'0.5'),
+      expression(xi~'='~'0.5;'~sigma~'='~'0.3'),
+      expression(xi~'='~'0.5;'~sigma~'='~'1')
+      # expression(xi~'='~'1;'~sigma~'='~'0.5')
+    )
+  ) +
+  theme_classic() +
+  theme(
+    legend.position = 'top'
+  ) ->
+p
+ggsave('../talk_PhDdefence/images/climate_example.png', p, width = 5, height = 3.5)
+
 ```

@@ -133,11 +133,11 @@ ggpubr::ggarrange(
 # Code to generate fig for presentation
 
 r <- exp(c(-5, -4, -3))
-linf <- c(900, 1200)
+linf <- c(1200)
 
 labels <- c(
-  `900` = "Z[infinity] ~  90",
-  `1200` = "Z[infinity] ~  120"
+  # `900` = "Z[infinity]==90",
+  `1200` = "Maximum expected size = 120"
 )
 
 expand_grid(
@@ -164,14 +164,14 @@ dt |>
   aes(group = log(r), color = factor(log(r))) +
   facet_wrap(
     ~Linf,
-    labeller = labeller(Linf = as_labeller(labels, label_parsed))
+    labeller = labeller(Linf = labels)
   ) +
-  geom_path(size = 1.2) +
+  geom_path(linewidth = 1) +
   theme_classic() +
   labs(
     x = expression(Delta~'time'),
     y = 'Size (cm)',
-    color = 'ln(r)'
+    color = 'ln(Annual\ngrowth rate)'
   ) +
   theme(
     strip.background = element_blank(),
@@ -180,7 +180,7 @@ dt |>
   scale_color_brewer(palette = "Oranges") +
   scale_y_continuous(labels = scales::number_format(accuracy = 0.1)) ->
 p
-ggsave('../talk_PhDdefence/images/growth_example.png', p, width = 7, height = 3)
+ggsave('../talk_PhDdefence/images/growth_example.png', p, width = 5.5, height = 3)
 ```
 
 ## Survival model
@@ -233,16 +233,16 @@ tibble(
   expand_grid(deltaYear = seq(0, 750, 1)) |>
   mutate(long = 1/(1 + exp(-psi))^deltaYear) |>
   ggplot(aes(x = deltaYear,  y = long, color = factor(psi))) +
-    geom_path(size = 1.2) +
+    geom_path(linewidth = 1) +
     scale_color_brewer(palette = "Oranges") +
     theme_classic() +
     labs(
       x = expression(Delta~'time'),
       y = 'Survival probability',
-      color = expression(psi)
+      color = 'Annual\nsurvival rate'
     ) ->
 p
-ggsave('../talk_PhDdefence/images/survival_example.png', p, width = 6, height = 3)
+ggsave('../talk_PhDdefence/images/survival_example.png', p, width = 5.5, height = 3)
 ```
 
 
@@ -313,7 +313,7 @@ expand_grid(
     plot_size = 168
   ) |>
   mutate(
-    rho_label = paste0('ρ = ', as.character(round(exp(-exp(rho)), 3))),
+    rho_label = paste0('annual survival rate = ', as.character(round(exp(-exp(rho)), 3))),
     phi_label = case_match(
       phi,
       -9 ~ '1e-4',
@@ -333,14 +333,15 @@ expand_grid(
   aes(deltaYear, lambda) +
   aes(color = phi_label) +
   facet_wrap(~ rho_label) +
-  geom_path(size = 1.2) +
+  geom_path(linewidth = 1) +
   scale_color_brewer(palette = "Oranges") +
   theme_classic() + 
   labs(
     x = expression(Delta~'time'),
     y = 'Mean number of ingrowth',
-    color = expression(phi)
-  ) ->
+    color = 'Annual\nrecruit rate'
+  ) +
+  theme(strip.background = element_blank()) ->
 p
 ggsave('../talk_PhDdefence/images/recruit_example.png', p, width = 7, height = 3)
 

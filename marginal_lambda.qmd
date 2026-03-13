@@ -198,6 +198,38 @@ p2
 ggarrange(p1, p2, ncol = 2)
 ```
 
+```{r,eval=FALSE,echo=FALSE}
+# figure for presentation
+AME_sp |>
+  group_by(species_id) |>
+  reframe(across(contains('par.'), mean)) |>
+  pivot_longer(cols = contains('par.')) |>
+  mutate(
+    name = str_replace(name, 'par.', ''),
+    name = case_match(
+      name,
+      'BA_con' ~ 'Competition\nconspecific',
+      'BA_het' ~ 'Competition\nheterospecific',
+      'temp' ~ 'Temperature',
+      'prec' ~ 'Precipitation'
+    )
+  ) |>
+  ggplot() +
+  aes(fct_reorder(name, log(value), .desc = TRUE), log(value)) +
+  aes(fill = name) +
+  geom_boxplot() +
+  theme_classic() +
+  labs(
+    x = '',
+    y = 'ln(Sensitivity)'
+  ) +
+  scale_fill_manual(values = c('#7fc97f', '#ffff99', '#386cb0', '#fdc086')) +
+  theme(legend.position = 'none') ->
+p
+ggsave('../talk_PhDdefence/images/fig-ame.png', p, width = 5, height = 4)
+
+```
+
 In @fig-comp_vs_clim, we integrate temperature with precipitation (climate) and conspecific with heterospecific competition to explore the relationship between sensitivity to climate and sensitivity to competition.
 Overall, species with high sensitivity to climate also exhibited high sensitivity to competition.
 Furthermore, most species displayed higher sensitivity to climate than to competition, and this difference widened as sensitivity levels increased.
@@ -635,7 +667,6 @@ out |>
 Lastly, we analyzed how each species' sensitivity to climate and competition changed from the cold to the hot border (@fig-hot_vs_cold).
 The change in sensitivity between the cold and hot borders was contingent on the species' position across the temperature range.
 For climate, species distributed toward colder temperature ranges often exhibited a decrease in sensitivity from the cold to the hot border.
-Conversely, most of the species located at the hot range distribution presented an increase in the sensitivity to climate at the hot border compared to the cold.
 Conversely, most species in the hot range distribution demonstrated an increase in sensitivity to climate at the hot border compared to the cold.
 For competition, most species presented a decrease in sensitivity from the cold to the hot border.
 Regarding competition, the majority of species displayed a decrease in sensitivity from the cold to the hot border regardless of their location in the temperature range.
@@ -750,6 +781,299 @@ out |>
 #   ) +
 #   theme(legend.position = 'top')
 ```
+
+```{r,eval=FALSE,echo=FALSE}
+# Supp figure ms
+out |>
+  # three species that had the lowest AME (low sensitivity to covariates)
+  # filter(!species_id %in% c('NAQUEPRI', '19290QUEALB', '27821NYSSYL')) |>
+  # filter(species_id == '18032ABIBAL') |>
+  mutate(
+    clim = log(par.temp + par.prec),
+    comp = log(par.BA_con + par.BA_het),
+    ccr = comp - clim
+  ) |>
+  left_join(plotBorder_class) |>
+  select(species_id, border_cl, rep, clim, comp) |>
+  group_by(species_id, border_cl) |>
+  reframe(
+    Climate = mean(clim),
+    Competition = mean(comp)
+  ) |>
+  pivot_longer(
+    cols = c(Climate, Competition),
+    names_to = 'covariable'
+  ) |>
+  pivot_wider(names_from = border_cl, values_from = value) |>
+  mutate(
+    d_cold = Cold - Center,
+    d_hot = Hot - Center,
+    d_d = d_cold + d_hot
+  ) |>
+  pivot_longer(cols = c(Cold, Hot, Center), names_to = 'border_cl') |>
+  left_join(    
+    treeData |>
+      left_join(plotBorder_class) |>
+      group_by(species_id, border_cl) |>
+      reframe(
+        range_pos = median(bio_01_mean, na.rm = TRUE)
+      ) |>
+      mutate(range_pos = range_pos + rnorm(n(), 0, 0.001))
+  ) |>
+  ggplot() +
+  aes(range_pos, value) +
+  geom_line(aes(color = d_d, group = species_id)) +
+  facet_wrap(~covariable) +
+  scale_color_gradient2() +
+  scale_fill_gradient2() +
+  theme_classic() +
+  labs(
+    x = 'Mean annual temperature (°C)',
+    y = 'ln(Sensitivity)',
+    color = "Curvature index<br>(<span style='color:#6863A9;'>concave</span> ↔ <span style='color:#9B5C54;'>convex</span>)"
+  ) +
+  theme(legend.title = element_markdown())
+
+
+# Figure extra
+out |>
+  # three species that had the lowest AME (low sensitivity to covariates)
+  # filter(!species_id %in% c('NAQUEPRI', '19290QUEALB', '27821NYSSYL')) |>
+  # filter(species_id == '18032ABIBAL') |>
+  mutate(
+    clim = log(par.temp + par.prec),
+    comp = log(par.BA_con + par.BA_het),
+    ccr = comp - clim
+  ) |>
+  left_join(plotBorder_class) |>
+  select(species_id, border_cl, rep, comp, clim, ccr) |>
+  group_by(species_id, border_cl) |>
+  reframe(
+    clim = mean(clim),
+    comp = mean(comp),
+    e_size1 = clim * comp,
+    e_size2 = clim + comp,
+    ccr = mean(ccr)
+  ) |>
+  left_join(    
+    treeData |>
+      left_join(plotBorder_class) |>
+      group_by(species_id, border_cl) |>
+      reframe(
+        range_pos = median(bio_01_mean, na.rm = TRUE)
+      ) |>
+      mutate(range_pos = range_pos + rnorm(n(), 0, 0.001))
+  ) |>
+  ggplot() +
+  aes(range_pos, e_size2, fill = border_cl, color = border_cl) +
+  # ggdensity::geom_hdr(
+  #   aes(color = NULL),
+  #   probs = .7, alpha = .5,
+  #   method = 'mvnorm'
+  # ) +
+  geom_smooth(method = "lm") +
+  geom_point() +
+  # geom_hline(yintercept = 0, alpha = 0.8, linetype = 2) +
+  scale_fill_manual(values = c('#91bfdb', '#99d594', '#fc8d59')) +
+  scale_color_manual(values = c('#91bfdb', '#99d594', '#fc8d59')) +
+  theme_classic() +
+  labs(
+    x = 'Mean annual temperature (°C)',
+    y = 'Competition/climate ratio',
+    color = NULL,
+    fill = NULL
+  ) +
+  theme(legend.title = element_markdown()) +
+  xlim(-3, 21.3)
+
+
+out |>
+  # three species that had the lowest AME (low sensitivity to covariates)
+  # filter(!species_id %in% c('NAQUEPRI', '19290QUEALB', '27821NYSSYL')) |>
+  # filter(species_id == '18032ABIBAL') |>
+  mutate(
+    clim = log(par.temp + par.prec),
+    comp = log(par.BA_con + par.BA_het),
+    ccr = comp - clim
+  ) |>
+  left_join(plotBorder_class) |>
+  select(species_id, border_cl, rep, clim, comp) |>
+  group_by(species_id, border_cl) |>
+  reframe(
+    Climate = mean(clim),
+    Competition = mean(comp)
+  ) |>
+  # filter(border_cl != 'Center') |>
+  pivot_longer(
+    cols = c(Climate, Competition),
+    names_to = 'covariable'
+  ) |>
+  pivot_wider(names_from = border_cl, values_from = value) |>
+  mutate(
+    d_cold = Cold - Center,
+    d_hot = Hot - Center,
+    d_d = d_cold + d_hot
+  ) |>
+  pivot_longer(cols = c(Cold, Hot, Center), names_to = 'border_cl') |>
+  left_join(    
+    treeData |>
+      left_join(plotBorder_class) |>
+      group_by(species_id, border_cl) |>
+      reframe(
+        range_pos = median(bio_01_mean, na.rm = TRUE)
+      ) |>
+      mutate(range_pos = range_pos + rnorm(n(), 0, 0.001))
+  ) |>
+  left_join(
+    sp_range_pos |> 
+      pivot_wider(names_from = border_cl, values_from = range_pos) |>
+      mutate(range_size = abs(Cold - Hot))
+  ) |>
+  left_join(spIds, by = c('species_id' = 'species_id_new')) |>
+  ggplot() +
+  aes(Center, d_d) +
+  facet_wrap(~covariable) +
+  geom_smooth(method = 'lm') +
+  geom_point()
+```
+
+```{r,eval=FALSE,echo=FALSE}
+# figure for presentation
+
+out |>
+  # three species that had the lowest AME (low sensitivity to covariates)
+  # filter(!species_id %in% c('NAQUEPRI', '19290QUEALB', '27821NYSSYL')) |>
+  # filter(species_id == '18032ABIBAL') |>
+  mutate(
+    clim = log(par.temp + par.prec),
+    comp = log(par.BA_con + par.BA_het),
+    ccr = comp - clim
+  ) |>
+  left_join(plotBorder_class) |>
+  select(species_id, border_cl, rep, clim, comp) |>
+  group_by(species_id, border_cl) |>
+  reframe(
+    Climate = mean(clim),
+    Competition = mean(comp)
+  ) |>
+  filter(border_cl != 'Center') |>
+  pivot_longer(
+    cols = c(Climate, Competition),
+    names_to = 'covariable'
+  ) |>
+  pivot_wider(names_from = border_cl, values_from = value) |>
+  mutate(diff = Cold - Hot) |>
+  pivot_longer(cols = c(Cold, Hot), names_to = 'border_cl') |> 
+  left_join(    
+    treeData |>
+      left_join(plotBorder_class) |>
+      group_by(species_id, border_cl) |>
+      reframe(
+        range_pos = median(bio_01_mean, na.rm = TRUE)
+      ) |>
+      mutate(range_pos = range_pos + rnorm(n(), 0, 0.001))
+  ) ->
+dt_fig
+
+# define axis limits limits
+dt_fig |>
+  pull(value) |>
+  range() ->
+y_lim
+dt_fig |>
+  pull(range_pos) |>
+  range() ->
+x_lim
+
+# define the two main species
+sps <- c(
+  dt_fig |>
+    filter(covariable == 'Competition') |>
+    filter(value == max(value)) |>
+    pull(species_id) |>
+    unique(),
+  dt_fig |>
+    filter(covariable == 'Competition') |>
+    filter(diff == min(diff)) |>
+    pull(species_id) |>
+    unique()
+)
+
+dt_fig |>
+  mutate(covariable = factor(covariable, levels = c('Competition', 'Climate'))) |>
+  filter(species_id %in% sps) |>
+  mutate(value = if_else(covariable == 'Climate', NA, value)) |>
+  ggplot() +
+  aes(range_pos, value) +
+  facet_wrap(~covariable) +
+  geom_line(aes(color = diff, group = species_id)) +
+  scale_color_gradient2() +
+  geom_point(aes(shape = border_cl, fill = diff), size = 2.5, alpha = 0.8) +
+  scale_shape_manual(values = c(21, 24)) +
+  scale_fill_gradient2() +
+  theme_classic() +
+  labs(
+    x = 'Mean annual temperature (°C)',
+    y = 'ln(Sensitivity)',
+    color = 'Cold - Hot',
+    shape = 'Border',
+    fill = 'Cold - Hot'
+  ) +
+  xlim(x_lim) +
+  ylim(y_lim) ->
+p
+ggsave('../talk_PhDdefence/images/ame_hot_vs_coldA.png', p, width = 8, height = 4)
+
+dt_fig |>
+  mutate(covariable = factor(covariable, levels = c('Competition', 'Climate'))) |>
+  mutate(value = if_else(covariable == 'Climate', NA, value)) |>
+  ggplot() +
+  aes(range_pos, value) +
+  facet_wrap(~covariable) +
+  geom_line(aes(color = diff, group = species_id)) +
+  scale_color_gradient2() +
+  geom_point(aes(shape = border_cl, fill = diff), size = 2.5, alpha = 0.8) +
+  scale_shape_manual(values = c(21, 24)) +
+  scale_fill_gradient2() +
+  theme_classic() +
+  labs(
+    x = 'Mean annual temperature (°C)',
+    y = 'ln(Sensitivity)',
+    color = 'Cold - Hot',
+    shape = 'Border',
+    fill = 'Cold - Hot'
+  ) +
+  xlim(x_lim) +
+  ylim(y_lim) ->
+p
+ggsave('../talk_PhDdefence/images/ame_hot_vs_coldB.png', p, width = 8, height = 4)
+
+
+dt_fig |>
+  mutate(covariable = factor(covariable, levels = c('Competition', 'Climate'))) |>
+  ggplot() +
+  aes(range_pos, value) +
+  facet_wrap(~covariable) +
+  geom_line(aes(color = diff, group = species_id)) +
+  scale_color_gradient2() +
+  geom_point(aes(shape = border_cl, fill = diff), size = 2.5, alpha = 0.8) +
+  scale_shape_manual(values = c(21, 24)) +
+  scale_fill_gradient2() +
+  theme_classic() +
+  labs(
+    x = 'Mean annual temperature (°C)',
+    y = 'ln(Sensitivity)',
+    color = 'Cold - Hot',
+    shape = 'Border',
+    fill = 'Cold - Hot'
+  ) +
+  xlim(x_lim) +
+  ylim(y_lim) ->
+p
+ggsave('../talk_PhDdefence/images/ame_hot_vs_coldC.png', p, width = 8, height = 4)
+
+```
+
 
 ## Spatial Distribution of sensitivity to the covariates
 
@@ -866,4 +1190,101 @@ plot_spatial_sens <- function(sp) {
 
 for(sp in spIds$species_id_old)
   plot_spatial_sens(sp)
+```
+
+
+```{r ms_figure,echo=FALSE,eval=FALSE}
+
+sp <- "18032ABIBAL"
+sp <- "28728ACERUB"
+
+out_summ |>
+  filter(species_id == sp) |>
+  mutate(
+    clim_ln = log(exp(par.temp) + exp(par.prec)),
+    comp_ln = log(exp(par.BA_con) + exp(par.BA_het)),
+    ccr_ln = comp_ln - clim_ln
+  ) |>
+  group_by(plot_id) |>
+  mutate(
+    clim_ln = mean(clim_ln, na.rm = TRUE),
+    comp_ln = mean(comp_ln, na.rm = TRUE),
+    ccr_ln = mean(ccr_ln, na.rm = TRUE)
+  ) |>
+  slice_head(n = 1) |>
+  select(contains('tude'), contains('ln')) |>
+  ungroup() ->
+sp_dt
+
+theme_plot <- list(
+  theme_classic() +
+  theme(
+    legend.position = 'bottom',
+    axis.text.y = element_blank(),
+    axis.text.x = element_blank(),
+    legend.key.height = unit(2, 'mm')
+  )
+  )
+
+sp_dt |>
+  filter(
+    comp_ln > quantile(comp_ln, 0.05) & comp_ln < quantile(comp_ln, 0.95)
+  ) |>
+  filter(
+    clim_ln > quantile(clim_ln, 0.05) & clim_ln < quantile(clim_ln, 0.95)
+  ) |>
+  ungroup() |>
+  select(comp_ln, clim_ln) |>
+  pivot_longer(cols = everything()) |>
+  pull(value) |>
+  range() ->
+sens_range
+
+sp_dt |>
+  filter(
+    clim_ln > quantile(clim_ln, 0.05) & clim_ln < quantile(clim_ln, 0.95)
+  ) |>
+  st_as_sf(
+    coords = c('longitude', 'latitude'),
+    crs = 4326
+  ) |>
+  ggplot() +
+  geom_sf(aes(color = clim_ln), alpha = 0.7, size = 0.1) +
+  scale_color_viridis_c(limits = sens_range) +
+  labs(color = expression('ln('~S[climate]~')')) +
+  theme_plot ->
+p
+
+rnaturalearth::ne_countries(
+    continent = "North America",
+    scale = 10,
+    returnclass = "sf"
+  ) |>
+  filter(sovereignt %in% c("United States of America", "Canada")) |>
+  st_crop(
+    sp_dt |>
+      st_as_sf(
+        coords = c('longitude', 'latitude'),
+        crs = 4326
+      ) |>
+      st_union() |>
+      st_buffer(dist = 6e5)
+  ) |>
+  ggplot() +
+  geom_sf(linewidth = 0.5, fill = "transparent") +
+  geom_sf(
+    data = sp_dt |>
+      filter(
+        clim_ln > quantile(clim_ln, 0.05) & clim_ln < quantile(clim_ln, 0.95)
+      ) |>
+      st_as_sf(
+        coords = c('longitude', 'latitude'),
+        crs = 4326
+      ),
+    aes(color = clim_ln),
+    alpha = 0.7, size = 0.5
+  ) +
+  scale_color_viridis_c(limits = sens_range) +
+  theme_classic() +
+  theme(legend.position = "none")
 ```

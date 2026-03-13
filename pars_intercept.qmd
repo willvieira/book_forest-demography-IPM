@@ -211,6 +211,33 @@ pars_growth |>
   ylab('Maximum predicted dbh (cm)')
 ```
 
+```{r,eval=FALSE,echo=FALSE}
+# Figure for presentation
+
+pars_growth |>
+  left_join(
+    spIds,
+    by = c('species_id' = 'species_id_old')
+  ) |>
+  ggplot() +
+  aes(max_size/10, Lmax/10, group = species_id) +
+  # aes(color = shade_sylvics) +
+  stat_pointinterval(alpha = 0.4) +
+  geom_abline(slope = 1, intercept = 0, alpha = 0.3) +
+  geom_text_repel(
+    data = parsGrowth_mean,
+    aes(x = max_size/10, y = Lmax/10, label = species_name),
+    alpha = 0.8,
+    size = 2.6,
+    fontface = 'italic'
+  ) +
+  theme_classic() +
+  xlab('Maximum observed dbh in Burns et al. 1990 (cm)') +
+  ylab('Maximum predicted dbh'~Z[infinity]~'(cm)') ->
+p
+ggsave('../talk_PhDdefence/images/growth_vs_litterature.png', p, width = 6, height = 4)
+
+```
 
 ## Mortality probability
 
