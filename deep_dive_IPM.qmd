@@ -2,12 +2,15 @@
 title: "Deep dive: multi-species IPMs and the forestIPM roadmap"
 ---
 
-This chapter extends the single-species quick start in @sec-quickstart to cover multi-species IPMs, time-varying climate, and the development roadmap for the `forestIPM` package.
+This chapter extends the single-species quick start in @sec-quickstart to cover multi-species IPMs, time-varying climate, posterior uncertainty propagation, and plot-level random effects.
+The package API is identical to what is described in the guide — only the argument values change.
 
 # Multi-species IPMs {#sec-deepdive}
 
 Running a multi-species IPM requires only one change to the quick-start workflow: include multiple `species_id` values in the `stand()` call.
 Here we build a two-species stand combining *Abies balsamea* (ABIBAL) and *Acer rubrum* (ACERUB), a common mixedwood assemblage in eastern North America.
+
+## Building a multi-species stand
 
 ```{r multisp-setup}
 library(forestIPM)
@@ -23,8 +26,31 @@ s_multi <- stand(
 s_multi
 ```
 
+`stand()` accepts any number of species — just mix them in the `species_id` column.
+The column name is flexible: `species_id`, `species`, or `sp` are all accepted.
+Use `summary(s_multi)` to confirm the per-species tree counts and size ranges.
+
+## Handling species with missing parameters
+
+When the stand includes a species that is not (yet) in `supported_species()`, the `on_missing` argument of `species_model()` controls what happens:
+
+```{r on-missing, eval=FALSE}
+# Default: error with a closest-match suggestion
+mod <- species_model(s_multi, on_missing = "error")
+
+# Silently drop the unknown species; model runs for remaining species
+mod <- species_model(s_multi, on_missing = "drop")
+
+# Keep the species as a static competitor (its Nvec never updates)
+mod <- species_model(s_multi, on_missing = "static")
+```
+
+`"static"` is useful when you want to fix a competitor's size distribution throughout the simulation — for example, to isolate the effect of a single focal species while holding its competitors constant.
+
+## Running the multi-species projection
+
 `species_model()` detects both species automatically and loads their respective fitted models.
-The interspecific competition between them is captured internally via the basal area competition terms.
+Interspecific competition between them is captured internally via the basal area competition terms.
 
 ```{r multisp-run, eval=FALSE}
 mod_multi  <- species_model(s_multi)
@@ -37,82 +63,170 @@ proj_multi <- project(mod_multi, pars_multi, s_multi, env_multi, ctrl_multi)
 
 ```{r multisp-plot, eval=FALSE}
 #| label: fig-multisp
-#| fig-cap: "Lambda trajectories for ABIBAL (balsam fir) and ACERUB (red maple) in a mixed stand."
+#| fig-cap: "Lambda trajectories for ABIBAL (balsam fir) and ACERUB (red maple) in a mixed stand. Species with a competitive advantage under these conditions maintain $\\lambda > 1$ longer."
 plot(proj_multi, type = "lambda")
 ```
 
-The plot shows $\lambda$ trajectories for each species.
-Species with a competitive advantage under the given climate and density conditions will maintain $\lambda > 1$ longer before density-dependence brings them to equilibrium.
+The `$summary` tibble of the returned `ipm_projection` contains one row per species per stored timestep, so you can filter and plot directly:
+
+```{r multisp-filter, eval=FALSE}
+library(dplyr)
+proj_multi$summary |>
+  filter(species_id == "ABIBAL") |>
+  select(timestep, lambda, n_trees)
+```
 
 ## Exploring species availability
 
-If you are unsure which species IDs are available, use `supported_species()` to browse the full list:
+If you are unsure which species IDs are available, use `supported_species()`:
 
 ```{r supported}
 supported_species()
 ```
 
-You can filter for species in a particular region or taxonomic group and use the resulting `species_id` values directly in `stand()`.
+The tibble also lists the fitted climate envelope (`MAT_min`, `MAT_max`, `MAP_min`, `MAP_max`) for each species — useful for choosing realistic `env_condition()` values and interpreting out-of-range warnings.
 
 # Time-varying climate {#sec-time-varying}
 
-A single `env_condition()` object represents a static climate — useful for exploring steady-state behaviour.
-To simulate climate change, you iterate over a sequence of conditions, running `project()` for each step and chaining the outputs.
+A single numeric value in `env_condition()` represents a static climate.
+To simulate climate change, pass a `function(t)` for `MAT` or `MAP`; the function receives the current simulation year `t` and returns the corresponding value.
 
-The pattern below shows how to explore the effect of a gradual 6 °C warming over 60 years by stepping through annual `MAT` values:
+**Arguments of `env_condition()`:**
 
-```{r climate-loop, eval=FALSE}
-library(forestIPM)
+- `MAT` — Mean Annual Temperature in °C. Numeric scalar *or* `function(t)`.
+- `MAP` — Mean Annual Precipitation in mm/year. Numeric scalar *or* `function(t)`.
 
-# Define a 60-year warming trajectory from MAT=6 to MAT=12
-mat_sequence <- seq(6, 12, length.out = 60)
+The pattern below simulates a linear 6 °C warming over 60 years by expressing MAT as a function of time:
 
-# Build baseline stand and model
+```{r climate-fn, eval=FALSE}
+# Linear warming from 6 °C to 12 °C over 60 years
+warming_env <- env_condition(
+  MAT = function(t) 6 + (6 / 60) * t,
+  MAP = 1200   # static precipitation
+)
+
 s    <- stand(data.frame(size_mm = c(150, 200, 350), species_id = "ABIBAL", plot_size = 400))
 mod  <- species_model(s)
 pars <- parameters(mod, draw = "mean")
-ctrl_1yr <- control(years = 1, compute_lambda = TRUE, progress = FALSE)
+ctrl <- control(years = 60, compute_lambda = TRUE, progress = FALSE)
 
-# Iterate: update climate each year
-results <- vector("list", length(mat_sequence))
-for (i in seq_along(mat_sequence)) {
-  env_i       <- env_condition(MAT = mat_sequence[i], MAP = 1200)
-  results[[i]] <- project(mod, pars, s, env_i, ctrl_1yr)
-  # Update stand state from previous projection output
-  s <- results[[i]]$stand_end
-}
-
-# Inspect lambda at each step
-lambdas_warming <- sapply(results, function(r) r$summary$lambda)
-plot(mat_sequence, lambdas_warming, type = "l",
-     xlab = "MAT (°C)", ylab = expression(lambda),
-     main = "ABIBAL response to warming")
-abline(h = 1, lty = 2, col = "grey50")
+proj_warming <- project(mod, pars, s, warming_env, ctrl)
+plot(proj_warming, type = "lambda")
 ```
 
-This approach lets you ask ecological questions such as:
-"At what temperature does *Abies balsamea* cross $\lambda = 1$ (transition from growing to declining population)?"
+`project()` evaluates `MAT(t)` and `MAP(t)` at each year `t`, so any R function works — step changes, sinusoidal cycles, or empirical trajectories loaded from data.
 
-The same pattern applies to MAP gradients or combined MAT + MAP shifts.
+If the time-varying MAT passes outside the fitted climate envelope for a species, a warning is issued once at projection start.
+You can silence it by clipping your MAT trajectory to the range shown in `supported_species()`.
 
 # Propagating parameter uncertainty {#sec-uncertainty}
 
-The posterior distribution of each demographic model contains thousands of MCMC samples.
-To propagate uncertainty into your projections, replace `draw = "mean"` with a sample index:
+The Bayesian posterior distribution for each demographic model contains 2000 MCMC samples.
+To propagate parameter uncertainty into your results, replace `draw = "mean"` with a sample index.
 
-```{r uncertainty, eval=FALSE}
-# Draw 50 random posterior samples
-lambda_samples <- replicate(50, {
-  pars_i <- parameters(mod, draw = sample.int(1000L, 1L))
-  lam_i  <- lambda(mod, pars_i, s, env, ctrl)
-  lam_i[["ABIBAL"]]$asymptotic_lambda
-})
+**`parameters()` argument recap:**
 
-hist(lambda_samples, xlab = expression(lambda), main = "Posterior distribution of asymptotic lambda")
-abline(v = 1, lty = 2)
+- `draw = "mean"` — posterior mean; deterministic.
+- `draw = "random"` — random draw from 1–2000; a seed is auto-generated and stored in `pars$seed`.
+- `draw = 42L` — specific draw index (integer 1–2000); reproducible without setting a global seed.
+- `seed` — integer or `NULL`. Explicit seed for `draw = "random"`. If `NULL`, one is auto-generated.
+
+Retrieve the seed that was used:
+
+```{r seed-example}
+pars_r <- parameters(species_model(stand(
+  data.frame(size_mm = c(150, 200), species_id = "ABIBAL", plot_size = 400)
+)), draw = "random")
+pars_r$seed   # auto-generated seed; save this to reproduce the same draw
 ```
 
+To estimate uncertainty across many draws:
+
+```{r uncertainty, eval=FALSE}
+s   <- stand(data.frame(size_mm = c(150, 200, 350), species_id = "ABIBAL", plot_size = 400))
+mod <- species_model(s)
+env <- env_condition(MAT = 8, MAP = 1200)
+
+# Draw 100 random posterior samples and compute asymptotic lambda for each
+lambda_samples <- replicate(100, {
+  pars_i <- parameters(mod, draw = "random")
+  lam_i  <- lambda(mod, pars_i, s, env)
+  lam_i[["ABIBAL"]]
+})
+
+hist(lambda_samples, xlab = expression(lambda),
+     main = "Posterior distribution of asymptotic lambda — ABIBAL")
+abline(v = 1, lty = 2, col = "grey50")
+```
+
+Note that `lambda()` is used here rather than `project()` because we only need the asymptotic $\lambda$ at the current stand state — not a full time-series.
+`lambda()` arguments:
+
+- `mod`, `pars`, `stand`, `env` — same as `project()`.
+- `ctrl` — optional `ipm_control`. Only `bin_width` and `delta_time` are read; if `NULL`, defaults (`bin_width = 1`, `delta_time = 1`) are used.
+
 For computationally intensive analyses (e.g., 1000 draws × multi-species projections), consider parallelising over draws with `parallel::mclapply()` or `future.apply::future_lapply()`.
+
+# Plot-level random effects {#sec-random-effects-deep}
+
+The hierarchical demographic models include plot-level random intercepts for growth, survival, and recruitment.
+These represent unmeasured plot characteristics (soil quality, microclimate, disturbance history) that shift vital rates above or below the population mean.
+
+By default all random effects are set to zero (population-mean predictions).
+Use `set_random_effects()` to supply observed or estimated plot-level offsets:
+
+**Arguments of `set_random_effects()`:**
+
+- `pars` — an `ipm_parameters` object (from `parameters()`).
+- `values` — either:
+  - A `numeric(3)` vector `c(growth_offset, survival_offset, recruitment_offset)` applied to all species in `species`.
+  - A named list keyed by species ID, where each element is a `numeric(3)` vector — use this to apply different offsets per species.
+- `species` — character vector of species IDs. Only used when `values` is a numeric vector. Defaults to `NULL` (apply to all species).
+
+```{r re-single, eval=FALSE}
+# Same offsets for all species
+pars_re <- set_random_effects(pars, values = c(0.10, -0.05, 0.02))
+
+# Species-specific offsets
+pars_re2 <- set_random_effects(
+  pars,
+  values = list(
+    ABIBAL = c( 0.10, -0.05,  0.00),
+    ACERUB = c(-0.05,  0.02,  0.10)
+  )
+)
+```
+
+Random effects accumulate across calls — calling `set_random_effects()` twice on the same `pars` object will overwrite the previous values for each named species.
+
+# Controlling memory with `store_every` {#sec-store-every}
+
+For long projections, storing the full size distribution at every timestep can be memory-intensive.
+Use `control(store_every = N)` to save only every N-th timestep:
+
+```{r store-every, eval=FALSE}
+# 1000-year projection storing only every 10th year (100 snapshots instead of 1000)
+ctrl_sparse <- control(
+  years          = 1000,
+  store_every    = 10,
+  compute_lambda = TRUE,
+  progress       = TRUE
+)
+```
+
+The stored timesteps are available in `proj$years` (e.g., `10, 20, 30, ...`).
+Pass any value from `proj$years` to `plot(proj, type = "size_dist", timestep = ...)`.
+
+**Full `control()` argument list:**
+
+| Argument | Default | Description |
+|---|---|---|
+| `years` | `100` | Number of simulation timesteps |
+| `delta_time` | `1` | Duration of each timestep in years |
+| `store_every` | `1` | Save stand state every N timesteps |
+| `bin_width` | `1` | IPM kernel discretization bin width (mm DBH) |
+| `compute_lambda` | `FALSE` | Compute asymptotic $\lambda$ at each step (eigendecomposition; slower) |
+| `progress` | `TRUE` | Show CLI progress bar |
 
 # Roadmap: what comes next {#sec-roadmap}
 
@@ -129,8 +243,8 @@ Below is the planned feature roadmap, ordered by implementation phase.
 
 ## v3 — Remote data and ML decoder
 
-- **Parquet parameter backend**: model parameters will be hosted remotely (AWS S3 or equivalent) as a columnar Parquet file, enabling partial reads via Arrow without downloading the full 300 MB dataset.
-  `parameters()` will transparently fetch only the rows needed for the requested species and draw.
+- **Parquet parameter backend**: model parameters will be hosted remotely (AWS S3 or equivalent) as a columnar Parquet file, enabling partial reads via Arrow without downloading the full dataset.
+  `parameters()` will transparently fetch only the rows needed for the requested species and draw index.
 - **ML decoder for new locations**: a learned spatial model that maps latitude/longitude (and optionally plot covariates) to plot-level random effects.
   This will enable projections at any arbitrary location in eastern North America — not just plots with inventory data.
   Planned architecture: a shallow neural network trained on the posterior random effects from the hierarchical model.
