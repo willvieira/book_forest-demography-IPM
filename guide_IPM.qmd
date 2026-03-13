@@ -100,10 +100,10 @@ pars <- parameters(mod, draw = "mean")
 
 ```{r parameters-draw}
 # Reproducible random draw: fix seed
-pars_r <- parameters(mod, draw = "random", seed = 42L)
+pars_r <- parameters(mod, draw = "random", seed = 42)
 
 # Specific posterior draw (e.g., draw #137)
-pars_137 <- parameters(mod, draw = 137L)
+pars_137 <- parameters(mod, draw = 137)
 ```
 
 Plot-level random effects (growth, survival, and recruitment offsets estimated per plot in the hierarchical model) default to zero for all species.
@@ -130,7 +130,7 @@ The valid climate envelope for each species is listed in `supported_species()` (
 `control()` sets all numerical parameters for the projection engine:
 
 ```{r control}
-ctrl <- control(years = 100, compute_lambda = TRUE, progress = FALSE)
+ctrl <- control(years = 200, compute_lambda = TRUE, progress = FALSE)
 ```
 
 **Arguments (all have defaults):**
@@ -159,8 +159,7 @@ proj <- project(mod, pars, s, env, ctrl)
 
 ```{r project-load, echo=FALSE}
 # Load precomputed output to avoid slow render
-out  <- readRDS(file.path("data", "out_IPM_guide.RDS"))
-proj <- out$proj
+proj  <- readRDS(file.path("data", "out_IPM_guide.RDS"))
 ```
 
 **Arguments:** `mod`, `pars`, `stand`, `env`, `ctrl` — all five constructors in order.
@@ -181,14 +180,6 @@ For a snapshot of the asymptotic $\lambda$ at a single point in time (without pr
 
 Calling `plot()` on a projection renders diagnostic panels.
 Use `type` to select a specific panel:
-
-```{r plot-all}
-#| label: fig-projAll
-#| fig-cap: "Population dynamics of *Abies balsamea* over 100 years under temperate conditions."
-plot(proj)
-```
-
-**Arguments:**
 
 - `type` — character or `NULL`. Selects which panel to render. Options:
   - `NULL` (default): all four panels in sequence.
