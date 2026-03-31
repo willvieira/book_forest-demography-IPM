@@ -1,11 +1,7 @@
----
-title: "Using the forestIPM package"
----
+# Using the forestIPM package {#sec-ipm_guide}
 
-The `forestIPM` package provides a clean R interface for running Integral Projection Models (IPMs) for 31 tree species in eastern North America.
-This guide walks through the complete workflow — from installing the package to projecting a population forward in time and visualizing the results.
-
-# Part 1: Quick start {#sec-quickstart}
+The `forestIPM` R package provides a clean R interface for the final Integral Projection Models (IPMs) model and its parameters for the 31 tree species in eastern North America.
+This guide walks through the complete workflow — from installing the package, setting conditions, to computing population growth rates and projecting a population forward in time, along with some visualization tools.
 
 ## Setup
 
@@ -17,166 +13,198 @@ devtools::install_github("willvieira/forestIPM")
 ```
 
 ```{r load}
+#| message: false
+#| warning: false
 library(forestIPM)
+library(tidyverse)
 ```
 
-To see all 31 supported species, call `supported_species()`:
+We begin by looking which species have fitted parameters and are available in the package:
 
 ```{r species}
 supported_species()
 ```
 
-Each row lists the species ID (e.g., `ABIBAL` for *Abies balsamea* — balsam fir), the common name, nominal french name, and the observed climate envelope (MAT and MAP min/max) used during model fitting.
+Each row lists the species ID (e.g., `ABIBAL` for *Abies balsamea* — balsam fir), the common name, nominal french name, the observed climate envelope (MAT and MAP min/max) used during model fitting, and the fitted demographic model from which the parameters are available.
+
+::: {.callout-note}
 The `species_id` column is the key you will use throughout the API.
+:::
 
-## Single-species IPM for balsam fir (ABIBAL)
+## Single-species IPM
 
+In the first example, we will construct a simple plot condition with a single species to compute population growth rate ($\lambda$) for balsam fir (`ABIBAL`).
 The `forestIPM` workflow is built around five constructors and two engines.
 The constructors capture the ecological context (the stand, the model, the parameters, the climate, and the simulation settings) while the engines run the actual computation.
+There are two engines, one for computing the ponctual $\lambda$ for a given condition, and the other for projecting the dynamics through time.
 
-### Step 1 — Define the stand with `stand()`
 
-A stand is a collection of trees described by their size (mm DBH) and species identity.
-Here we start a small population of *Abies balsamea* with three trees of different sizes on a 400 m² plot:
+### Step 1: Define the stand with `stand()`
+
+A stand describes a set of interacting individual trees in a given **local condition**.
+Specifically, it defined by a collection of trees with their size (mm DBH) and species identity.
+Note that the minimum DBH is 127 mm - the lower inventory threshold used to fit the models (FIA protocol).
+We also must define the plot size in which the individuals resid.
+The `stand()` function accetps a single data frame object with one row per tree, so it can be easly applied to forest inventory databases.
+In this example, we will start a small community from scratch with three individuals per two species in a 400 m² plot:
 
 ```{r stand}
-s <- stand(
-  data.frame(
-    size_mm    = c(150, 200, 350),
-    species_id = "ABIBAL",
-    plot_size  = 400
-  )
+plot_i <- tibble(
+  size_mm    = runif(n = 6, 127, 400),
+  species_id = c(rep("ABIBAL", 3), rep("ACESAC", 3)),
+  plot_size  = 400
 )
-s
+plot_i
 ```
 
-`stand()` accepts a single `data` argument — a data.frame or tibble with one row per tree.
-The three required columns are flexible in their naming:
 
-| Concept | Accepted column names | Unit |
-|---|---|---|
-| Tree size | `size_mm`, `size`, or `dbh` | mm DBH |
-| Species identity | `species_id`, `species`, or `sp` | character ID |
-| Plot area | `plot_size` | m² (same value for all rows) |
+```{r stand2}
+std <- stand(plot_i)
+std
+```
 
-The minimum DBH is 127 mm — the lower inventory threshold used to fit the models (FIA protocol).
-Trees below this threshold will cause an error.
-Use `summary(s)` to inspect the size range and species counts after construction.
+::: {.callout-important}
+The IPM is constructed in a way that all species within a plot are interacting with each other. This means that increasing the size of the plot degradades the ecological meaning of the competition.
+We are using the 400 m² as it's the size of the FIA protocol.
+:::
 
-### Step 2 — Load the species model with `species_model()`
 
-`species_model()` reads the fitted Bayesian hierarchical demographic model for every species present in the stand:
+### Step 2: Load the species model with `species_model()`
+
+`species_model()` reads the fitted Bayesian hierarchical demographic model for one or more species present in the stand.
+Here we are interested in computing $\lambda$ for the balsam fir:
 
 ```{r model}
-mod <- species_model(s)
+mod <- species_model("ABIBAL")
+mod
 ```
 
-**Arguments:**
 
-- `x` — an `ipm_stand` object *or* a character vector of species IDs (e.g., `species_model(c("ABIBAL", "ACERUB"))`).
-- `on_missing` — what to do if a species ID is not in `supported_species()`. Defaults to `"error"`. Options:
-  - `"error"` (default): abort with a suggestion of the closest valid ID.
-  - `"drop"`: silently remove the unrecognised species; the model runs for the remaining species only.
-  - `"static"`: keep the species as a competitor whose population does not update over time (useful for fixed background competition).
+Alternatively, you could directly feed the `stand()` output to the `species_model()` to automatically defining all species **with** available parameters to model.
+In the case a stand have species without available parameters, there are three possibilities the user can assign to the `on_missing` argument:
 
-Use `summary(mod)` to confirm how many species loaded successfully.
+- `"error"` (default): abort with a suggestion of the closest valid ID.
+- `"drop"`: silently remove the unrecognised species; the model runs for the remaining species only.
+- `"static"`: keep the species as a competitor whose population does not update over time (useful for fixed background competition).
 
-### Step 3 — Extract parameters with `parameters()`
 
-`parameters()` returns one parameter realization from the fitted posterior distribution:
+### Step 3: Extract parameters with `parameters()`
+
+The `parameters()` returns one parameter realization from the fitted posterior distribution per `mod` species.
+The `draw` argument determines weather the user wants the `"mean"` across all 2000 posterior draws, a sampled `"random`" draw, or a specific draw index (ranging between 1-2000).
+When `draw = "random"` a random seed is generated and exported to the object for reproducibility.
+But the user can also fixed it with the `seed` argument.
 
 ```{r parameters}
 pars <- parameters(mod, draw = "mean")
-```
-
-**Arguments:**
-
-- `mod` — the `ipm_spModel` object from Step 2.
-- `draw` — which parameter set to use. Three options:
-  - `"mean"` — the posterior mean; deterministic and fastest. Use for exploration and plotting.
-  - `"random"` — a random draw from the 2000 posterior samples. A seed is auto-generated and stored in `pars$seed` for reproducibility.
-  - Integer `1L` – `2000L` — a specific draw index. Use `set.seed()` before calling, or pass `seed` explicitly.
-- `seed` — integer seed for reproducibility when `draw = "random"`. If `NULL` (default), a seed is auto-generated. Retrieve the used seed from `pars$seed`.
-
-```{r parameters-draw}
-# Reproducible random draw: fix seed
-pars_r <- parameters(mod, draw = "random", seed = 42)
-
-# Specific posterior draw (e.g., draw #137)
-pars_137 <- parameters(mod, draw = 137)
+## Reproducible random draw with fixed seed
+# parameters(mod, draw = "random", seed = 42)
+## Specific posterior draw (e.g., draw #137)
+# parameters(mod, draw = 137)
+pars
 ```
 
 Plot-level random effects (growth, survival, and recruitment offsets estimated per plot in the hierarchical model) default to zero for all species.
 To override them use `set_random_effects()` — see @sec-random-effects.
 
-### Step 4 — Set climate conditions with `env_condition()`
 
-`env_condition()` defines the environmental drivers under which the IPM will run:
+### Step 4: Set climate conditions with `env_condition()`
+
+`env_condition()` defines the environmental drivers under which the IPM will run, namely the mean annual temperature and mean annual precipitation:
 
 ```{r env}
 env <- env_condition(MAT = 8, MAP = 1200)
+env
 ```
 
-**Arguments:**
+Further than accepting a numeric scalar (static climate), both arguments also accept a `function(t)` returning a value for year `t` (time-varying climate; see @sec-time-varying).
 
-- `MAT` — Mean Annual Temperature in °C. Accepts a numeric scalar (static climate) or a `function(t)` returning a value for year `t` (time-varying climate; see @sec-time-varying).
-- `MAP` — Mean Annual Precipitation in mm/year. Same scalar-or-function flexibility.
-
-If your MAT or MAP values fall outside the range observed during model fitting for any species in the stand, `project()` and `lambda()` will emit a warning.
+::: {.callout-note}
+If your MAT or MAP values fall outside the range observed during model fitting for any species in the stand, the engines will emit a warning.
 The valid climate envelope for each species is listed in `supported_species()` (columns `MAT_min`, `MAT_max`, `MAP_min`, `MAP_max`).
+:::
 
-### Step 5 — Configure the simulation with `control()`
 
-`control()` sets all numerical parameters for the projection engine:
+### Step 5: Configure the simulation with `control()`
+
+`control()` is the central place to set all configuration parameters for both engines.
+The `delta_time` is the duration of each timestep in years. In IPMs, it is usually set to 1.
+The other arguments are either for the `project()` engine or the discretization approach (both details discussed later).
+For the `lambda()` engine, all parameters can be set to defaut.
 
 ```{r control}
-ctrl <- control(years = 200, compute_lambda = TRUE, progress = FALSE)
+ctrl <- control()
+ctrl
 ```
 
-**Arguments (all have defaults):**
 
-| Argument | Default | Description |
-|---|---|---|
-| `years` | `100` | Number of simulation timesteps to run |
-| `delta_time` | `1` | Duration of each timestep in years |
-| `store_every` | `1` | Save stand state every N timesteps (reduces memory for long runs) |
-| `bin_width` | `1` | Kernel discretization bin width in mm DBH |
-| `compute_lambda` | `FALSE` | Compute asymptotic $\lambda$ via eigendecomposition at each step (slower) |
-| `progress` | `TRUE` | Show a CLI progress bar during projection |
+### Step 6: Compute population growth rate with `lambda()`
 
-Setting `store_every = 10` for a 1000-year run reduces the stored `$stand_series` list from 1000 to 100 entries.
-The available timesteps are in `proj$years` after the projection.
+Once all constructors are defined, we can approximate the population growth rate ($\lambda$) for a given condition:
 
-Use `summary(ctrl)` to confirm how many states will be stored.
-
-### Run the projection with `project()`
-
-`project()` advances the population forward in time, updating the kernel at every timestep to account for the current size distribution (density-dependent dynamics):
-
-```{r project, eval=FALSE}
-proj <- project(mod, pars, s, env, ctrl)
+```{r lambda-fn}
+lam <- lambda(mod, pars, std, env, ctrl)
+lam
 ```
 
-```{r project-load, echo=FALSE}
-# Load precomputed output to avoid slow render
-proj  <- readRDS(file.path("data", "out_IPM_guide.RDS"))
+
+## Multi-species IPM through time
+
+Diferent from the `lambda()` engine, `project()` advances the population forward in time, updating the kernel at every timestep to account for the current size distribution (density-dependent dynamics).
+This engine also depends on the five constructors.
+Here we will the same conditions set to run the single species IPM.
+
+If we plugged all predefined conditions into the `project()` engine, it would return an error stating that there are species in the `std` which do not have its parameters in `pars`.
+Indeed, `project()` needs parameters for all species present in the stand, and when there is no parameter available, we have to explicit handle it with the `on_missing` argument in `species_model()`.
+To avoid the error, we will first update the `mod` and `pars` objects to also account for the sugar maple along with the balsam fir:
+
+```{r update_mod}
+(mod <- species_model(std))
+(pars <- parameters(mod, draw = "random"))
 ```
 
-**Arguments:** `mod`, `pars`, `stand`, `env`, `ctrl` — all five constructors in order.
+As we will project population over time, let's take the opportunity to see how we can set a dynamic environment.
+We will simulate a 4°C degree increase for the first 100 year and keep it constant for the remaining years as follows:
 
-The returned `ipm_projection` object contains:
+```{r set_env_dynamic}
+temp_warm <- function(t) {
+  if(t <= 100) {
+    return( 8 + (4/100) * t)
+  }else{
+    return( 8 + 4 )
+  }
+}
 
-| Field | Type | Description |
-|---|---|---|
-| `$species` | character vector | Focal species IDs |
-| `$years` | integer vector | Stored timesteps (determined by `store_every`) |
-| `$lambda` | named list of numeric vectors | Per-species $\lambda$ at each stored timestep (only if `compute_lambda = TRUE`) |
-| `$stand_series` | list of snapshots | Size distribution per species at each stored timestep |
-| `$summary` | tibble | Long-format table: `timestep`, `species_id`, `lambda`, `n_trees` |
+env <- env_condition(MAT = temp_warm, MAP = 1200)
+env
+```
 
-For a snapshot of the asymptotic $\lambda$ at a single point in time (without projecting the population forward), use `lambda()` instead — see @sec-lambda-fn.
+Before running projection, we can take a look in the available controls for this engine:
 
-## Visualizing results with `plot()`
+```{r set_control2}
+ctrl <- control(
+  delta_time = 1,
+  years = 300,            # only used in `project()`
+  store_every = 1,        # only used in `project()`
+  compute_lambda = TRUE,  # only used in `project()`
+  progress = FALSE,       # only used in `project()`
+  integration_method = "gauss-legendre",
+  n_gl = 200L,            # for integration = "gauss-legendre"
+  bin_width = 1           # for integration = "midpoint"
+)
+```
+
+`years` define the total simulation length and `store_every` the steps in which it will save population summaries and lambda computation if `compute_lambda = TRUE`.
+The remaining three arguments can be set to default given the Gauss-Legendre Quadrature is both more efficient and mathematically more precise than the midpoint rule to numerically integrate the Kernel.
+
+Now that we have set conditions, we can simulate the community dynamics for the specified time frame:
+
+```{r project, eval=TRUE}
+proj <- project(mod, pars, std, env, ctrl)
+summary(proj)
+```
+
+## Visualizing project results with `plot()`
 
 Calling `plot()` on a projection renders diagnostic panels.
 Use `type` to select a specific panel:
@@ -195,6 +223,7 @@ Use `type` to select a specific panel:
 #| label: fig-guideLambda
 #| fig-cap: "Population growth rate ($\\lambda$) over time. Values above 1 indicate growth; below 1 indicate decline."
 plot(proj, type = "lambda")
+
 ```
 
 $\lambda$ starts above 1 when the stand is sparse (low intraspecific competition) and converges toward 1 as the population reaches carrying capacity.
@@ -211,7 +240,7 @@ plot(proj, type = "pop_size")
 
 ```{r plot-sizedist-last}
 #| label: fig-guideSizeDist
-#| fig-cap: "Size distribution of *Abies balsamea* at year 100. The distribution shifts rightward as the cohort matures."
+#| fig-cap: "Size distribution of *Abies balsamea* and *Acer saccharum* at the last time step."
 plot(proj, type = "size_dist")           # default: last stored timestep
 ```
 
@@ -219,7 +248,7 @@ Use `timestep` to inspect an earlier snapshot:
 
 ```{r plot-sizedist-t10}
 #| label: fig-guideSizeDist10
-#| fig-cap: "Size distribution at year 10 — still dominated by the initial small-tree cohort."
+#| fig-cap: "Size distribution at year 10."
 plot(proj, type = "size_dist", timestep = 10)
 ```
 
@@ -233,77 +262,6 @@ plot(proj, type = "lambda_vs_n")
 
 This phase portrait shows the classic density-dependent trajectory: $\lambda$ is high when population size is low and declines as intraspecific competition intensifies, eventually stabilising near $\lambda = 1$.
 
-## Computing asymptotic lambda without projecting {#sec-lambda-fn}
-
-For a single-point estimate of $\lambda$ at the current stand state — without projecting the population forward — use `lambda()` directly.
-This is much faster than `project()` because it solves one eigenvalue problem rather than iterating over hundreds of timesteps:
-
-```{r lambda-fn}
-lam <- lambda(mod, pars, s, env)
-lam
-```
-
-**Arguments:**
-
-- `mod`, `pars`, `stand`, `env` — same as `project()`.
-- `ctrl` — optional `ipm_control` object. Only `bin_width` and `delta_time` are used; if `NULL`, package defaults are applied (`bin_width = 1`, `delta_time = 1`).
-
-The return value is an `ipm_lambda` object: a named numeric vector with one $\lambda$ per focal species.
-Use `summary(lam)` to see whether each species is growing ($\lambda > 1$), stable ($\lambda = 1$), or declining ($\lambda < 1$).
-
-## Reproducibility {#sec-reproducibility}
-
-Every `ipm_lambda` and `ipm_projection` object carries a `$conditions` record that captures the exact parameter draw, seed, and climate values used to produce the result.
-This makes any analysis self-documenting — you can always recover the exact inputs from the output alone.
-
-```{r reproducibility-inspect}
-# The conditions record is embedded in the projection object
-proj$conditions$draw_type   # "mean", "random", or "user_defined"
-proj$conditions$draw        # integer draw index (NULL for "mean")
-proj$conditions$seed        # seed used (NULL for "mean")
-proj$conditions$MAT         # climate MAT (numeric or "function(t)")
-proj$conditions$MAP         # climate MAP
-```
-
-`summary()` prints these alongside the demographic results:
-
-```{r reproducibility-summary}
-summary(proj)
-```
-
-**Reproducible random draws.**
-When `draw = "random"`, a seed is auto-generated and stored in both `pars$seed` and `proj$conditions$seed`.
-To reproduce a specific run:
-
-```{r reproducibility-random, eval=FALSE}
-# First run — seed auto-generated and saved in the output
-pars_r    <- parameters(mod, draw = "random")
-proj_run1 <- project(mod, pars_r, s, env, ctrl)
-saved_seed <- proj_run1$conditions$seed
-
-# Reproduce the identical run later using the saved seed
-pars_r2   <- parameters(mod, draw = "random", seed = saved_seed)
-proj_run2 <- project(mod, pars_r2, s, env, ctrl)
-# proj_run1$summary and proj_run2$summary are identical
-```
-
-**Pinning a specific draw.**
-To share a reproducible result without saving a seed, use an integer draw index.
-The index is stored in the output and is sufficient to reproduce the run:
-
-```{r reproducibility-pinned, eval=FALSE}
-pars_pinned <- parameters(mod, draw = 137L)  # always draw #137 from the posterior
-proj_pinned <- project(mod, pars_pinned, s, env, ctrl)
-proj_pinned$conditions$draw   # 137 — embedded in the output
-```
-
-**`ipm_lambda` conditions** are stored as an attribute on the named numeric vector:
-
-```{r reproducibility-lambda, eval=FALSE}
-lam <- lambda(mod, pars_r, s, env)
-attr(lam, "conditions")$seed   # same seed as pars_r$seed
-attr(lam, "conditions")$MAT    # climate conditions at time of call
-```
 
 ## Plot-level random effects {#sec-random-effects}
 
@@ -336,15 +294,23 @@ pars_re2 <- set_random_effects(
 
 The three offsets correspond to the random intercepts in the growth, survival, and recruitment sub-models respectively.
 
-# Part 2: Deep dive (bridge to next chapter) {#sec-deepdive-bridge}
 
-The quick start above covers a single species under static climate conditions.
-For more advanced use cases — running multi-species IPMs, simulating climate warming scenarios, propagating posterior uncertainty, and an overview of planned package extensions — see @sec-deepdive in the next chapter.
+## Reproducibility {#sec-reproducibility}
 
-Briefly, `forestIPM` supports:
+Every `ipm_lambda` and `ipm_projection` object carries a `$conditions` record that captures the exact parameter draw, seed, and climate values used to produce the result.
+This makes any analysis self-documenting — you can always recover the exact inputs from the output alone.
 
-- **Multi-species stands**: pass a `data.frame` with multiple `species_id` values to `stand()`; `species_model()` and `project()` handle the rest, including interspecific competition.
-- **Time-varying climate**: pass a `function(t)` to `env_condition()` to vary MAT or MAP at each timestep.
-- **Posterior uncertainty**: replace `draw = "mean"` with `draw = "random"` or a specific integer index to sample different posterior draws.
+```{r reproducibility-inspect}
+# The conditions record is embedded in the projection object
+names(proj$conditions)
+```
 
-For details on all three patterns and the package roadmap, continue to [Deep dive](deep_dive_IPM.qmd).
+## ROADMAP
+
+The next developpement phase can include
+
+- random effects cloud accecibility
+- smooth gaussian model to predict random effects for any location
+- new functionality to fit and evaluate Stan model for new speceis
+- expand to include dynamic modifiers (immigration, fire/insect disturbance, forest management, etc)
+- 
