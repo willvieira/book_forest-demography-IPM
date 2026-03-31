@@ -23,13 +23,15 @@ book:
     - index.qmd
     - introduction.qmd
     - db.qmd
-    - part: Demographic models evaluation
+    - part: Demographic model development
       chapters:
       - model_description.qmd
       - covariates_description.qmd
       - model_fit.qmd
       - model_comparison.qmd
       - parameters_descr.qmd
+    - part: Demographic model evaluation
+      chapters:
       - pars_intercept.qmd
       - pars_randomEffect.qmd
       - pars_competition.qmd
