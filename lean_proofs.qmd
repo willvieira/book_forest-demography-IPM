@@ -1,0 +1,77 @@
+# Mathematical Verification (Lean 4) {#sec-lean_proofs}
+
+## Why formal verification?
+
+The demographic models implemented in `{forestIPM}` rest on mathematical assumptions — growth converges to an asymptote, survival probabilities stay bounded, kernels are non-negative — that are easy to state informally but non-trivial to guarantee in general.
+[Lean 4](https://lean-lang.org/) is a proof assistant that lets us write these assumptions as machine-checkable theorems.
+Backed by the [Mathlib](https://leanprover-community.github.io/mathlib4_docs/) library of mathematics, each theorem is verified by the Lean kernel, providing a level of certainty beyond unit tests or numerical checks.
+
+These proofs do **not** test the R implementation.
+They are proofs about the *mathematical model* itself — the equations described in @sec-demo_model_description, @sec-mixed_cov, and @sec-ipm_description.
+If a property holds in the Lean proof, it holds for every possible parameter value, without exception.
+
+The full source is in the [`lean/`](https://github.com/willvieira/forestIPM/tree/master/lean) directory of the `forestIPM` repository.
+
+## What is proved (and what is not)
+
+The formalization is organized into modules mirroring the model pipeline.
+Theorems marked *open* are stated but not yet proved — they require results (primarily the Perron-Frobenius theorem for non-negative matrices) not yet available in Mathlib.
+
+| Component | Module | Theorems | Proved | Open | Source |
+|---|---|:---:|:---:|:---:|---|
+| **Demographic models** | Growth | 4 | 4 | 0 | [Growth.lean](https://github.com/willvieira/forest-IPM/blob/master/lean/ForestIPM/Growth.lean) |
+| | Survival | 4 | 4 | 0 | [Survival.lean](https://github.com/willvieira/forest-IPM/blob/master/lean/ForestIPM/Survival.lean) |
+| | Ingrowth | 9 | 8 | 1 | [Ingrowth.lean](https://github.com/willvieira/forest-IPM/blob/master/lean/ForestIPM/Ingrowth.lean) |
+| **Covariates** | Competition | 5 | 5 | 0 | [Competition.lean](https://github.com/willvieira/forest-IPM/blob/master/lean/ForestIPM/Competition.lean) |
+| | Climate | 7 | 7 | 0 | [Climate.lean](https://github.com/willvieira/forest-IPM/blob/master/lean/ForestIPM/Climate.lean) |
+| **Population model** | GaussLegendre | 4 | 2 | 2 | [GaussLegendre.lean](https://github.com/willvieira/forest-IPM/blob/master/lean/ForestIPM/GaussLegendre.lean) |
+| | Kernel | 6 | 5 | 1 | [Kernel.lean](https://github.com/willvieira/forest-IPM/blob/master/lean/ForestIPM/Kernel.lean) |
+| **Engines** | AsymptoticLambda | 6 | 1 | 5 | [AsymptoticLambda.lean](https://github.com/willvieira/forest-IPM/blob/master/lean/ForestIPM/AsymptoticLambda.lean) |
+| | CommunityDynamic | 7 | 6 | 1 | [CommunityDynamic.lean](https://github.com/willvieira/forest-IPM/blob/master/lean/ForestIPM/CommunityDynamic.lean) |
+| | **Total** | **52** | **42** | **10** | |
+
+: Current proof status. Table is kept up to date by CI in the [forestIPM repository](https://github.com/willvieira/forestIPM). {.striped}
+
+## Key results by module
+
+### Growth
+
+The Von Bertalanffy map $\mu(x) = x \cdot e^{-r\Delta t} + \zeta_\infty(1 - e^{-r\Delta t})$ is formally a contraction mapping converging to $\zeta_\infty$:
+
+- **Fixed point**: $\zeta_\infty$ is the unique fixed point.
+- **Contraction**: $|\mu(x) - \mu(y)| = e^{-r\Delta t} |x - y|$ — distances shrink geometrically.
+- **Closed form**: $\mu^{[n]}(x) = x \cdot e^{-r\Delta t \cdot n} + \zeta_\infty(1 - e^{-r\Delta t \cdot n})$.
+- **Convergence**: for any $r, \Delta t > 0$, iterates converge to $\zeta_\infty$ from any starting size.
+
+The convergence proof chains Mathlib's `tendsto_pow_atTop_nhds_zero_of_lt_one` (geometric sequences converge to 0) with a translation argument.
+
+### Survival
+
+The survival probability $\psi^{\Delta t}$ is proved to lie strictly in $(0, 1)$ for any $\Delta t > 0$, and to be strictly decreasing in $\Delta t$.
+This guarantees the model never predicts certain survival or certain death, regardless of parameter values.
+
+### Ingrowth
+
+The recruitment sub-model is proved to produce strictly positive rates, and the truncated-normal density used for recruit size distribution is proved non-negative.
+The one open theorem (`truncnorm_const_pos`) requires a result about the normal CDF not yet in Mathlib.
+
+### Competition (Basal Area)
+
+Individual basal area $BA_{ind}(d) = \pi(d/2000)^2$ is proved non-negative, strictly positive for $d > 0$, and strictly monotone.
+Plot-level basal area aggregation is proved non-negative.
+
+### Climate
+
+The bell-curve response $\exp(-\tau(x-\xi)^2)$ is proved to lie in $(0, 1]$, attain its maximum of 1 exactly at $x = \xi$, be symmetric around $\xi$, and be strictly increasing/decreasing on either side.
+This guarantees unimodality of the climate response for any parameter values.
+
+### Kernel
+
+The IPM kernel $K = P + F$ is proved to have non-negative entries.
+This is the structural prerequisite for Perron-Frobenius theory, which guarantees a real dominant eigenvalue $\lambda$.
+
+### Open obligations (Perron-Frobenius)
+
+The remaining 10 open theorems all depend on the Perron-Frobenius theorem for non-negative matrices.
+This theorem (and its corollaries about eigenvalue uniqueness, positivity, and the growth/decline characterization via $\lambda$) is not yet formalized in Mathlib.
+The statements are written and will be discharged once Mathlib includes this result.

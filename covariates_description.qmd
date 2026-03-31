@@ -359,6 +359,21 @@ $$
   \rho + \beta_{\rho} \times (BAL_{cons} +  BAL_{het})
 $$
 
+::: {.callout-note collapse="true"}
+## Formal properties (Lean 4) {.unnumbered}
+
+The following properties of the basal area competition metric are machine-checked proofs verified with [Lean 4](https://lean-lang.org/) and [Mathlib](https://leanprover-community.github.io/mathlib4_docs/):
+
+| Property | Statement |
+|---|---|
+| Non-negativity | $BA_{ind}(d) \geq 0$ for any diameter $d$ |
+| Positivity | $BA_{ind}(d) > 0$ for $d > 0$ |
+| Monotonicity | Larger diameter → larger basal area |
+| Formula equivalence | $\pi (d/2 \cdot 10^{-3})^2 = \pi (d/2000)^2$ (R code identity) |
+| Plot non-negativity | $BA_{plot} \geq 0$ when all counts $\geq 0$ and plot area $> 0$ |
+
+Source: [`lean/ForestIPM/Competition.lean`](https://github.com/willvieira/forest-IPM/blob/master/lean/ForestIPM/Competition.lean)
+:::
 
 ## Climate effect
 
@@ -461,3 +476,21 @@ p
 ggsave('../talk_PhDdefence/images/climate_example.png', p, width = 5, height = 3.5)
 
 ```
+
+::: {.callout-note collapse="true"}
+## Formal properties (Lean 4) {.unnumbered}
+
+The following properties of the climate bell-curve response are machine-checked proofs verified with [Lean 4](https://lean-lang.org/) and [Mathlib](https://leanprover-community.github.io/mathlib4_docs/):
+
+| Property | Statement |
+|---|---|
+| Positivity | $\exp(-\tau(x - \xi)^2) > 0$ for all inputs |
+| Upper bound | Response $\leq 1$ for any $\tau \geq 0$ |
+| Bounded | Response lies in $(0, 1]$ |
+| Maximum at optimum | Response equals exactly 1 at $x = \xi$ |
+| Symmetry | Response is symmetric around $\xi$ |
+| Left monotonicity | Strictly increasing for $x < \xi$ (when $\tau > 0$) |
+| Right monotonicity | Strictly decreasing for $x > \xi$ (when $\tau > 0$) |
+
+Source: [`lean/ForestIPM/Climate.lean`](https://github.com/willvieira/forest-IPM/blob/master/lean/ForestIPM/Climate.lean)
+:::

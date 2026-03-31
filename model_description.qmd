@@ -183,6 +183,21 @@ p
 ggsave('../talk_PhDdefence/images/growth_example.png', p, width = 5.5, height = 3)
 ```
 
+::: {.callout-note collapse="true"}
+## Formal properties (Lean 4) {.unnumbered}
+
+The following properties of the von Bertalanffy growth map are machine-checked proofs verified with [Lean 4](https://lean-lang.org/) and [Mathlib](https://leanprover-community.github.io/mathlib4_docs/):
+
+| Property | Statement |
+|---|---|
+| Fixed point | $\zeta_\infty$ is the unique fixed point of the map |
+| Contraction | Distance to $\zeta_\infty$ shrinks by exactly $e^{-r \Delta t}$ per step |
+| Closed form | $\mu^{[n]}(x) = x \cdot e^{-r \Delta t \cdot n} + \zeta_\infty (1 - e^{-r \Delta t \cdot n})$ |
+| Convergence | Iterates converge to $\zeta_\infty$ from any starting size when $r, \Delta t > 0$ |
+
+Source: [`lean/ForestIPM/Growth.lean`](https://github.com/willvieira/forest-IPM/blob/master/lean/ForestIPM/Growth.lean)
+:::
+
 ## Survival model
 
 The chance of a mortality event ($M$) for an individual $i$ within the time interval between $t$ and $t+\Delta t$ is modeled as a Bernoulli distribution:
@@ -245,6 +260,20 @@ p
 ggsave('../talk_PhDdefence/images/survival_example.png', p, width = 5.5, height = 3)
 ```
 
+::: {.callout-note collapse="true"}
+## Formal properties (Lean 4) {.unnumbered}
+
+The following properties of the survival model are machine-checked proofs verified with [Lean 4](https://lean-lang.org/) and [Mathlib](https://leanprover-community.github.io/mathlib4_docs/):
+
+| Property | Statement |
+|---|---|
+| Positivity | $\psi^{\Delta t} > 0$ for all inputs |
+| Upper bound | $\psi^{\Delta t} < 1$ for all $\Delta t > 0$ |
+| Bounded | $\psi^{\Delta t} \in (0, 1)$ for all $\Delta t > 0$ |
+| Monotonicity | Survival probability is strictly decreasing in $\Delta t$ |
+
+Source: [`lean/ForestIPM/Survival.lean`](https://github.com/willvieira/forest-IPM/blob/master/lean/ForestIPM/Survival.lean)
+:::
 
 ## Recruitment model
 
@@ -346,6 +375,22 @@ p
 ggsave('../talk_PhDdefence/images/recruit_example.png', p, width = 7, height = 3)
 
 ```
+
+::: {.callout-note collapse="true"}
+## Formal properties (Lean 4) {.unnumbered}
+
+The following properties of the recruitment model are machine-checked proofs verified with [Lean 4](https://lean-lang.org/) and [Mathlib](https://leanprover-community.github.io/mathlib4_docs/):
+
+| Property | Statement |
+|---|---|
+| Miss probability bounds | Annual miss probability $p \in (0, 1)$ |
+| Cumulative factor | $(1 - p^{\Delta t}) / (1 - p) > 0$ for $p \in (0,1)$ and $\Delta t > 0$ |
+| Rate positivity | Ingrowth rate $\phi \cdot A \cdot \frac{1 - p^{\Delta t}}{1 - p} > 0$ |
+| Recruit size PDF | Gaussian density of recruit sizes is non-negative (and $> 0$ when $\sigma > 0$) |
+| Kernel non-negativity | Full recruitment kernel $F(z', z) \geq 0$ |
+
+Source: [`lean/ForestIPM/Ingrowth.lean`](https://github.com/willvieira/forest-IPM/blob/master/lean/ForestIPM/Ingrowth.lean)
+:::
 
 ## Recruited size model
 

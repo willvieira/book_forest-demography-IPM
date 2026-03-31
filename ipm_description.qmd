@@ -17,6 +17,23 @@ k(z', z, \theta) = [Growth(z', z, \theta) \times Survival(z, \theta)] + Recruitm
 $${#eq-ipm2}
 
 
+::: {.callout-note collapse="true"}
+## Formal properties (Lean 4) {.unnumbered}
+
+The following properties of the IPM kernel are machine-checked proofs verified with [Lean 4](https://lean-lang.org/) and [Mathlib](https://leanprover-community.github.io/mathlib4_docs/):
+
+| Property | Statement |
+|---|---|
+| Decomposition | $K = P + **F**$ where $P$ is the growth-survival kernel and $F$ the recruitment kernel |
+| $P$ non-negativity | Growth-survival kernel entries $\geq 0$ |
+| $F$ non-negativity | Recruitment kernel entries $\geq 0$ |
+| $K$ non-negativity | Full kernel entries $\geq 0$ (required for Perron-Frobenius) |
+| Quadrature weights | Gauss-Legendre weights mapped to $[L, U]$ sum to $U - L$ |
+| Quadrature positivity | Mapped quadrature weights are strictly positive |
+
+Source: [`lean/ForestIPM/Kernel.lean`](https://github.com/willvieira/forest-IPM/blob/master/lean/ForestIPM/Kernel.lean), [`lean/ForestIPM/GaussLegendre.lean`](https://github.com/willvieira/forest-IPM/blob/master/lean/ForestIPM/GaussLegendre.lean)
+:::
+
 ## Numerical implementation
 
 Evaluating @eq-ipm requires discretising the continuous integral over $[L, U]$.

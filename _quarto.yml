@@ -49,6 +49,9 @@ book:
       - conditional_lambda.qmd
       - marginal_lambda.qmd
       - extinction_risk.qmd
+    - part: Appendices
+      chapters:
+      - lean_proofs.qmd
     - references.qmd
 
 bibliography: references.bib
