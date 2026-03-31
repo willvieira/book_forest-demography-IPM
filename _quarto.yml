@@ -42,7 +42,6 @@ book:
       chapters:
       - ipm_description.qmd
       - guide_IPM.qmd
-      - deep_dive_IPM.qmd
     - part: Using the IPM
       chapters:
       - sens_analysis.qmd
