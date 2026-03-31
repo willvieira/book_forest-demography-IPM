@@ -19,7 +19,34 @@ $${#eq-ipm2}
 
 ## Numerical implementation
 
-In practice, we employ the mid-point rule to perform the discrete-form integration of the continuous kernel $K$ [@Ellner2016].
-While this approach is straightforward to implement, it comes with the trade-off of potentially introducing bias into estimates, particularly in the case of large matrices with overall slow growth rates, such as trees.
-Simulation analyses have shown that integration bins ranging from 0.1 to 1 cm are appropriate for obtaining reliable outputs [@zuidema2010integral].
-This study uses the lower proposed value of 0.1 cm size bins.
+Evaluating @eq-ipm requires discretising the continuous integral over $[L, U]$.
+The `{forestIPM}` R package (described in @sec-ipm_guide) provides two quadrature methods for this purpose.
+
+### Midpoint rule
+
+The classical approach partitions $[L, U]$ into uniform bins of width $h$ and approximates the integral as
+
+$$
+n(z', t+1) \approx h \sum_{i=1}^{m} k(z', z_i, \theta)\, n(z_i, t)
+$${#eq-midpoint}
+
+where $z_i = L + (i - 0.5)\,h$ are the bin midpoints and $m = \lfloor(U - L)/h\rfloor$ [@Ellner2016].
+This method is straightforward to implement and can introduce bias for large matrices with slow growth rates; simulation analyses recommend bin widths between 0.1 and 1 cm [@zuidema2010integral].
+All analyses presented in the *Using the IPM* section of this book used the midpoint rule with $h = 1\,\text{mm}$, as it was the first integration method implemented in the package.
+
+## Gauss-Legendre (GL) quadrature
+
+The recently implemented alternative places $n$ optimally chosen nodes $z_1, \ldots, z_n$ and weights $w_1, \ldots, w_n$ on $[L, U]$ (via the Golub-Welsch algorithm) and approximates the integral as
+
+$$
+n(z', t+1) \approx \sum_{i=1}^{n} w_i\, k(z', z_i, \theta)\, n(z_i, t)
+$${#eq-gl}
+
+Because GL quadrature integrates polynomials of degree $\leq 2n - 1$ exactly, it achieves exponential convergence for smooth kernels — reaching the same accuracy as the midpoint rule with far fewer nodes.
+
+In the following two chapters, we present simulations comparing both integration approaches and evaluate the optimal number of nodes for the GL quadrature.
+In summary, convergence analyses show that GL reproduces the dominant eigenvalue $\lambda$ obtained with the midpoint rule within a tolerance of $10^{-4}$, while reducing matrix size by up to 65% for species with large DBH sizes.
+In other words, GL substantially accelerates computation while maintaining high integration accuracy.
+Within the GL family, $n = 100$ nodes already converges to the $n = 500$ solution within 1% for both equilibrium population density and basal area.
+However, $n = 200$ achieves higher precision without compromising computational efficiency.
+Therefore, GL quadrature with $n = 200$ nodes is the recommended integration method for future analyses.
