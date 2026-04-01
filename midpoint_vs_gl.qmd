@@ -1,0 +1,498 @@
+# Midpoint Rule vs. Gauss-Legendre Quadrature {#sec-midpoint_vs_gl}
+
+```{r,include=FALSE,echo=FALSE}
+Echo=FALSE
+Eval=TRUE
+Cache=TRUE
+Warng=FALSE
+Msg=FALSE
+library(tidyverse)
+library(kableExtra)
+```
+
+```{r setup,include=FALSE,echo=FALSE}
+GL_SIZES <- c(20L, 50L, 100L, 200L, 500L)
+GL_TOL   <- 1e-4   # acceptable GL deviation from midpoint reference
+```
+
+The forest IPM projects population dynamics by computing the dominant eigenvalue
+$\lambda$ of the kernel matrix **K**:
+
+$$
+n(x', t+1) = \int_{L}^{L_{\max}} K(x', x)\, n(x, t)\, dx
+$$
+
+Two numerical integration schemes are compared here:
+
+| Method | Description | Grid |
+|--------|-------------|------|
+| **Midpoint rule** | Uniform bins of width $h = 1$ mm | $[L,\, L_{\max}]$ |
+| **Gauss-Legendre (GL)** | Optimal quadrature nodes and weights | $n_{\text{gl}}$ nodes on $[L,\, L_{\max}]$ |
+
+The midpoint rule was used in the original cluster simulations ([`covariates_perturbation`](https://github.com/willvieira/forestIPM/tree/master/simulations/covariates_perturbation))
+and serves as the **historical reference** throughout this report.  GL quadrature
+is the new implementation: it places nodes at positions that exactly integrate
+polynomials of degree $\leq 2n_{\text{gl}} - 1$, achieving faster convergence
+for smooth integrands.
+
+This report addresses two questions:
+
+1. **Accuracy** — does GL recover the same $\lambda$ as the midpoint rule, and
+   at what `n_gl`?
+2. **Speed** — is GL faster than the midpoint rule for species with large size
+   domains?
+
+
+## Simulation design
+
+Results were pre-computed by [`compare_versions_gl.R`](https://github.com/willvieira/forestIPM/blob/master/simulations/compare_versions/compare_versions_gl.R):
+
+- **15 stratified environmental scenarios** drawn from 216 027 combinations
+  of species × plot × climate.
+- **100 Bayesian posterior parameter draws** per scenario.
+- **`n_gl` tested:** 20, 50, 100, 200, 500.
+- **Reference:** midpoint rule ($h = 1$ mm) from `final_output.RDS`.
+- **Metric:** dominant eigenvalue $\lambda$ of the IPM kernel **K**.
+- **Tolerance:** $|\lambda_{\text{GL}} - \lambda_{\text{midpoint}}| < 10^{-4}$.
+
+```{r load-data}
+#| code-fold: true
+
+tbl_lambda <- readRDS(file.path("data", "table_lambda_comparison.RDS"))
+
+# Midpoint reference: mean lambda per (array_id, species)
+midpt_ref <- tbl_lambda |>
+  filter(method == "midpoint") |>
+  select(array_id, species, rep, lambda_midpt = lambda)
+
+# GL-only table joined with midpoint reference
+gl_tbl <- tbl_lambda |>
+  filter(method == "GL") |>
+  left_join(midpt_ref, by = c("array_id", "species", "rep")) |>
+  mutate(
+    abs_dev  = abs(lambda - lambda_midpt),
+    rel_dev  = abs_dev / abs(lambda_midpt),
+    sp_short = sub(".*_", "", species)
+  )
+```
+
+
+## GL accuracy vs. midpoint rule {#sec-accuracy}
+
+### Absolute deviation from midpoint {#sec-abs-dev}
+
+```{r fig-abs-deviation}
+#| fig-cap: "Absolute deviation of GL(n) lambda from the midpoint reference, by n_gl. Boxes show median and IQR across all 15 scenarios × 100 draws. Orange dashed line = GL tolerance (1e-4)."
+#| code-fold: true
+
+gl_tbl |>
+  mutate(n_gl = factor(n_gl)) |>
+  ggplot(aes(n_gl, abs_dev)) +
+  geom_boxplot(outlier.size = 0.6, fill = "steelblue", alpha = 0.6) +
+  geom_hline(yintercept = GL_TOL, linetype = "dashed", color = "darkorange", linewidth = 0.7) +
+  scale_y_log10(
+    labels = scales::label_scientific(),
+    breaks = 10^seq(-10, 0)
+  ) +
+  labs(
+    x       = "n_gl",
+    y       = expression(abs(lambda[GL] - lambda[midpoint])),
+    caption = "Orange dashed = tolerance 1e-4"
+  ) +
+  theme_classic(base_size = 12)
+```
+
+### Relative deviation from midpoint {#sec-rel-dev}
+
+```{r fig-rel-deviation}
+#| fig-cap: "Relative deviation of GL(n) lambda from the midpoint reference. Red dashed = 0.1%, orange dotted = 1% tolerance."
+#| code-fold: true
+
+gl_tbl |>
+  mutate(n_gl = factor(n_gl)) |>
+  ggplot(aes(n_gl, rel_dev)) +
+  geom_boxplot(outlier.size = 0.6, fill = "steelblue", alpha = 0.6) +
+  geom_hline(yintercept = 0.001, linetype = "dashed", color = "firebrick",  linewidth = 0.7) +
+  geom_hline(yintercept = 0.01,  linetype = "dotted", color = "darkorange", linewidth = 0.7) +
+  scale_y_log10(
+    labels = scales::label_percent(accuracy = 0.01),
+    breaks = c(1e-6, 1e-5, 1e-4, 1e-3, 0.01, 0.1)
+  ) +
+  labs(
+    x       = "n_gl",
+    y       = expression(abs(lambda[GL] - lambda[midpoint]) / abs(lambda[midpoint])),
+    caption = "Red dashed = 0.1%; orange dotted = 1% tolerance"
+  ) +
+  theme_classic(base_size = 12)
+```
+
+### Pass/fail at absolute tolerance 1e-4 {#sec-passfail}
+
+```{r tbl-passfail}
+#| code-fold: true
+
+gl_tbl |>
+  group_by(n_gl) |>
+  summarise(
+    n_total    = n(),
+    n_pass     = sum(abs_dev < GL_TOL, na.rm = TRUE),
+    pct_pass   = n_pass / n_total,
+    max_dev    = max(abs_dev,    na.rm = TRUE),
+    median_dev = median(abs_dev, na.rm = TRUE),
+    .groups    = "drop"
+  ) |>
+  mutate(
+    pct_pass   = scales::percent(pct_pass,   accuracy = 0.1),
+    max_dev    = formatC(max_dev,    format = "e", digits = 2),
+    median_dev = formatC(median_dev, format = "e", digits = 2)
+  ) |>
+  rename(
+    "n_gl"         = n_gl,
+    "N draws"      = n_total,
+    "Pass (< 1e-4)" = n_pass,
+    "% Pass"       = pct_pass,
+    "Max |dev|"    = max_dev,
+    "Median |dev|" = median_dev
+  ) |>
+  kbl(caption = "GL lambda convergence vs. midpoint rule (absolute deviation)") |>
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+
+## Per-species deviation heatmap {#sec-heatmap}
+
+```{r fig-heatmap}
+#| fig-cap: "Median absolute deviation of lambda from the midpoint reference, per species and n_gl."
+#| code-fold: true
+
+gl_tbl |>
+  group_by(sp_short, n_gl) |>
+  summarise(med_dev = median(abs_dev, na.rm = TRUE), .groups = "drop") |>
+  mutate(
+    n_gl    = factor(n_gl),
+    sci_lab = formatC(med_dev, format = "e", digits = 1)
+  ) |>
+  ggplot(aes(n_gl, reorder(sp_short, med_dev))) +
+  geom_tile(aes(fill = log10(med_dev)), color = "white") +
+  geom_text(aes(label = sci_lab), size = 2.6) +
+  scale_fill_gradient2(
+    low      = "#2166ac",
+    mid      = "#f7f7f7",
+    high     = "#d6604d",
+    midpoint = log10(GL_TOL),
+    name     = "log10(dev)",
+    labels   = function(x) formatC(10^x, format = "e", digits = 1)
+  ) +
+  labs(x = "n_gl", y = NULL,
+       caption = "Colour midpoint = tolerance 1e-4") +
+  theme_classic(base_size = 11)
+```
+
+
+## Per-species convergence profiles {#sec-species}
+
+Each panel shows how $\lambda$ deviation from the midpoint rule evolves as
+`n_gl` increases.  The ribbon spans the IQR across the 15 scenarios × 100
+parameter draws.
+
+```{r fig-species-facets}
+#| fig-cap: "Per-species absolute deviation of GL lambda from midpoint. Line = median; ribbon = IQR. Orange dashed = tolerance 1e-4."
+#| code-fold: true
+
+gl_tbl |>
+  group_by(sp_short, n_gl) |>
+  summarise(
+    med = median(abs_dev, na.rm = TRUE),
+    q25 = quantile(abs_dev, 0.25, na.rm = TRUE),
+    q75 = quantile(abs_dev, 0.75, na.rm = TRUE),
+    .groups = "drop"
+  ) |>
+  ggplot(aes(n_gl, med)) +
+  geom_ribbon(aes(ymin = q25, ymax = q75), alpha = 0.25, fill = "steelblue") +
+  geom_line(color = "steelblue") +
+  geom_point(color = "steelblue", size = 1.8) +
+  geom_hline(yintercept = GL_TOL, linetype = "dashed", color = "darkorange", linewidth = 0.5) +
+  facet_wrap(~sp_short, ncol = 4, scales = "free_y") +
+  scale_y_log10(
+    labels = scales::label_scientific(),
+    breaks = 10^seq(-10, 0)
+  ) +
+  scale_x_continuous(breaks = GL_SIZES) +
+  labs(
+    x       = "n_gl",
+    y       = expression(abs(lambda[GL] - lambda[midpoint])),
+    caption = "Orange dashed = tolerance 1e-4; ribbon = IQR across scenarios"
+  ) +
+  theme_classic(base_size = 9) +
+  theme(strip.text = element_text(size = 7))
+```
+
+
+## GL internal convergence {#sec-gl-convergence}
+
+This section examines convergence **within the GL family** — how smaller `n_gl`
+values compare to GL(500), independent of the midpoint reference.
+
+```{r gl-internal}
+#| code-fold: true
+
+# Reference: GL(500) per (array_id, species, rep)
+gl_ref <- tbl_lambda |>
+  filter(method == "GL", n_gl == 500L) |>
+  select(array_id, species, rep, lambda_gl500 = lambda)
+
+gl_conv <- tbl_lambda |>
+  filter(method == "GL", n_gl < 500L) |>
+  left_join(gl_ref, by = c("array_id", "species", "rep")) |>
+  mutate(
+    abs_dev_gl  = abs(lambda - lambda_gl500),
+    rel_dev_gl  = abs_dev_gl / abs(lambda_gl500),
+    sp_short    = sub(".*_", "", species)
+  )
+```
+
+```{r fig-gl-conv}
+#| fig-cap: "Absolute deviation of GL(n) from GL(500). Convergence within the GL family is much faster than convergence toward the midpoint rule."
+#| code-fold: true
+
+gl_conv |>
+  mutate(n_gl = factor(n_gl)) |>
+  ggplot(aes(n_gl, abs_dev_gl)) +
+  geom_boxplot(outlier.size = 0.6, fill = "#9ecae1", alpha = 0.7) +
+  scale_y_log10(labels = scales::label_scientific()) +
+  labs(
+    x = "n_gl",
+    y = expression(abs(lambda[GL(n)] - lambda[GL(500)]))
+  ) +
+  theme_classic(base_size = 12)
+```
+
+```{r tbl-gl-conv}
+#| code-fold: true
+
+gl_conv |>
+  group_by(n_gl) |>
+  summarise(
+    median_dev = median(abs_dev_gl, na.rm = TRUE),
+    max_dev    = max(abs_dev_gl,    na.rm = TRUE),
+    .groups    = "drop"
+  ) |>
+  mutate(across(median_dev:max_dev, ~formatC(.x, format = "e", digits = 2))) |>
+  rename(
+    "n_gl"           = n_gl,
+    "Median |dev|"   = median_dev,
+    "Max |dev|"      = max_dev
+  ) |>
+  kbl(caption = "GL(n) vs. GL(500): absolute deviation in lambda") |>
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+## Structural difference: GL vs. midpoint {#sec-structural}
+
+Even at GL(500) — which is fully converged within the GL family — $\lambda$
+differs systematically from the midpoint rule.  The figure below shows this
+plateau: as `n_gl` increases, deviation from the midpoint rule does not
+approach zero.
+
+```{r fig-plateau}
+#| fig-cap: "Mean absolute deviation of GL(n) from midpoint (blue) vs. GL internal deviation from GL(500) (grey). The GL-vs-midpoint curve plateaus, revealing a structural difference between the two integration schemes."
+#| code-fold: true
+
+gl_vs_mp_summary <- gl_tbl |>
+  group_by(n_gl) |>
+  summarise(mean_dev = mean(abs_dev, na.rm = TRUE), .groups = "drop") |>
+  mutate(comparison = "GL vs. midpoint")
+
+gl_internal_summary <- gl_conv |>
+  group_by(n_gl) |>
+  summarise(mean_dev = mean(abs_dev_gl, na.rm = TRUE), .groups = "drop") |>
+  mutate(comparison = "GL vs. GL(500)")
+
+bind_rows(gl_vs_mp_summary, gl_internal_summary) |>
+  ggplot(aes(n_gl, mean_dev, color = comparison, group = comparison)) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 2.5) +
+  scale_y_log10(labels = scales::label_scientific()) +
+  scale_color_manual(
+    values = c("GL vs. midpoint" = "steelblue", "GL vs. GL(500)" = "grey50")
+  ) +
+  labs(
+    x     = "n_gl",
+    y     = "Mean absolute deviation in lambda",
+    color = NULL
+  ) +
+  theme_classic(base_size = 12) +
+  theme(legend.position = "top")
+```
+
+The plateau arises because GL and midpoint are computing fundamentally different
+discrete approximations of the same continuous integral.  GL uses non-uniform
+nodes and weights optimised for smooth integrands; the midpoint rule uses uniform
+spacing.  At finite resolution, neither converges to the other — they converge
+to the same continuous-limit value at different rates.
+
+In practice, **switching from midpoint to GL will always produce a step-change
+in $\lambda$**, regardless of `n_gl`.  This is expected and not a numerical
+error; it reflects the change in integration scheme.
+
+
+## Computational benchmark {#sec-benchmark}
+
+```{r load-benchmark}
+#| code-fold: true
+
+tbl_bench <- readRDS(file.path("data", "table_benchmark.RDS"))
+```
+
+### Timing by species and method
+
+```{r fig-benchmark}
+#| fig-cap: "Median computation time per lambda evaluation (mesh setup + kernel assembly + eigenvalue). Each box shows 30 independent repetitions. Species chosen to bracket the midpoint mesh-size range: PINBAN (fewest bins) and QUERUB (most bins)."
+#| code-fold: true
+
+tbl_bench |>
+  mutate(
+    method_label = if_else(method == "midpoint",
+                           paste0("midpoint\n(", n_midpt_bins, " bins)"),
+                           paste0("GL(", n_gl, ")")),
+    method_label = fct_reorder(method_label, if_else(method == "midpoint", 0L, n_gl),
+                               .fun = first)
+  ) |>
+  ggplot(aes(method_label, time_s, fill = method)) +
+  geom_boxplot(outlier.size = 0.7, alpha = 0.7) +
+  facet_wrap(~species_short, scales = "free", ncol = 2) +
+  scale_fill_manual(values = c("midpoint" = "#fc8d59", "GL" = "steelblue")) +
+  labs(
+    x    = "Method",
+    y    = "Wall time (s) per lambda evaluation",
+    fill = NULL
+  ) +
+  theme_classic(base_size = 11) +
+  theme(
+    legend.position  = "top",
+    axis.text.x      = element_text(size = 8)
+  )
+```
+
+### Speedup relative to midpoint rule
+
+```{r tbl-benchmark}
+#| code-fold: true
+
+midpt_medians <- tbl_bench |>
+  filter(method == "midpoint") |>
+  group_by(species_short, n_midpt_bins) |>
+  summarise(midpt_med = median(time_s), .groups = "drop")
+
+tbl_bench |>
+  filter(method == "GL") |>
+  group_by(species_short, n_midpt_bins, n_gl) |>
+  summarise(
+    median_s = median(time_s),
+    min_s    = min(time_s),
+    max_s    = max(time_s),
+    .groups  = "drop"
+  ) |>
+  left_join(midpt_medians, by = c("species_short", "n_midpt_bins")) |>
+  mutate(
+    speedup   = round(midpt_med / median_s, 1),
+    median_s  = round(median_s,  4),
+    min_s     = round(min_s,     4),
+    max_s     = round(max_s,     4),
+    midpt_med = round(midpt_med, 4)
+  ) |>
+  select(species_short, n_midpt_bins, midpt_med, n_gl, median_s, min_s, max_s, speedup) |>
+  rename(
+    "Species"        = species_short,
+    "Midpt bins"     = n_midpt_bins,
+    "Midpt median(s)" = midpt_med,
+    "n_gl"           = n_gl,
+    "GL median(s)"   = median_s,
+    "GL min(s)"      = min_s,
+    "GL max(s)"      = max_s,
+    "Speedup"        = speedup
+  ) |>
+  kbl(caption = "GL timing relative to midpoint rule (median over 30 repetitions)") |>
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE) |>
+  collapse_rows(columns = 1:3, valign = "top")
+```
+
+Kernel matrix assembly and eigenvalue computation scale as $\mathcal{O}(n^2)$
+and $\mathcal{O}(n^3)$ respectively, so the reduction in node count from
+midpoint to GL compounds quickly for large-domain species.
+
+## Recommendation {#sec-recommendation}
+
+```{r recommendation}
+#| output: asis
+#| code-fold: true
+
+pass_summary <- gl_tbl |>
+  group_by(n_gl) |>
+  summarise(
+    pct_pass_abs = mean(abs_dev < GL_TOL,   na.rm = TRUE),
+    pct_pass_1pct = mean(rel_dev < 0.01,    na.rm = TRUE),
+    max_abs_dev  = max(abs_dev,              na.rm = TRUE),
+    .groups = "drop"
+  )
+
+pct <- function(n_gl_val, col) {
+  scales::percent(
+    pass_summary[[col]][pass_summary$n_gl == n_gl_val],
+    accuracy = 0.1
+  )
+}
+mdev <- function(n_gl_val) {
+  formatC(
+    pass_summary$max_abs_dev[pass_summary$n_gl == n_gl_val],
+    format = "e", digits = 2
+  )
+}
+
+```
+
+Based on the accuracy analysis (15 scenarios × 100 parameter draws,
+midpoint h = 1 as reference):
+
+| n_gl | Pass (|dev| < 1e-4) | Pass (rel < 1%) | Max |dev| | Recommended use |
+|------|---------------------|-----------------|-----------|-----------------|
+| 20   | {pct(20,  'pct_pass_abs')} | {pct(20,  'pct_pass_1pct')} | {mdev(20)}  | Exploration only |
+| 50   | {pct(50,  'pct_pass_abs')} | {pct(50,  'pct_pass_1pct')} | {mdev(50)}  | Fast screening |
+| 100  | {pct(100, 'pct_pass_abs')} | {pct(100, 'pct_pass_1pct')} | {mdev(100)} | good balance |
+| 200  | {pct(200, 'pct_pass_abs')} | {pct(200, 'pct_pass_1pct')} | {mdev(200)} | default **Production** |
+| 500  | {pct(500, 'pct_pass_abs')} | {pct(500, 'pct_pass_1pct')} | {mdev(500)} | Reference / validation |
+
+### Recommended defaults
+
+- **Default production runs:** `n_gl = 200` — passes the 1e-4 absolute
+  tolerance for {pct(200, 'pct_pass_abs')} of draws and is considerably
+  faster than the midpoint rule for large-domain species.
+- **Large-scale screening (100 k+ runs):** `n_gl = 100` is a viable
+  compromise; see per-species profiles for worst-case species.
+- **Fast exploration:** `n_gl = 50` is acceptable for qualitative
+  comparisons only.
+
+### Note on comparing outputs across methods
+
+Lambda values obtained with GL quadrature **cannot be directly compared**
+with historical midpoint-rule results without accounting for the structural
+step-change between schemes (see [Structural difference](#sec-structural)).
+For continuity with `final_output.RDS`, use the midpoint-rule lambda as
+the reference when reporting changes relative to historical runs.
+
+## Methods summary
+
+| Item | Value |
+|------|-------|
+| GL algorithm | Golub-Welsch (Jacobi tridiagonal eigendecomposition) |
+| C++ solver | `Eigen::SelfAdjointEigenSolver` via RcppEigen |
+| Size domain | $[127\,\text{mm},\, L_{\max}]$ (species-specific $L_{\max}$) |
+| Vital rate models | von Bertalanffy growth × logistic survival + log-linear recruitment |
+| Metric | Dominant eigenvalue $\lambda$ of the IPM kernel **K** |
+| Reference | Midpoint rule ($h = 1$ mm) from `final_output.RDS` |
+| `n_gl` tested | 20, 50, 100, 200, 500 |
+| Scenarios | 15 stratified rows from 216 027 combinations |
+| Draws per scenario | 100 Bayesian posterior samples |
+| Absolute tolerance | $\|\lambda_{\text{GL}} - \lambda_{\text{midpoint}}\| < 10^{-4}$ |
+| Benchmark species | PINBAN (smallest domain), QUERUB (largest domain) |
+| Benchmark repetitions | 30 per method per species |
