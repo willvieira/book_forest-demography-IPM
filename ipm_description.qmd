@@ -28,10 +28,8 @@ The following properties of the IPM kernel are machine-checked proofs verified w
 | $P$ non-negativity | Growth-survival kernel entries $\geq 0$ |
 | $F$ non-negativity | Recruitment kernel entries $\geq 0$ |
 | $K$ non-negativity | Full kernel entries $\geq 0$ (required for Perron-Frobenius) |
-| Quadrature weights | Gauss-Legendre weights mapped to $[L, U]$ sum to $U - L$ |
-| Quadrature positivity | Mapped quadrature weights are strictly positive |
 
-Source: [`lean/ForestIPM/Kernel.lean`](https://github.com/willvieira/forest-IPM/blob/master/lean/ForestIPM/Kernel.lean), [`lean/ForestIPM/GaussLegendre.lean`](https://github.com/willvieira/forest-IPM/blob/master/lean/ForestIPM/GaussLegendre.lean)
+Source: [`lean/ForestIPM/Kernel.lean`](https://github.com/willvieira/forest-IPM/blob/master/lean/ForestIPM/Kernel.lean)
 :::
 
 ## Numerical implementation
@@ -51,6 +49,20 @@ where $z_i = L + (i - 0.5)\,h$ are the bin midpoints and $m = \lfloor(U - L)/h\r
 This method is straightforward to implement and can introduce bias for large matrices with slow growth rates; simulation analyses recommend bin widths between 0.1 and 1 cm [@zuidema2010integral].
 All analyses presented in the *Using the IPM* section of this book used the midpoint rule with $h = 1\,\text{mm}$, as it was the first integration method implemented in the package.
 
+::: {.callout-note collapse="true"}
+## Formal properties (Lean 4) {.unnumbered}
+
+The following properties of the midpoint rule are machine-checked proofs verified with [Lean 4](https://lean-lang.org/) and [Mathlib](https://leanprover-community.github.io/mathlib4_docs/):
+
+| Property | Statement |
+|---|---|
+| Weight positivity | Each weight $w_i = h > 0$ is strictly positive |
+| Weight sum | $\sum_{i=1}^{m} w_i = m \cdot h$ (total interval length) |
+| Mesh points bounded | Each mesh point $z_i \in (L,\, L + m \cdot h)$ |
+
+Source: [`lean/ForestIPM/MidpointRule.lean`](https://github.com/willvieira/forest-IPM/blob/master/lean/ForestIPM/MidpointRule.lean)
+:::
+
 ## Gauss-Legendre (GL) quadrature
 
 The recently implemented alternative places $n$ optimally chosen nodes $z_1, \ldots, z_n$ and weights $w_1, \ldots, w_n$ on $[L, U]$ (via the Golub-Welsch algorithm) and approximates the integral as
@@ -67,3 +79,16 @@ In other words, GL substantially accelerates computation while maintaining high 
 Within the GL family, $n = 100$ nodes already converges to the $n = 500$ solution within 1% for both equilibrium population density and basal area.
 However, $n = 200$ achieves higher precision without compromising computational efficiency.
 Therefore, GL quadrature with $n = 200$ nodes is the recommended integration method for future analyses.
+
+::: {.callout-note collapse="true"}
+## Formal properties (Lean 4) {.unnumbered}
+
+The following properties of Gauss-Legendre quadrature are machine-checked proofs verified with [Lean 4](https://lean-lang.org/) and [Mathlib](https://leanprover-community.github.io/mathlib4_docs/):
+
+| Property | Statement |
+|---|---|
+| Weight positivity | Mapped GL weights $w_i = \tfrac{U-L}{2}\,\tilde{w}_i > 0$ are strictly positive |
+| Weight sum | Mapped GL weights sum to $U - L$ (exact integration of the constant 1) |
+
+Source: [`lean/ForestIPM/GaussLegendre.lean`](https://github.com/willvieira/forest-IPM/blob/master/lean/ForestIPM/GaussLegendre.lean)
+:::
