@@ -15,32 +15,21 @@ GL_SIZES <- c(20L, 50L, 100L, 200L, 500L)
 GL_TOL   <- 1e-4   # acceptable GL deviation from midpoint reference
 ```
 
-The forest IPM projects population dynamics by computing the dominant eigenvalue
-$\lambda$ of the kernel matrix **K**:
+The release of `v1.0.1` of the `{forestIPM}` R package introduces a new integration approach: the [Gauss-Legendre Quadrature](https://en.wikipedia.org/wiki/Gauss%E2%80%93Legendre_quadrature).
+In this chapter, we compare this new approach agains the original midpoint rule.
 
-$$
-n(x', t+1) = \int_{L}^{L_{\max}} K(x', x)\, n(x, t)\, dx
-$$
+| Method | Description | Grid | Meshpoints  |
+|--------|-------------|------|-------------|
+| **Midpoint rule** | Uniform bins of width $h = 1$ mm | $[L,\, L_{\max}]$ | $(L_{max} - 127)/h$ |
+| **Gauss-Legendre (GL)** | Optimal quadrature nodes and weights | $n_{\text{gl}}$ nodes on $[L,\, L_{\max}]$ | $n_{gl}$ nodes |
 
-Two numerical integration schemes are compared here:
+The midpoint rule was used in the original cluster simulations ([`covariates_perturbation`](https://github.com/willvieira/forestIPM/tree/master/simulations/covariates_perturbation)) and serves as the **historical reference** throughout this report.  GL quadrature is the new implementation: it places nodes at positions that exactly integrate polynomials of degree $\leq 2n_{\text{gl}} - 1$, achieving faster convergence for smooth integrands.
 
-| Method | Description | Grid |
-|--------|-------------|------|
-| **Midpoint rule** | Uniform bins of width $h = 1$ mm | $[L,\, L_{\max}]$ |
-| **Gauss-Legendre (GL)** | Optimal quadrature nodes and weights | $n_{\text{gl}}$ nodes on $[L,\, L_{\max}]$ |
-
-The midpoint rule was used in the original cluster simulations ([`covariates_perturbation`](https://github.com/willvieira/forestIPM/tree/master/simulations/covariates_perturbation))
-and serves as the **historical reference** throughout this report.  GL quadrature
-is the new implementation: it places nodes at positions that exactly integrate
-polynomials of degree $\leq 2n_{\text{gl}} - 1$, achieving faster convergence
-for smooth integrands.
-
-This report addresses two questions:
+In practice, we run this simulation to addresses two questions:
 
 1. **Accuracy** — does GL recover the same $\lambda$ as the midpoint rule, and
    at what `n_gl`?
-2. **Speed** — is GL faster than the midpoint rule for species with large size
-   domains?
+2. **Speed** — is GL faster than the midpoint rule regardless of species size range?
 
 
 ## Simulation design
@@ -449,8 +438,7 @@ mdev <- function(n_gl_val) {
   )
 }
 
-```
-
+cat(glue::glue("
 Based on the accuracy analysis (15 scenarios × 100 parameter draws,
 midpoint h = 1 as reference):
 
@@ -471,6 +459,8 @@ midpoint h = 1 as reference):
   compromise; see per-species profiles for worst-case species.
 - **Fast exploration:** `n_gl = 50` is acceptable for qualitative
   comparisons only.
+"))
+```
 
 ### Note on comparing outputs across methods
 
