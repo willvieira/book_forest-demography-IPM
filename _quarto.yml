@@ -43,6 +43,7 @@ book:
       - ipm_description.qmd
       - guide_IPM.qmd
       - midpoint_vs_gl.qmd
+      - gaussLegendre_convergence.qmd
     - part: Using the IPM
       chapters:
       - sens_analysis.qmd

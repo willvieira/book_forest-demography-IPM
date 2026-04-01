@@ -1,0 +1,488 @@
+# Gauss-Legendre Quadrature Convergence {#sec-gl_convergence}
+
+```{r,include=FALSE,echo=FALSE}
+Echo=FALSE
+Eval=TRUE
+Cache=TRUE
+Warng=FALSE
+Msg=FALSE
+library(tidyverse)
+library(kableExtra)
+```
+
+```{r setup,include=FALSE,echo=FALSE}
+GL_SIZES <- c(20L, 50L, 100L, 200L, 500L)
+GL_REF   <- 500L
+GL_TOL_N <- 0.05   # 5% relative tolerance for equilibrium N
+```
+
+The release of `v1.0.1` of the `{forestIPM}` R package introduces a new integration approach: the [Gauss-Legendre Quadrature](https://en.wikipedia.org/wiki/Gauss%E2%80%93Legendre_quadrature) — a spectral method that achieves exponential convergence for smooth integrands.
+The number of quadrature nodes (`n_gl`) controls the trade-off between accuracy and
+computational cost.
+
+Because Gauss-Legendre quadrature exactly integrates polynomials of degree
+$\leq 2n-1$, convergence for smooth kernels is typically achieved at modest
+$n_{\text{gl}}$ values.
+In this chapter, we quantify that convergence empirically using Gauss-Legendre with $n_{gl} = 500$ nodes as the reference.
+
+## Simulation design
+
+Results were pre-computed by the [`compare_gl_N.R`](https://github.com/willvieira/forestIPM/blob/master/simulations/compare_versions/compare_gl_N.R) script:
+
+- **15 stratified environmental scenarios** drawn from 216 027 combinations
+  of species × plot × climate.
+- **100 Bayesian posterior parameter draws** per scenario.
+- **`n_gl` tested:** 20, 50, 100, 200, 500.
+- **Reference:** GL(500) (treated as truth for within-GL convergence).
+- **Metrics:**
+  - Equilibrium $N$ — total tree density after density-dependent projection
+    (up to 500 yr, convergence tolerance $10^{-6}$).
+  - Equilibrium basal area (BA, m² ha⁻¹).
+
+```{r load-data}
+#| code-fold: true
+
+tbl_N_BA <- readRDS(file.path("data", "table_gl_N_BA.RDS"))
+
+# Reference: GL(500) per (array_id, species)
+ref_vals <- tbl_N_BA |>
+  filter(method == "GL", n_gl == GL_REF) |>
+  select(array_id, species, N_ref = N, BA_ref = BA)
+
+# GL-only table joined with GL(500) reference
+gl_tbl <- tbl_N_BA |>
+  filter(method == "GL") |>
+  left_join(ref_vals, by = c("array_id", "species")) |>
+  mutate(
+    N_reldev  = abs(N  - N_ref)  / N_ref,
+    BA_reldev = abs(BA - BA_ref) / BA_ref,
+    sp_short  = sub(".*_", "", species)
+  )
+```
+
+---
+
+## Convergence of equilibrium N {#sec-N}
+
+### Relative deviation vs. GL(500)
+
+```{r fig-N-deviation}
+#| fig-cap: "Relative deviation of equilibrium N from GL(500), by n_gl. Boxes show median and IQR; red dashed = 1%, orange dotted = 5% tolerance."
+#| code-fold: true
+
+gl_tbl |>
+  filter(n_gl < GL_REF) |>
+  mutate(n_gl = factor(n_gl)) |>
+  ggplot(aes(n_gl, N_reldev)) +
+  geom_boxplot(outlier.size = 0.8, fill = "steelblue", alpha = 0.6) +
+  geom_hline(yintercept = 0.01, linetype = "dashed", color = "firebrick",  linewidth = 0.7) +
+  geom_hline(yintercept = 0.05, linetype = "dotted", color = "darkorange", linewidth = 0.7) +
+  scale_y_log10(
+    labels = scales::label_percent(accuracy = 0.01),
+    breaks = c(1e-5, 1e-4, 1e-3, 0.01, 0.05, 0.1, 0.5)
+  ) +
+  labs(
+    x       = "n_gl",
+    y       = "Relative deviation |N(n) - N(500)| / N(500)",
+    caption = "Red dashed = 1%, orange dotted = 5% tolerance"
+  ) +
+  theme_classic(base_size = 12)
+```
+
+### Per-species deviation heatmap {#sec-heatmap}
+
+```{r fig-heatmap-N}
+#| fig-cap: "Median relative deviation of equilibrium N from GL(500), per species and n_gl."
+#| code-fold: true
+
+gl_tbl |>
+  filter(n_gl < GL_REF) |>
+  group_by(sp_short, n_gl) |>
+  summarise(med_dev = median(N_reldev, na.rm = TRUE), .groups = "drop") |>
+  mutate(
+    n_gl    = factor(n_gl),
+    pct_lab = scales::percent(med_dev, accuracy = 0.1)
+  ) |>
+  ggplot(aes(n_gl, reorder(sp_short, med_dev))) +
+  geom_tile(aes(fill = med_dev), color = "white") +
+  geom_text(aes(label = pct_lab), size = 2.8) +
+  scale_fill_gradient2(
+    low      = "#2166ac",
+    mid      = "#f7f7f7",
+    high     = "#d6604d",
+    midpoint = 0.01,
+    labels   = scales::label_percent(accuracy = 0.1),
+    name     = "Rel. dev."
+  ) +
+  labs(x = "n_gl", y = NULL) +
+  theme_classic(base_size = 11)
+```
+
+### Pass/fail at 5% tolerance {#sec-passfail}
+
+```{r tbl-passfail}
+#| code-fold: true
+
+gl_tbl |>
+  filter(n_gl < GL_REF) |>
+  group_by(n_gl) |>
+  summarise(
+    n_total    = n(),
+    n_pass     = sum(N_reldev < 0.05, na.rm = TRUE),
+    pct_pass   = n_pass / n_total,
+    max_dev    = max(N_reldev,    na.rm = TRUE),
+    median_dev = median(N_reldev, na.rm = TRUE),
+    .groups    = "drop"
+  ) |>
+  mutate(
+    pct_pass   = scales::percent(pct_pass,   accuracy = 0.1),
+    max_dev    = scales::percent(max_dev,    accuracy = 0.01),
+    median_dev = scales::percent(median_dev, accuracy = 0.01)
+  ) |>
+  rename(
+    "n_gl"        = n_gl,
+    "N scenarios" = n_total,
+    "Pass (< 5%)" = n_pass,
+    "% Pass"      = pct_pass,
+    "Max dev."    = max_dev,
+    "Median dev." = median_dev
+  ) |>
+  kbl(caption = "Equilibrium N convergence relative to GL(500)") |>
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+---
+
+## Convergence of basal area {#sec-BA}
+
+```{r fig-BA-deviation}
+#| fig-cap: "Relative deviation of equilibrium basal area (BA) from GL(500)."
+#| code-fold: true
+
+gl_tbl |>
+  filter(n_gl < GL_REF, is.finite(BA_reldev)) |>
+  mutate(n_gl = factor(n_gl)) |>
+  ggplot(aes(n_gl, BA_reldev)) +
+  geom_boxplot(outlier.size = 0.8, fill = "#2ca25f", alpha = 0.6) +
+  geom_hline(yintercept = 0.01, linetype = "dashed", color = "firebrick",  linewidth = 0.7) +
+  geom_hline(yintercept = 0.05, linetype = "dotted", color = "darkorange", linewidth = 0.7) +
+  scale_y_log10(
+    labels = scales::label_percent(accuracy = 0.01),
+    breaks = c(1e-5, 1e-4, 1e-3, 0.01, 0.05, 0.1, 0.5)
+  ) +
+  labs(
+    x       = "n_gl",
+    y       = "Relative deviation |BA(n) - BA(500)| / BA(500)",
+    caption = "Red dashed = 1%, orange dotted = 5% tolerance"
+  ) +
+  theme_classic(base_size = 12)
+```
+
+---
+
+## Per-species convergence profiles {#sec-species}
+
+Each panel shows how both equilibrium N (blue) and BA (green) converge toward
+GL(500) as `n_gl` increases.  The ribbon spans the IQR across the 15 scenarios
+× 100 parameter draws.
+
+```{r fig-species-facets}
+#| fig-cap: "Per-species convergence of equilibrium N and BA toward GL(500). Ribbon = IQR across scenarios; red dashed = 1% tolerance."
+#| code-fold: true
+
+gl_tbl |>
+  filter(n_gl < GL_REF) |>
+  pivot_longer(
+    cols      = c(N_reldev, BA_reldev),
+    names_to  = "metric",
+    values_to = "reldev"
+  ) |>
+  mutate(
+    metric = recode(metric, N_reldev = "Equil. N", BA_reldev = "Equil. BA")
+  ) |>
+  filter(is.finite(reldev)) |>
+  group_by(sp_short, n_gl, metric) |>
+  summarise(
+    med = median(reldev, na.rm = TRUE),
+    q25 = quantile(reldev, 0.25, na.rm = TRUE),
+    q75 = quantile(reldev, 0.75, na.rm = TRUE),
+    .groups = "drop"
+  ) |>
+  ggplot(aes(n_gl, med, color = metric, fill = metric)) +
+  geom_ribbon(aes(ymin = q25, ymax = q75), alpha = 0.2, color = NA) +
+  geom_line() +
+  geom_point(size = 1.8) +
+  geom_hline(yintercept = 0.01, linetype = "dashed", color = "firebrick", linewidth = 0.4) +
+  facet_wrap(~sp_short, ncol = 4, scales = "free_y") +
+  scale_color_manual(values = c("Equil. N" = "steelblue", "Equil. BA" = "#2ca25f")) +
+  scale_fill_manual( values = c("Equil. N" = "steelblue", "Equil. BA" = "#2ca25f")) +
+  scale_y_log10(labels = scales::label_percent(accuracy = 0.01)) +
+  scale_x_continuous(breaks = c(20, 50, 100, 200)) +
+  labs(
+    x       = "n_gl",
+    y       = "Rel. deviation from GL(500)",
+    color   = NULL,
+    fill    = NULL,
+    caption = "Red dashed = 1% tolerance; ribbon = IQR across scenarios"
+  ) +
+  theme_classic(base_size = 9) +
+  theme(
+    strip.text   = element_text(size = 7),
+    legend.position = "top"
+  )
+```
+
+---
+
+## Species-specific convergence table {#sec-sp-table}
+
+Minimum `n_gl` needed to reach < 1% and < 5% median relative deviation from
+GL(500), for both N and BA:
+
+```{r tbl-sp-threshold}
+#| code-fold: true
+
+threshold_tbl <- function(devvar, label) {
+  gl_tbl |>
+    filter(n_gl < GL_REF) |>
+    group_by(sp_short, n_gl) |>
+    summarise(med_dev = median(.data[[devvar]], na.rm = TRUE), .groups = "drop") |>
+    arrange(sp_short, n_gl) |>
+    group_by(sp_short) |>
+    summarise(
+      min_ngl_1pct = {
+        pass <- n_gl[med_dev < 0.01]
+        if (length(pass) == 0) NA_integer_ else min(pass)
+      },
+      min_ngl_5pct = {
+        pass <- n_gl[med_dev < 0.05]
+        if (length(pass) == 0) NA_integer_ else min(pass)
+      },
+      dev_100 = scales::percent(med_dev[n_gl == 100], accuracy = 0.01),
+      dev_200 = scales::percent(med_dev[n_gl == 200], accuracy = 0.01),
+      .groups = "drop"
+    ) |>
+    rename(
+      "Species"                        = sp_short,
+      !!paste0("Min n_gl <1% (", label, ")") := min_ngl_1pct,
+      !!paste0("Min n_gl <5% (", label, ")") := min_ngl_5pct,
+      !!paste0("Dev @100 (", label, ")")      := dev_100,
+      !!paste0("Dev @200 (", label, ")")      := dev_200
+    )
+}
+
+threshold_tbl("N_reldev",  "N") |>
+  left_join(threshold_tbl("BA_reldev", "BA"), by = "Species") |>
+  kbl(caption = "Minimum n_gl to meet convergence thresholds vs. GL(500)") |>
+  kable_styling(
+    bootstrap_options = c("striped", "hover", "condensed"),
+    full_width = FALSE
+  ) |>
+  add_header_above(c(" " = 1, "Equil. N" = 4, "Equil. BA" = 4))
+```
+
+---
+
+## Recommendation {#sec-recommendation}
+
+```{r recommendation}
+#| output: asis
+#| code-fold: true
+
+pass_summary <- gl_tbl |>
+  filter(n_gl < GL_REF) |>
+  group_by(n_gl) |>
+  summarise(
+    pct_N_1pct  = mean(N_reldev  < 0.01, na.rm = TRUE),
+    pct_N_5pct  = mean(N_reldev  < 0.05, na.rm = TRUE),
+    pct_BA_1pct = mean(BA_reldev < 0.01, na.rm = TRUE),
+    pct_BA_5pct = mean(BA_reldev < 0.05, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+pct <- function(n_gl_val, col) {
+  scales::percent(
+    pass_summary[[col]][pass_summary$n_gl == n_gl_val],
+    accuracy = 0.1
+  )
+}
+
+cat(glue::glue("
+Based on the convergence analysis (15 scenarios × 100 parameter draws,
+GL(500) as reference):
+
+| n_gl | N: pass < 1% | N: pass < 5% | BA: pass < 1% | BA: pass < 5% | Recommended use |
+|------|-------------|-------------|--------------|--------------|-----------------|
+| 20  | {pct(20,  'pct_N_1pct')} | {pct(20,  'pct_N_5pct')} | {pct(20,  'pct_BA_1pct')} | {pct(20,  'pct_BA_5pct')} | **Exploration only** |
+| 50  | {pct(50,  'pct_N_1pct')} | {pct(50,  'pct_N_5pct')} | {pct(50,  'pct_BA_1pct')} | {pct(50,  'pct_BA_5pct')} | **Fast screening** |
+| 100 | {pct(100, 'pct_N_1pct')} | {pct(100, 'pct_N_5pct')} | {pct(100, 'pct_BA_1pct')} | {pct(100, 'pct_BA_5pct')} | **good balance** |
+| 200 | {pct(200, 'pct_N_1pct')} | {pct(200, 'pct_N_5pct')} | {pct(200, 'pct_BA_1pct')} | {pct(200, 'pct_BA_5pct')} | default **Production** |
+
+### Recommended defaults
+
+- **Population projections / equilibrium N and BA:** `n_gl = 200` is the
+  recommended default.  It matches GL(500) within 1% for {pct(200, 'pct_N_1pct')}
+  of N scenarios and {pct(200, 'pct_BA_1pct')} of BA scenarios.
+- **Large-scale simulations (100 k+ runs):** `n_gl = 100` is a viable
+  compromise; see species-specific tables for worst-case species.
+- **Fast screening / exploration:** `n_gl = 50` is acceptable for
+  qualitative comparisons only.
+
+The current package default (`n_gl = 200`) is well-justified and does
+not need to be changed.
+"))
+```
+
+---
+
+## GL vs. midpoint rule {#sec-vs-midpoint}
+
+Even at GL(500) — which is converged within the GL family — the outputs differ
+systematically from the midpoint rule (h = 1 mm).  This section quantifies
+that structural difference.
+
+```{r gl-vs-midpoint}
+#| code-fold: true
+
+# Join each GL result with the midpoint reference
+midpt_ref <- tbl_N_BA |>
+  filter(method == "midpoint") |>
+  select(array_id, species, N_midpt = N, BA_midpt = BA)
+
+gl_vs_mp <- tbl_N_BA |>
+  filter(method == "GL") |>
+  left_join(midpt_ref, by = c("array_id", "species")) |>
+  mutate(
+    N_dev_mp  = abs(N  - N_midpt)  / N_midpt,
+    BA_dev_mp = abs(BA - BA_midpt) / BA_midpt,
+    sp_short  = sub(".*_", "", species)
+  )
+```
+
+### Overall deviation from midpoint
+
+```{r fig-gl-vs-mp-overall}
+#| fig-cap: "Relative deviation of GL(n) from the midpoint rule (h = 1) for equilibrium N (blue) and BA (green). Unlike within-GL convergence, deviations do not approach zero as n_gl increases — they plateau at a structural difference between the two integration schemes."
+#| code-fold: true
+
+gl_vs_mp |>
+  filter(is.finite(N_dev_mp), is.finite(BA_dev_mp)) |>
+  pivot_longer(
+    cols      = c(N_dev_mp, BA_dev_mp),
+    names_to  = "metric",
+    values_to = "reldev"
+  ) |>
+  mutate(
+    metric = recode(metric, N_dev_mp = "Equil. N", BA_dev_mp = "Equil. BA"),
+    n_gl   = factor(n_gl)
+  ) |>
+  ggplot(aes(n_gl, reldev, fill = metric)) +
+  geom_boxplot(outlier.size = 0.6, alpha = 0.6, position = position_dodge(0.8)) +
+  scale_fill_manual(values = c("Equil. N" = "steelblue", "Equil. BA" = "#2ca25f")) +
+  scale_y_log10(
+    labels = scales::label_percent(accuracy = 0.01),
+    breaks = c(1e-4, 1e-3, 0.01, 0.05, 0.1, 0.5, 1)
+  ) +
+  labs(
+    x    = "n_gl",
+    y    = "Relative deviation from midpoint rule",
+    fill = NULL
+  ) +
+  theme_classic(base_size = 12) +
+  theme(legend.position = "top")
+```
+
+```{r tbl-gl-vs-mp}
+#| code-fold: true
+
+gl_vs_mp |>
+  group_by(n_gl) |>
+  summarise(
+    N_median  = median(N_dev_mp,  na.rm = TRUE),
+    N_max     = max(N_dev_mp,     na.rm = TRUE),
+    BA_median = median(BA_dev_mp, na.rm = TRUE),
+    BA_max    = max(BA_dev_mp,    na.rm = TRUE),
+    .groups   = "drop"
+  ) |>
+  mutate(across(N_median:BA_max, ~scales::percent(.x, accuracy = 0.01))) |>
+  rename(
+    "n_gl"           = n_gl,
+    "N: median dev." = N_median,
+    "N: max dev."    = N_max,
+    "BA: median dev." = BA_median,
+    "BA: max dev."   = BA_max
+  ) |>
+  kbl(caption = "Deviation of GL(n) from midpoint rule (h = 1)") |>
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+### Why N deviates more than BA
+
+The two metrics respond differently because of how integration weights enter
+each quantity.
+
+**Equilibrium N** is computed as
+
+$$
+N^* = \sum_i w_i\, n^*(x_i)
+$$
+
+where $w_i$ are quadrature weights and $n^*(x_i)$ is the equilibrium size
+density.  For GL nodes, the weights $w_i$ are non-uniform — they are larger
+near the centre of the interval and smaller near the endpoints — whereas
+midpoint weights are all equal to $h$.  Because small trees are the most
+abundant size class and dominate total N, the unequal weighting of GL nodes
+in the small-size region directly shifts the integral of the density
+distribution, producing a systematic offset in $N^*$ relative to the
+uniform midpoint bins.
+
+**Equilibrium BA** is computed as
+
+$$
+\text{BA}^* = \sum_i w_i\, n^*(x_i)\, \pi \left(\frac{x_i}{2}\right)^2 \times 10^{-6}
+$$
+
+The $x_i^2$ term down-weights small trees and up-weights large trees.  The
+large-tree region is where GL weights and midpoint weights are most similar
+(the midpoint bins are fine enough to approximate GL there), so the
+$x^2$-weighted integral is less sensitive to the quadrature scheme.
+As a result, the structural difference between GL and midpoint manifests
+more weakly in BA than in N.
+
+In practical terms, **GL and midpoint are computing fundamentally different
+discrete approximations** of the same continuous integral.  Neither is wrong;
+they converge to the same limit as resolution increases.  However, at finite
+resolution, GL distributes nodes and weights optimally for smooth integrands,
+while midpoint uses uniform spacing.  For population projections, this means
+that **switching from midpoint to GL will always produce a step-change in
+equilibrium N and BA outputs**, regardless of how large `n_gl` is.  The
+magnitude of this step-change decreases slowly as GL resolution increases,
+but does not vanish at practical node counts.
+
+
+## Computational note
+
+GL quadrature achieves the same within-family accuracy as the midpoint rule
+with far fewer nodes.  For example:
+
+- Midpoint (h = 1) for *Quercus rubra* ($L_{\max} \approx 700$ mm) requires
+  **573 bins**; GL(100) uses only **100 nodes** — a 5.7× reduction in matrix
+  size (32.5× fewer matrix elements).
+- Kernel matrix assembly and eigenvalue computation scale as
+  $\mathcal{O}(n^2)$ and $\mathcal{O}(n^3)$ respectively, so the savings
+  compound quickly with node count.
+
+
+## Methods summary
+
+| Item | Value |
+|------|-------|
+| GL algorithm | Golub-Welsch (Jacobi tridiagonal eigendecomposition) |
+| C++ solver | `Eigen::SelfAdjointEigenSolver` via RcppEigen |
+| Size domain | $[127\,\text{mm},\, L_{\max}]$ (species-specific $L_{\max}$) |
+| Vital rate models | von Bertalanffy growth × logistic survival + log-linear recruitment |
+| Within-GL reference | GL(500) |
+| Midpoint rule | h = 1 mm (original integration method) |
+| Scenarios | 15 stratified rows from 216 027 combinations |
+| Draws per scenario | 100 Bayesian posterior samples |
+| Convergence criterion | $\|\Delta N / N\| < 10^{-6}$ for 10 consecutive steps |
