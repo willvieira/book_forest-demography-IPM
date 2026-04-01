@@ -24,7 +24,7 @@ The following properties of the IPM kernel are machine-checked proofs verified w
 
 | Property | Statement |
 |---|---|
-| Decomposition | $K = P + **F**$ where $P$ is the growth-survival kernel and $F$ the recruitment kernel |
+| Decomposition | $K = P + F$ where $P$ is the growth-survival kernel and $F$ the recruitment kernel |
 | $P$ non-negativity | Growth-survival kernel entries $\geq 0$ |
 | $F$ non-negativity | Recruitment kernel entries $\geq 0$ |
 | $K$ non-negativity | Full kernel entries $\geq 0$ (required for Perron-Frobenius) |
