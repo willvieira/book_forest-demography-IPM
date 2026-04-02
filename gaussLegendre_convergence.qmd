@@ -39,9 +39,7 @@ Results were pre-computed by the [`compare_gl_N.R`](https://github.com/willvieir
     (up to 500 yr, convergence tolerance $10^{-6}$).
   - Equilibrium basal area (BA, m² ha⁻¹).
 
-```{r load-data}
-#| code-fold: true
-
+```{r load_data,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 tbl_N_BA <- readRDS(file.path("data", "table_gl_N_BA.RDS"))
 
 # Reference: GL(500) per (array_id, species)
@@ -60,15 +58,12 @@ gl_tbl <- tbl_N_BA |>
   )
 ```
 
----
-
 ## Convergence of equilibrium N {#sec-N}
 
 ### Relative deviation vs. GL(500)
 
-```{r fig-N-deviation}
+```{r fig_N_deviation,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| fig-cap: "Relative deviation of equilibrium N from GL(500), by n_gl. Boxes show median and IQR; red dashed = 1%, orange dotted = 5% tolerance."
-#| code-fold: true
 
 gl_tbl |>
   filter(n_gl < GL_REF) |>
@@ -91,9 +86,8 @@ gl_tbl |>
 
 ### Per-species deviation heatmap {#sec-heatmap}
 
-```{r fig-heatmap-N}
+```{r fig_heatmap_N,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| fig-cap: "Median relative deviation of equilibrium N from GL(500), per species and n_gl."
-#| code-fold: true
 
 gl_tbl |>
   filter(n_gl < GL_REF) |>
@@ -120,9 +114,7 @@ gl_tbl |>
 
 ### Pass/fail at 5% tolerance {#sec-passfail}
 
-```{r tbl-passfail}
-#| code-fold: true
-
+```{r tbl_passfail,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 gl_tbl |>
   filter(n_gl < GL_REF) |>
   group_by(n_gl) |>
@@ -151,13 +143,10 @@ gl_tbl |>
   kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
 ```
 
----
-
 ## Convergence of basal area {#sec-BA}
 
-```{r fig-BA-deviation}
+```{r fig_BA_deviation,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| fig-cap: "Relative deviation of equilibrium basal area (BA) from GL(500)."
-#| code-fold: true
 
 gl_tbl |>
   filter(n_gl < GL_REF, is.finite(BA_reldev)) |>
@@ -178,17 +167,14 @@ gl_tbl |>
   theme_classic(base_size = 12)
 ```
 
----
-
 ## Per-species convergence profiles {#sec-species}
 
 Each panel shows how both equilibrium N (blue) and BA (green) converge toward
 GL(500) as `n_gl` increases.  The ribbon spans the IQR across the 15 scenarios
 × 100 parameter draws.
 
-```{r fig-species-facets}
+```{r fig_species_facets,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| fig-cap: "Per-species convergence of equilibrium N and BA toward GL(500). Ribbon = IQR across scenarios; red dashed = 1% tolerance."
-#| code-fold: true
 
 gl_tbl |>
   filter(n_gl < GL_REF) |>
@@ -232,16 +218,12 @@ gl_tbl |>
   )
 ```
 
----
-
 ## Species-specific convergence table {#sec-sp-table}
 
 Minimum `n_gl` needed to reach < 1% and < 5% median relative deviation from
 GL(500), for both N and BA:
 
-```{r tbl-sp-threshold}
-#| code-fold: true
-
+```{r tbl_sp_threshold,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 threshold_tbl <- function(devvar, label) {
   gl_tbl |>
     filter(n_gl < GL_REF) |>
@@ -281,13 +263,10 @@ threshold_tbl("N_reldev",  "N") |>
   add_header_above(c(" " = 1, "Equil. N" = 4, "Equil. BA" = 4))
 ```
 
----
-
 ## Recommendation {#sec-recommendation}
 
-```{r recommendation}
+```{r recommendation,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| output: asis
-#| code-fold: true
 
 pass_summary <- gl_tbl |>
   filter(n_gl < GL_REF) |>
@@ -333,17 +312,13 @@ not need to be changed.
 "))
 ```
 
----
-
 ## GL vs. midpoint rule {#sec-vs-midpoint}
 
 Even at GL(500) — which is converged within the GL family — the outputs differ
 systematically from the midpoint rule (h = 1 mm).  This section quantifies
 that structural difference.
 
-```{r gl-vs-midpoint}
-#| code-fold: true
-
+```{r gl_vs_midpoint,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 # Join each GL result with the midpoint reference
 midpt_ref <- tbl_N_BA |>
   filter(method == "midpoint") |>
@@ -361,9 +336,8 @@ gl_vs_mp <- tbl_N_BA |>
 
 ### Overall deviation from midpoint
 
-```{r fig-gl-vs-mp-overall}
+```{r fig_gl_vs_mp_overall,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| fig-cap: "Relative deviation of GL(n) from the midpoint rule (h = 1) for equilibrium N (blue) and BA (green). Unlike within-GL convergence, deviations do not approach zero as n_gl increases — they plateau at a structural difference between the two integration schemes."
-#| code-fold: true
 
 gl_vs_mp |>
   filter(is.finite(N_dev_mp), is.finite(BA_dev_mp)) |>
@@ -392,9 +366,7 @@ gl_vs_mp |>
   theme(legend.position = "top")
 ```
 
-```{r tbl-gl-vs-mp}
-#| code-fold: true
-
+```{r tbl_gl_vs_mp,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 gl_vs_mp |>
   group_by(n_gl) |>
   summarise(

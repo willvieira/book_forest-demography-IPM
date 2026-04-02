@@ -44,9 +44,7 @@ Results were pre-computed by [`compare_versions_gl.R`](https://github.com/willvi
 - **Metric:** dominant eigenvalue $\lambda$ of the IPM kernel **K**.
 - **Tolerance:** $|\lambda_{\text{GL}} - \lambda_{\text{midpoint}}| < 10^{-4}$.
 
-```{r load-data}
-#| code-fold: true
-
+```{r load_data,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 tbl_lambda <- readRDS(file.path("data", "table_lambda_comparison.RDS"))
 
 # Midpoint reference: mean lambda per (array_id, species)
@@ -70,9 +68,8 @@ gl_tbl <- tbl_lambda |>
 
 ### Absolute deviation from midpoint {#sec-abs-dev}
 
-```{r fig-abs-deviation}
+```{r fig_abs_deviation,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| fig-cap: "Absolute deviation of GL(n) lambda from the midpoint reference, by n_gl. Boxes show median and IQR across all 15 scenarios × 100 draws. Orange dashed line = GL tolerance (1e-4)."
-#| code-fold: true
 
 gl_tbl |>
   mutate(n_gl = factor(n_gl)) |>
@@ -93,9 +90,8 @@ gl_tbl |>
 
 ### Relative deviation from midpoint {#sec-rel-dev}
 
-```{r fig-rel-deviation}
+```{r fig_rel_deviation,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| fig-cap: "Relative deviation of GL(n) lambda from the midpoint reference. Red dashed = 0.1%, orange dotted = 1% tolerance."
-#| code-fold: true
 
 gl_tbl |>
   mutate(n_gl = factor(n_gl)) |>
@@ -117,9 +113,7 @@ gl_tbl |>
 
 ### Pass/fail at absolute tolerance 1e-4 {#sec-passfail}
 
-```{r tbl-passfail}
-#| code-fold: true
-
+```{r tbl_passfail,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 gl_tbl |>
   group_by(n_gl) |>
   summarise(
@@ -150,9 +144,8 @@ gl_tbl |>
 
 ## Per-species deviation heatmap {#sec-heatmap}
 
-```{r fig-heatmap}
+```{r fig_heatmap,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| fig-cap: "Median absolute deviation of lambda from the midpoint reference, per species and n_gl."
-#| code-fold: true
 
 gl_tbl |>
   group_by(sp_short, n_gl) |>
@@ -184,9 +177,8 @@ Each panel shows how $\lambda$ deviation from the midpoint rule evolves as
 `n_gl` increases.  The ribbon spans the IQR across the 15 scenarios × 100
 parameter draws.
 
-```{r fig-species-facets}
+```{r fig_species_facets,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| fig-cap: "Per-species absolute deviation of GL lambda from midpoint. Line = median; ribbon = IQR. Orange dashed = tolerance 1e-4."
-#| code-fold: true
 
 gl_tbl |>
   group_by(sp_short, n_gl) |>
@@ -222,9 +214,7 @@ gl_tbl |>
 This section examines convergence **within the GL family** — how smaller `n_gl`
 values compare to GL(500), independent of the midpoint reference.
 
-```{r gl-internal}
-#| code-fold: true
-
+```{r gl_internal,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 # Reference: GL(500) per (array_id, species, rep)
 gl_ref <- tbl_lambda |>
   filter(method == "GL", n_gl == 500L) |>
@@ -240,9 +230,8 @@ gl_conv <- tbl_lambda |>
   )
 ```
 
-```{r fig-gl-conv}
+```{r fig_gl_conv,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| fig-cap: "Absolute deviation of GL(n) from GL(500). Convergence within the GL family is much faster than convergence toward the midpoint rule."
-#| code-fold: true
 
 gl_conv |>
   mutate(n_gl = factor(n_gl)) |>
@@ -256,9 +245,7 @@ gl_conv |>
   theme_classic(base_size = 12)
 ```
 
-```{r tbl-gl-conv}
-#| code-fold: true
-
+```{r tbl_gl_conv,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 gl_conv |>
   group_by(n_gl) |>
   summarise(
@@ -283,9 +270,8 @@ differs systematically from the midpoint rule.  The figure below shows this
 plateau: as `n_gl` increases, deviation from the midpoint rule does not
 approach zero.
 
-```{r fig-plateau}
+```{r fig_plateau,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| fig-cap: "Mean absolute deviation of GL(n) from midpoint (blue) vs. GL internal deviation from GL(500) (grey). The GL-vs-midpoint curve plateaus, revealing a structural difference between the two integration schemes."
-#| code-fold: true
 
 gl_vs_mp_summary <- gl_tbl |>
   group_by(n_gl) |>
@@ -327,17 +313,14 @@ error; it reflects the change in integration scheme.
 
 ## Computational benchmark {#sec-benchmark}
 
-```{r load-benchmark}
-#| code-fold: true
-
+```{r load_benchmark,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 tbl_bench <- readRDS(file.path("data", "table_benchmark.RDS"))
 ```
 
 ### Timing by species and method
 
-```{r fig-benchmark}
+```{r fig_benchmark,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| fig-cap: "Median computation time per lambda evaluation (mesh setup + kernel assembly + eigenvalue). Each box shows 30 independent repetitions. Species chosen to bracket the midpoint mesh-size range: PINBAN (fewest bins) and QUERUB (most bins)."
-#| code-fold: true
 
 tbl_bench |>
   mutate(
@@ -365,9 +348,7 @@ tbl_bench |>
 
 ### Speedup relative to midpoint rule
 
-```{r tbl-benchmark}
-#| code-fold: true
-
+```{r tbl_benchmark,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 midpt_medians <- tbl_bench |>
   filter(method == "midpoint") |>
   group_by(species_short, n_midpt_bins) |>
@@ -412,9 +393,8 @@ midpoint to GL compounds quickly for large-domain species.
 
 ## Recommendation {#sec-recommendation}
 
-```{r recommendation}
+```{r recommendation,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| output: asis
-#| code-fold: true
 
 pass_summary <- gl_tbl |>
   group_by(n_gl) |>

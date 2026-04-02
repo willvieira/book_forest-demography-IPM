@@ -1,5 +1,13 @@
 # Using the forestIPM package {#sec-ipm_guide}
 
+```{r,include=FALSE,echo=FALSE}
+Echo=TRUE
+Eval=TRUE
+Cache=TRUE
+Warng=FALSE
+Msg=FALSE
+```
+
 The `forestIPM` R package provides a clean R interface for the final Integral Projection Models (IPMs) model and its parameters for the 31 tree species in eastern North America.
 This guide walks through the complete workflow — from installing the package, setting conditions, to computing population growth rates and projecting a population forward in time, along with some visualization tools.
 
@@ -7,21 +15,19 @@ This guide walks through the complete workflow — from installing the package, 
 
 Install the package from GitHub:
 
-```{r install, eval=FALSE}
+```{r install,echo=Echo,eval=FALSE}
 # install.packages("devtools")
 devtools::install_github("willvieira/forestIPM")
 ```
 
-```{r load}
-#| message: false
-#| warning: false
+```{r load,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 library(forestIPM)
 library(tidyverse)
 ```
 
 We begin by looking which species have fitted parameters and are available in the package:
 
-```{r species}
+```{r species,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 supported_species()
 ```
 
@@ -36,7 +42,7 @@ The `species_id` column is the key you will use throughout the API.
 In the first example, we will construct a simple plot condition with a single species to compute population growth rate ($\lambda$) for balsam fir (`ABIBAL`).
 The `forestIPM` workflow is built around five constructors and two engines.
 The constructors capture the ecological context (the stand, the model, the parameters, the climate, and the simulation settings) while the engines run the actual computation.
-There are two engines, one for computing the ponctual $\lambda$ for a given condition, and the other for projecting the dynamics through time.
+There are two engines, one for computing the punctual $\lambda$ for a given condition, and the other for projecting the dynamics through time.
 
 
 ### Step 1: Define the stand with `stand()`
@@ -44,11 +50,11 @@ There are two engines, one for computing the ponctual $\lambda$ for a given cond
 A stand describes a set of interacting individual trees in a given **local condition**.
 Specifically, it defined by a collection of trees with their size (mm DBH) and species identity.
 Note that the minimum DBH is 127 mm - the lower inventory threshold used to fit the models (FIA protocol).
-We also must define the plot size in which the individuals resid.
-The `stand()` function accetps a single data frame object with one row per tree, so it can be easly applied to forest inventory databases.
+We also must define the plot size in which the individuals reside.
+The `stand()` function accepts a single data frame object with one row per tree, so it can be easily applied to forest inventory databases.
 In this example, we will start a small community from scratch with three individuals per two species in a 400 m² plot:
 
-```{r stand}
+```{r stand,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 plot_i <- tibble(
   size_mm    = runif(n = 6, 127, 400),
   species_id = c(rep("ABIBAL", 3), rep("ACESAC", 3)),
@@ -58,13 +64,13 @@ plot_i
 ```
 
 
-```{r stand2}
+```{r stand2,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 std <- stand(plot_i)
 std
 ```
 
 ::: {.callout-important}
-The IPM is constructed in a way that all species within a plot are interacting with each other. This means that increasing the size of the plot degradades the ecological meaning of the competition.
+The IPM is constructed in a way that all species within a plot are interacting with each other. This means that increasing the size of the plot degrades the ecological meaning of the competition.
 We are using the 400 m² as it's the size of the FIA protocol.
 :::
 
@@ -74,7 +80,7 @@ We are using the 400 m² as it's the size of the FIA protocol.
 `species_model()` reads the fitted Bayesian hierarchical demographic model for one or more species present in the stand.
 Here we are interested in computing $\lambda$ for the balsam fir:
 
-```{r model}
+```{r model,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 mod <- species_model("ABIBAL")
 mod
 ```
@@ -91,11 +97,11 @@ In the case a stand have species without available parameters, there are three p
 ### Step 3: Extract parameters with `parameters()`
 
 The `parameters()` returns one parameter realization from the fitted posterior distribution per `mod` species.
-The `draw` argument determines weather the user wants the `"mean"` across all 2000 posterior draws, a sampled `"random`" draw, or a specific draw index (ranging between 1-2000).
+The `draw` argument determines whether the user wants the `"mean"` across all 2000 posterior draws, a sampled `"random"` draw, or a specific draw index (ranging between 1-2000).
 When `draw = "random"` a random seed is generated and exported to the object for reproducibility.
 But the user can also fixed it with the `seed` argument.
 
-```{r parameters}
+```{r parameters,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 pars <- parameters(mod, draw = "mean")
 ## Reproducible random draw with fixed seed
 # parameters(mod, draw = "random", seed = 42)
@@ -112,7 +118,7 @@ To override them use `set_random_effects()` — see @sec-random-effects.
 
 `env_condition()` defines the environmental drivers under which the IPM will run, namely the mean annual temperature and mean annual precipitation:
 
-```{r env}
+```{r env,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 env <- env_condition(MAT = 8, MAP = 1200)
 env
 ```
@@ -132,7 +138,7 @@ The `delta_time` is the duration of each timestep in years. In IPMs, it is usual
 The other arguments are either for the `project()` engine or the discretization approach (both details discussed later).
 For the `lambda()` engine, all parameters can be set to defaut.
 
-```{r control}
+```{r control,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 ctrl <- control()
 ctrl
 ```
@@ -142,7 +148,7 @@ ctrl
 
 Once all constructors are defined, we can approximate the population growth rate ($\lambda$) for a given condition:
 
-```{r lambda-fn}
+```{r lambda_fn,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 lam <- lambda(mod, pars, std, env, ctrl)
 lam
 ```
@@ -150,7 +156,7 @@ lam
 
 ## Multi-species IPM through time
 
-Diferent from the `lambda()` engine, `project()` advances the population forward in time, updating the kernel at every timestep to account for the current size distribution (density-dependent dynamics).
+Different from the `lambda()` engine, `project()` advances the population forward in time, updating the kernel at every timestep to account for the current size distribution (density-dependent dynamics).
 This engine also depends on the five constructors.
 Here we will the same conditions set to run the single species IPM.
 
@@ -158,7 +164,7 @@ If we plugged all predefined conditions into the `project()` engine, it would re
 Indeed, `project()` needs parameters for all species present in the stand, and when there is no parameter available, we have to explicit handle it with the `on_missing` argument in `species_model()`.
 To avoid the error, we will first update the `mod` and `pars` objects to also account for the sugar maple along with the balsam fir:
 
-```{r update_mod}
+```{r update_mod,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 (mod <- species_model(std))
 (pars <- parameters(mod, draw = "random"))
 ```
@@ -166,7 +172,7 @@ To avoid the error, we will first update the `mod` and `pars` objects to also ac
 As we will project population over time, let's take the opportunity to see how we can set a dynamic environment.
 We will simulate a 4°C degree increase for the first 100 year and keep it constant for the remaining years as follows:
 
-```{r set_env_dynamic}
+```{r set_env_dynamic,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 temp_warm <- function(t) {
   if(t <= 100) {
     return( 8 + (4/100) * t)
@@ -181,7 +187,7 @@ env
 
 Before running projection, we can take a look in the available controls for this engine:
 
-```{r set_control2}
+```{r set_control2,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 ctrl <- control(
   delta_time = 1,
   years = 300,            # only used in `project()`
@@ -199,7 +205,7 @@ The remaining three arguments can be set to default given the Gauss-Legendre Qua
 
 Now that we have set conditions, we can simulate the community dynamics for the specified time frame:
 
-```{r project, eval=TRUE}
+```{r project,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 proj <- project(mod, pars, std, env, ctrl)
 summary(proj)
 ```
@@ -219,7 +225,7 @@ Use `type` to select a specific panel:
 
 ### Lambda trajectory {#sec-lambda}
 
-```{r plot-lambda}
+```{r plot_lambda,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-guideLambda
 #| fig-cap: "Population growth rate ($\\lambda$) over time. Values above 1 indicate growth; below 1 indicate decline."
 plot(proj, type = "lambda")
@@ -230,7 +236,7 @@ $\lambda$ starts above 1 when the stand is sparse (low intraspecific competition
 
 ### Population size trajectory
 
-```{r plot-popsize}
+```{r plot_popsize,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-guidePopSize
 #| fig-cap: "Total population size (N, number of individuals) over time."
 plot(proj, type = "pop_size")
@@ -238,7 +244,7 @@ plot(proj, type = "pop_size")
 
 ### Size distribution over time {#sec-sizedist}
 
-```{r plot-sizedist-last}
+```{r plot_sizedist_last,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-guideSizeDist
 #| fig-cap: "Size distribution of *Abies balsamea* and *Acer saccharum* at the last time step."
 plot(proj, type = "size_dist")           # default: last stored timestep
@@ -246,7 +252,7 @@ plot(proj, type = "size_dist")           # default: last stored timestep
 
 Use `timestep` to inspect an earlier snapshot:
 
-```{r plot-sizedist-t10}
+```{r plot_sizedist_t10,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-guideSizeDist10
 #| fig-cap: "Size distribution at year 10."
 plot(proj, type = "size_dist", timestep = 10)
@@ -254,7 +260,7 @@ plot(proj, type = "size_dist", timestep = 10)
 
 ### Lambda vs population size {#sec-lambdavsn}
 
-```{r plot-lambdavsn}
+```{r plot_lambdavsn,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-lambdaVsN
 #| fig-cap: "Phase portrait of $\\lambda$ against total population size. Colour gradient indicates time."
 plot(proj, type = "lambda_vs_n")
@@ -270,7 +276,7 @@ By default, `parameters()` sets all random effects to zero (population-mean pred
 
 To apply plot-specific random effects — for example if you have inventory data from a known plot — use `set_random_effects()`:
 
-```{r random-effects}
+```{r random_effects,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 # Apply the same offsets to all species in pars
 pars_re <- set_random_effects(
   pars,
@@ -300,7 +306,7 @@ The three offsets correspond to the random intercepts in the growth, survival, a
 Every `ipm_lambda` and `ipm_projection` object carries a `$conditions` record that captures the exact parameter draw, seed, and climate values used to produce the result.
 This makes any analysis self-documenting — you can always recover the exact inputs from the output alone.
 
-```{r reproducibility-inspect}
+```{r reproducibility_inspect,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 # The conditions record is embedded in the projection object
 names(proj$conditions)
 ```
