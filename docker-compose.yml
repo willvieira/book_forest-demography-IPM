@@ -1,0 +1,6 @@
+services:
+  book:
+    build: .
+    volumes:
+      - ./data:/project/data
+      - ./_book:/project/_book

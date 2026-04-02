@@ -1,6 +1,20 @@
+# Large data directories - mount at runtime instead
+data/
+*_cache/
+*_files/
+
+# Build outputs
 _book/
 _freeze/
+
+# Git
 .git/
+
+# renv library (restored inside container)
 renv/library/
+
+# File types
 *.html
 *.pdf
+*.RDS
+*.rds
