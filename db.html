@@ -2,12 +2,12 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.2.335">
+<meta name="generator" content="quarto-1.7.32">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Lab notebook - 2&nbsp; Dataset</title>
+<title>2&nbsp; Dataset – Lab notebook</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -17,14 +17,16 @@ div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
 ul.task-list{list-style: none;}
 ul.task-list li input[type="checkbox"] {
   width: 0.8em;
-  margin: 0 0.8em 0.2em -1.6em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for citations */
 div.csl-bib-body { }
 div.csl-entry {
   clear: both;
+  margin-bottom: 0em;
 }
-.hanging div.csl-entry {
+.hanging-indent div.csl-entry {
   margin-left:2em;
   text-indent:-2em;
 }
@@ -38,8 +40,7 @@ div.csl-right-inline {
 }
 div.csl-indent {
   margin-left: 2em;
-}
-</style>
+}</style>
 
 
 <script src="site_libs/quarto-nav/quarto-nav.js"></script>
@@ -51,22 +52,29 @@ div.csl-indent {
 <meta name="quarto:offset" content="./">
 <link href="./model_description.html" rel="next">
 <link href="./introduction.html" rel="prev">
-<script src="site_libs/quarto-html/quarto.js"></script>
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="site_libs/quarto-html/anchor.min.js"></script>
 <link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-f7a797495825df6112bcacb9190231e3.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
   "collapse-after": 3,
   "panel-placement": "start",
   "type": "textbox",
-  "limit": 20,
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
   "language": {
     "search-no-results-text": "No results",
     "search-matching-documents-text": "matching documents",
@@ -75,26 +83,65 @@ div.csl-indent {
     "search-more-match-text": "more match in this document",
     "search-more-matches-text": "more matches in this document",
     "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
     "search-detached-cancel-button-title": "Cancel",
-    "search-submit-button-title": "Submit"
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
   }
 }</script>
 <script async="" src="https://hypothes.is/embed.js"></script>
+<script>
+  window.document.addEventListener("DOMContentLoaded", function (_event) {
+    document.body.classList.add('hypothesis-enabled');
+  });
+</script>
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 </head>
 
-<body class="nav-sidebar floating">
-
+<body class="nav-sidebar floating quarto-light">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
-  <nav class="quarto-secondary-nav" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
-    <div class="container-fluid d-flex justify-content-between">
-      <h1 class="quarto-secondary-nav-title"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Dataset</span></h1>
-      <button type="button" class="quarto-btn-toggle btn" aria-label="Show secondary navigation">
-        <i class="bi bi-chevron-right"></i>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./db.html"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Dataset</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
       </button>
     </div>
   </nav>
@@ -102,160 +149,225 @@ div.csl-indent {
 <!-- content -->
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
 <!-- sidebar -->
-  <nav id="quarto-sidebar" class="sidebar collapse sidebar-navigation floating overflow-auto">
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
     <div class="pt-lg-2 mt-2 text-left sidebar-header">
     <div class="sidebar-title mb-0 py-0">
       <a href="./">Lab notebook</a> 
         <div class="sidebar-tools-main">
-    <a href="https://github.com/willvieira/book_forest-demography-IPM/" title="Source Code" class="sidebar-tool px-1"><i class="bi bi-github"></i></a>
+    <a href="https://github.com/willvieira/book_forest-demography-IPM/" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
 </div>
     </div>
       </div>
-      <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="mt-2 flex-shrink-0 align-items-center">
         <div class="sidebar-search">
         <div id="quarto-search" class="" title="Search"></div>
         </div>
-      </div>
+        </div>
     <div class="sidebar-menu-container"> 
     <ul class="list-unstyled mt-1">
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./index.html" class="sidebar-item-text sidebar-link">Preface</a>
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Preface</span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./introduction.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction</span></a>
+  <a href="./introduction.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./db.html" class="sidebar-item-text sidebar-link active"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Dataset</span></a>
+  <a href="./db.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Dataset</span></span></a>
   </div>
 </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">Demographic models</a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Demographic model development</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
       <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./model_description.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Model description</span></a>
+  <a href="./model_description.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Model description</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./covariates_description.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Mixed covariates</span></a>
+  <a href="./covariates_description.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Mixed covariates</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./model_fit.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Model fit</span></a>
+  <a href="./model_fit.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Model fit</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./model_comparison.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Model comparison</span></a>
+  <a href="./model_comparison.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Model comparison</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./parameters_descr.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Parameters</span></a>
+  <a href="./parameters_descr.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Parameters</span></span></a>
   </div>
 </li>
       </ul>
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">Demographic model evaluation</a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Demographic model evaluation</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
       <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./pars_intercept.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Intercept</span></a>
+  <a href="./pars_intercept.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Intercept</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./pars_randomEffect.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Random effects</span></a>
+  <a href="./pars_randomEffect.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Random effects</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./pars_competition.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Competition effect</span></a>
+  <a href="./pars_competition.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Competition effect</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./pars_climate.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Climate effect</span></a>
+  <a href="./pars_climate.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Climate effect</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./pars_effectSize.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Conditional effect of covariates</span></a>
+  <a href="./pars_effectSize.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Conditional effect of covariates</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./pars_condEffect.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Average Marginal Effect</span></a>
+  <a href="./pars_condEffect.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Average Marginal Effect</span></span></a>
   </div>
 </li>
       </ul>
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="true">Using demographic models to infer population level performance</a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">From demographic rates to population dynamics</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
       <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./ipm_description.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">Integral Projection Model</span></a>
+  <a href="./ipm_description.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">Integral Projection Model</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./guide_IPM.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">A guide to use the forest-IPM code</span></a>
+  <a href="./guide_IPM.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Using the forestIPM package</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./sens_analysis.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">Sensitivity analysis</span></a>
+  <a href="./midpoint_vs_gl.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">Midpoint Rule vs.&nbsp;Gauss-Legendre Quadrature</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./conditional_lambda.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Conditional effect of covariates</span></a>
+  <a href="./gaussLegendre_convergence.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Gauss-Legendre Quadrature Convergence</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Using the IPM</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./sens_analysis.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">Sensitivity analysis</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./marginal_lambda.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">Marginal effect of covariates</span></a>
+  <a href="./conditional_lambda.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">19</span>&nbsp; <span class="chapter-title">Conditional effect of covariates</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./extinction_risk.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">19</span>&nbsp; <span class="chapter-title">Suitable probability</span></a>
+  <a href="./marginal_lambda.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">20</span>&nbsp; <span class="chapter-title">Marginal effect of covariates</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./extinction_risk.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">21</span>&nbsp; <span class="chapter-title">Suitable probability</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Appendices</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./lean_proofs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">22</span>&nbsp; <span class="chapter-title">Mathematical Verification (Lean 4)</span></span></a>
   </div>
 </li>
       </ul>
   </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./references.html" class="sidebar-item-text sidebar-link">References</a>
+  <a href="./references.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">References</span></a>
   </div>
 </li>
     </ul>
     </div>
 </nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
         <nav id="TOC" role="doc-toc" class="toc-active">
@@ -269,14 +381,14 @@ div.csl-indent {
   </ul></li>
   <li><a href="#r-objects" id="toc-r-objects" class="nav-link" data-scroll-target="#r-objects">R objects</a></li>
   </ul>
-<div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/willvieira/book_forest-demography-IPM/issues/new" class="toc-action">Report an issue</a></p></div></div></nav>
+<div class="toc-actions"><ul><li><a href="https://github.com/willvieira/book_forest-demography-IPM/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title"><span id="sec-dataset" class="quarto-section-identifier d-none d-lg-block"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Dataset</span></span></h1>
+<h1 class="title"><span id="sec-dataset" class="quarto-section-identifier"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Dataset</span></span></h1>
 </div>
 
 
@@ -289,45 +401,52 @@ div.csl-indent {
   </div>
   
 
+
 </header>
 
-<div class="cell" data-hash="db_cache/html/unnamed-chunk-2_760f278e7e88d071d18cb0ab52af2a0a">
 
-</div>
 <p>This chapter outlines the two data sources and the steps to organize and create a tidy dataset for our analysis. We focus on two open inventory data from eastern North America: the Forest Inventory and Analysis (FIA) dataset in the United States <span class="citation" data-cites="OConnell2007">(<a href="references.html#ref-OConnell2007" role="doc-biblioref">O’Connell et al. 2007</a>)</span> and the Forest Inventory of Québec <span class="citation" data-cites="Naturelles2016">(<a href="references.html#ref-Naturelles2016" role="doc-biblioref">Ministere des Ressources Naturelles 2016</a>)</span>. From the FIA dataset, we utilized information collected from 37 states out of the total 50: Alabama, Arkansas, Connecticut, Delaware, Florida, Georgia, Illinois, Indiana, Iowa, Kansas, Kentucky, Louisiana, Maine, Maryland, Massachusetts, Michigan, Minnesota, Mississippi, Missouri, Nebraska, New Hampshire, New Jersey, New York, North Carolina, North Dakota, Ohio, Oklahoma, Pennsylvania, Rhode Island, South Carolina, South Dakota, Tennessee, Texas, Vermont, Virginia, West Virginia, and Wisconsin.</p>
-<p>At the plot level, we retained plots sampled at least twice, excluding those that had undergone harvesting to focus solely on natural dynamics. Specifically, we selected surveys conducted for the FIA dataset using the modern standardized methodology implemented since 1999. After applying these filters, our final dataset encompassed nearly 26,000 plots spanning a latitude range from 26° to 53° (<a href="#fig-plotCoverage">Figure&nbsp;<span>2.1</span></a>). Each plot within the dataset was measured between 1970 and 2021, with observation frequencies ranging from 2 to 7 times and an average of 3 measurements per plot. The time intervals between measurements varied from 1 to 40 years, with a median interval of 7 years (<a href="#fig-plotCoverage">Figure&nbsp;<span>2.1</span></a>).</p>
-<div class="cell" data-hash="db_cache/html/fig-plotCoverage_66a6d00e6bca47e33f06644347fa48d0">
+<p>At the plot level, we retained plots sampled at least twice, excluding those that had undergone harvesting to focus solely on natural dynamics. Specifically, we selected surveys conducted for the FIA dataset using the modern standardized methodology implemented since 1999. After applying these filters, our final dataset encompassed nearly 26,000 plots spanning a latitude range from 26° to 53° (<a href="#fig-plotCoverage" class="quarto-xref">Figure&nbsp;<span>2.1</span></a>). Each plot within the dataset was measured between 1970 and 2021, with observation frequencies ranging from 2 to 7 times and an average of 3 measurements per plot. The time intervals between measurements varied from 1 to 40 years, with a median interval of 7 years (<a href="#fig-plotCoverage" class="quarto-xref">Figure&nbsp;<span>2.1</span></a>).</p>
+<div class="cell">
 <div class="cell-output-display">
-<div id="fig-plotCoverage" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><img src="db_files/figure-html/fig-plotCoverage-1.png" class="img-fluid figure-img" width="864"></p>
-<p></p><figcaption class="figure-caption">Figure&nbsp;2.1: Spatial (top left) and temporal (top right) coverage of the dataset incorporating data from the USA and Quebec. The top right panel shows the distribution of observations per class of latitude for the 31 species used in this study.</figcaption><p></p>
+<div id="fig-plotCoverage" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-plotCoverage-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="db_files/figure-html/fig-plotCoverage-1.png" class="img-fluid figure-img" width="864">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-plotCoverage-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2.1: Spatial (top left) and temporal (top right) coverage of the dataset incorporating data from the USA and Quebec. The top right panel shows the distribution of observations per class of latitude for the 31 species used in this study.
+</figcaption>
 </figure>
 </div>
 </div>
 </div>
-<p>These datasets provide individual-level information on the diameter at breast height (dbh) and the status (dead or alive) of more than 200 species. From this pool, we selected the 31 most abundant species (<a href="#tbl-tabSpecies">Table&nbsp;<span>2.1</span></a>). This selection comprises 9 conifer species and 21 hardwood species. We ensured an even distribution of species across the continuous shade tolerance trait, with 3 species classified as very intolerant, 9 as intolerant, 8 as intermediate, 8 as tolerant, and 5 as very tolerant <span class="citation" data-cites="burns1990silvics">(<a href="references.html#ref-burns1990silvics" role="doc-biblioref">Burns, Honkala, et al. 1990</a>)</span>. While our analysis focuses on these 31 selected species, we retained the data for the remaining species for potential future exploration and analysis. We initially included the <em>Ostrya virginiana</em> species in our analysis; however, we encountered substantial challenges with several growth, survival, and recruitment parameters, with substantial confidence intervals. As a result, we decided to remove this species from our analysis, even though the fit files are still accessible for potential future investigations.</p>
-<div class="cell" data-hash="db_cache/html/tbl-tabSpecies_c4f95c628323788876df04172f111a22">
+<p>These datasets provide individual-level information on the diameter at breast height (dbh) and the status (dead or alive) of more than 200 species. From this pool, we selected the 31 most abundant species (<a href="#tbl-tabSpecies" class="quarto-xref">Table&nbsp;<span>2.1</span></a>). This selection comprises 9 conifer species and 21 hardwood species. We ensured an even distribution of species across the continuous shade tolerance trait, with 3 species classified as very intolerant, 9 as intolerant, 8 as intermediate, 8 as tolerant, and 5 as very tolerant <span class="citation" data-cites="burns1990silvics">(<a href="references.html#ref-burns1990silvics" role="doc-biblioref">Burns, Honkala, et al. 1990</a>)</span>. While our analysis focuses on these 31 selected species, we retained the data for the remaining species for potential future exploration and analysis. We initially included the <em>Ostrya virginiana</em> species in our analysis; however, we encountered substantial challenges with several growth, survival, and recruitment parameters, with substantial confidence intervals. As a result, we decided to remove this species from our analysis, even though the fit files are still accessible for potential future investigations.</p>
+<div class="cell">
+<div id="tbl-tabSpecies" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-tabSpecies-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;2.1: List of species and their frequency across the dataset.
+</figcaption>
+<div aria-describedby="tbl-tabSpecies-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell-output-display">
-<div id="tbl-tabSpecies" class="anchored">
-
-<div id="okxuhqgyxh" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#okxuhqgyxh table {
+<div id="pgwyrqmvpm" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#pgwyrqmvpm table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#okxuhqgyxh thead, #okxuhqgyxh tbody, #okxuhqgyxh tfoot, #okxuhqgyxh tr, #okxuhqgyxh td, #okxuhqgyxh th {
+#pgwyrqmvpm thead, #pgwyrqmvpm tbody, #pgwyrqmvpm tfoot, #pgwyrqmvpm tr, #pgwyrqmvpm td, #pgwyrqmvpm th {
   border-style: none;
 }
 
-#okxuhqgyxh p {
+#pgwyrqmvpm p {
   margin: 0;
   padding: 0;
 }
 
-#okxuhqgyxh .gt_table {
+#pgwyrqmvpm .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -353,12 +472,12 @@ div.csl-indent {
   border-left-color: #D3D3D3;
 }
 
-#okxuhqgyxh .gt_caption {
+#pgwyrqmvpm .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#okxuhqgyxh .gt_title {
+#pgwyrqmvpm .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -370,7 +489,7 @@ div.csl-indent {
   border-bottom-width: 0;
 }
 
-#okxuhqgyxh .gt_subtitle {
+#pgwyrqmvpm .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -382,7 +501,7 @@ div.csl-indent {
   border-top-width: 0;
 }
 
-#okxuhqgyxh .gt_heading {
+#pgwyrqmvpm .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -394,13 +513,13 @@ div.csl-indent {
   border-right-color: #D3D3D3;
 }
 
-#okxuhqgyxh .gt_bottom_border {
+#pgwyrqmvpm .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#okxuhqgyxh .gt_col_headings {
+#pgwyrqmvpm .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -415,7 +534,7 @@ div.csl-indent {
   border-right-color: #D3D3D3;
 }
 
-#okxuhqgyxh .gt_col_heading {
+#pgwyrqmvpm .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -435,7 +554,7 @@ div.csl-indent {
   overflow-x: hidden;
 }
 
-#okxuhqgyxh .gt_column_spanner_outer {
+#pgwyrqmvpm .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -447,15 +566,15 @@ div.csl-indent {
   padding-right: 4px;
 }
 
-#okxuhqgyxh .gt_column_spanner_outer:first-child {
+#pgwyrqmvpm .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#okxuhqgyxh .gt_column_spanner_outer:last-child {
+#pgwyrqmvpm .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#okxuhqgyxh .gt_column_spanner {
+#pgwyrqmvpm .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -467,11 +586,11 @@ div.csl-indent {
   width: 100%;
 }
 
-#okxuhqgyxh .gt_spanner_row {
+#pgwyrqmvpm .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#okxuhqgyxh .gt_group_heading {
+#pgwyrqmvpm .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -497,7 +616,7 @@ div.csl-indent {
   text-align: left;
 }
 
-#okxuhqgyxh .gt_empty_group_heading {
+#pgwyrqmvpm .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -512,15 +631,15 @@ div.csl-indent {
   vertical-align: middle;
 }
 
-#okxuhqgyxh .gt_from_md > :first-child {
+#pgwyrqmvpm .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#okxuhqgyxh .gt_from_md > :last-child {
+#pgwyrqmvpm .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#okxuhqgyxh .gt_row {
+#pgwyrqmvpm .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -539,7 +658,7 @@ div.csl-indent {
   overflow-x: hidden;
 }
 
-#okxuhqgyxh .gt_stub {
+#pgwyrqmvpm .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -552,7 +671,7 @@ div.csl-indent {
   padding-right: 5px;
 }
 
-#okxuhqgyxh .gt_stub_row_group {
+#pgwyrqmvpm .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -566,15 +685,15 @@ div.csl-indent {
   vertical-align: top;
 }
 
-#okxuhqgyxh .gt_row_group_first td {
+#pgwyrqmvpm .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#okxuhqgyxh .gt_row_group_first th {
+#pgwyrqmvpm .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#okxuhqgyxh .gt_summary_row {
+#pgwyrqmvpm .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -584,16 +703,16 @@ div.csl-indent {
   padding-right: 5px;
 }
 
-#okxuhqgyxh .gt_first_summary_row {
+#pgwyrqmvpm .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#okxuhqgyxh .gt_first_summary_row.thick {
+#pgwyrqmvpm .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#okxuhqgyxh .gt_last_summary_row {
+#pgwyrqmvpm .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -603,7 +722,7 @@ div.csl-indent {
   border-bottom-color: #D3D3D3;
 }
 
-#okxuhqgyxh .gt_grand_summary_row {
+#pgwyrqmvpm .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -613,7 +732,7 @@ div.csl-indent {
   padding-right: 5px;
 }
 
-#okxuhqgyxh .gt_first_grand_summary_row {
+#pgwyrqmvpm .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -623,7 +742,7 @@ div.csl-indent {
   border-top-color: #D3D3D3;
 }
 
-#okxuhqgyxh .gt_last_grand_summary_row_top {
+#pgwyrqmvpm .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -633,11 +752,11 @@ div.csl-indent {
   border-bottom-color: #D3D3D3;
 }
 
-#okxuhqgyxh .gt_striped {
+#pgwyrqmvpm .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#okxuhqgyxh .gt_table_body {
+#pgwyrqmvpm .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -646,7 +765,7 @@ div.csl-indent {
   border-bottom-color: #D3D3D3;
 }
 
-#okxuhqgyxh .gt_footnotes {
+#pgwyrqmvpm .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -660,7 +779,7 @@ div.csl-indent {
   border-right-color: #D3D3D3;
 }
 
-#okxuhqgyxh .gt_footnote {
+#pgwyrqmvpm .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -669,7 +788,7 @@ div.csl-indent {
   padding-right: 5px;
 }
 
-#okxuhqgyxh .gt_sourcenotes {
+#pgwyrqmvpm .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -683,7 +802,7 @@ div.csl-indent {
   border-right-color: #D3D3D3;
 }
 
-#okxuhqgyxh .gt_sourcenote {
+#pgwyrqmvpm .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -691,369 +810,405 @@ div.csl-indent {
   padding-right: 5px;
 }
 
-#okxuhqgyxh .gt_left {
+#pgwyrqmvpm .gt_left {
   text-align: left;
 }
 
-#okxuhqgyxh .gt_center {
+#pgwyrqmvpm .gt_center {
   text-align: center;
 }
 
-#okxuhqgyxh .gt_right {
+#pgwyrqmvpm .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#okxuhqgyxh .gt_font_normal {
+#pgwyrqmvpm .gt_font_normal {
   font-weight: normal;
 }
 
-#okxuhqgyxh .gt_font_bold {
+#pgwyrqmvpm .gt_font_bold {
   font-weight: bold;
 }
 
-#okxuhqgyxh .gt_font_italic {
+#pgwyrqmvpm .gt_font_italic {
   font-style: italic;
 }
 
-#okxuhqgyxh .gt_super {
+#pgwyrqmvpm .gt_super {
   font-size: 65%;
 }
 
-#okxuhqgyxh .gt_footnote_marks {
+#pgwyrqmvpm .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#okxuhqgyxh .gt_asterisk {
+#pgwyrqmvpm .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#okxuhqgyxh .gt_indent_1 {
+#pgwyrqmvpm .gt_indent_1 {
   text-indent: 5px;
 }
 
-#okxuhqgyxh .gt_indent_2 {
+#pgwyrqmvpm .gt_indent_2 {
   text-indent: 10px;
 }
 
-#okxuhqgyxh .gt_indent_3 {
+#pgwyrqmvpm .gt_indent_3 {
   text-indent: 15px;
 }
 
-#okxuhqgyxh .gt_indent_4 {
+#pgwyrqmvpm .gt_indent_4 {
   text-indent: 20px;
 }
 
-#okxuhqgyxh .gt_indent_5 {
+#pgwyrqmvpm .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
-<table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false"><caption>Table&nbsp;2.1:  List of species and their frequency across the dataset. </caption>
-  <thead>
-    
-    <tr class="gt_col_headings">
-      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="font-weight: bold;" scope="col" id="Species">Species</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="font-weight: bold;" scope="col" id="Species ID">Species ID</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="font-weight: bold;" scope="col" id="Number of
- plots">Number of
- plots</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="font-weight: bold;" scope="col" id="Number of
- individual">Number of
- individual</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" style="font-weight: bold;" scope="col" id="Number of
- observation">Number of
- observation</th>
-    </tr>
-  </thead>
-  <tbody class="gt_table_body">
-    <tr><td headers="Species" class="gt_row gt_left"><div data-qmd="*Acer rubrum*"><div class="gt_from_md"><p><em>Acer rubrum</em></p>
-</div></div></td>
-<td headers="Species ID" class="gt_row gt_left">28728ACERUB</td>
-<td headers="Number of
- plots" class="gt_row gt_right">13149</td>
-<td headers="Number of
- individual" class="gt_row gt_right">96739</td>
-<td headers="Number of
- observation" class="gt_row gt_right">235408</td></tr>
-    <tr><td headers="Species" class="gt_row gt_left"><div data-qmd="*Abies balsamea*"><div class="gt_from_md"><p><em>Abies balsamea</em></p>
-</div></div></td>
-<td headers="Species ID" class="gt_row gt_left">18032ABIBAL</td>
-<td headers="Number of
- plots" class="gt_row gt_right">11932</td>
-<td headers="Number of
- individual" class="gt_row gt_right">247737</td>
-<td headers="Number of
- observation" class="gt_row gt_right">521565</td></tr>
-    <tr><td headers="Species" class="gt_row gt_left"><div data-qmd="*Betula papyrifera*"><div class="gt_from_md"><p><em>Betula papyrifera</em></p>
-</div></div></td>
-<td headers="Species ID" class="gt_row gt_left">19489BETPAP</td>
-<td headers="Number of
- plots" class="gt_row gt_right">9508</td>
-<td headers="Number of
- individual" class="gt_row gt_right">78049</td>
-<td headers="Number of
- observation" class="gt_row gt_right">203500</td></tr>
-    <tr><td headers="Species" class="gt_row gt_left"><div data-qmd="*Picea mariana*"><div class="gt_from_md"><p><em>Picea mariana</em></p>
-</div></div></td>
-<td headers="Species ID" class="gt_row gt_left">183302PICMAR</td>
-<td headers="Number of
- plots" class="gt_row gt_right">7869</td>
-<td headers="Number of
- individual" class="gt_row gt_right">186491</td>
-<td headers="Number of
- observation" class="gt_row gt_right">454246</td></tr>
-    <tr><td headers="Species" class="gt_row gt_left"><div data-qmd="*Acer saccharum*"><div class="gt_from_md"><p><em>Acer saccharum</em></p>
-</div></div></td>
-<td headers="Species ID" class="gt_row gt_left">28731ACESAC</td>
-<td headers="Number of
- plots" class="gt_row gt_right">7403</td>
-<td headers="Number of
- individual" class="gt_row gt_right">71961</td>
-<td headers="Number of
- observation" class="gt_row gt_right">184641</td></tr>
-    <tr><td headers="Species" class="gt_row gt_left"><div data-qmd="*Picea glauca*"><div class="gt_from_md"><p><em>Picea glauca</em></p>
-</div></div></td>
-<td headers="Species ID" class="gt_row gt_left">183295PICGLA</td>
-<td headers="Number of
- plots" class="gt_row gt_right">5889</td>
-<td headers="Number of
- individual" class="gt_row gt_right">27641</td>
-<td headers="Number of
- observation" class="gt_row gt_right">65626</td></tr>
-    <tr><td headers="Species" class="gt_row gt_left"><div data-qmd="*Populus tremuloides*"><div class="gt_from_md"><p><em>Populus tremuloides</em></p>
-</div></div></td>
-<td headers="Species ID" class="gt_row gt_left">195773POPTRE</td>
-<td headers="Number of
- plots" class="gt_row gt_right">5876</td>
-<td headers="Number of
- individual" class="gt_row gt_right">56010</td>
-<td headers="Number of
- observation" class="gt_row gt_right">127115</td></tr>
-    <tr><td headers="Species" class="gt_row gt_left"><div data-qmd="*Betula alleghaniensis*"><div class="gt_from_md"><p><em>Betula alleghaniensis</em></p>
-</div></div></td>
-<td headers="Species ID" class="gt_row gt_left">19481BETALL</td>
-<td headers="Number of
- plots" class="gt_row gt_right">5624</td>
-<td headers="Number of
- individual" class="gt_row gt_right">28872</td>
-<td headers="Number of
- observation" class="gt_row gt_right">73116</td></tr>
-    <tr><td headers="Species" class="gt_row gt_left"><div data-qmd="*Quercus rubra*"><div class="gt_from_md"><p><em>Quercus rubra</em></p>
-</div></div></td>
-<td headers="Species ID" class="gt_row gt_left">19408QUERUB</td>
-<td headers="Number of
- plots" class="gt_row gt_right">4549</td>
-<td headers="Number of
- individual" class="gt_row gt_right">18272</td>
-<td headers="Number of
- observation" class="gt_row gt_right">46341</td></tr>
-    <tr><td headers="Species" class="gt_row gt_left"><div data-qmd="*Quercus alba*"><div class="gt_from_md"><p><em>Quercus alba</em></p>
-</div></div></td>
-<td headers="Species ID" class="gt_row gt_left">19290QUEALB</td>
-<td headers="Number of
- plots" class="gt_row gt_right">4200</td>
-<td headers="Number of
- individual" class="gt_row gt_right">20376</td>
-<td headers="Number of
- observation" class="gt_row gt_right">51466</td></tr>
-    <tr><td headers="Species" class="gt_row gt_left"><div data-qmd="*Fagus grandifolia*"><div class="gt_from_md"><p><em>Fagus grandifolia</em></p>
-</div></div></td>
-<td headers="Species ID" class="gt_row gt_left">19462FAGGRA</td>
-<td headers="Number of
- plots" class="gt_row gt_right">3819</td>
-<td headers="Number of
- individual" class="gt_row gt_right">21784</td>
-<td headers="Number of
- observation" class="gt_row gt_right">51764</td></tr>
-    <tr><td headers="Species" class="gt_row gt_left"><div data-qmd="*Prunus serotina*"><div class="gt_from_md"><p><em>Prunus serotina</em></p>
-</div></div></td>
-<td headers="Species ID" class="gt_row gt_left">24764PRUSER</td>
-<td headers="Number of
- plots" class="gt_row gt_right">3730</td>
-<td headers="Number of
- individual" class="gt_row gt_right">12178</td>
-<td headers="Number of
- observation" class="gt_row gt_right">26464</td></tr>
-    <tr><td headers="Species" class="gt_row gt_left"><div data-qmd="*Thuja occidentalis*"><div class="gt_from_md"><p><em>Thuja occidentalis</em></p>
-</div></div></td>
-<td headers="Species ID" class="gt_row gt_left">505490THUOCC</td>
-<td headers="Number of
- plots" class="gt_row gt_right">3230</td>
-<td headers="Number of
- individual" class="gt_row gt_right">51312</td>
-<td headers="Number of
- observation" class="gt_row gt_right">125811</td></tr>
-    <tr><td headers="Species" class="gt_row gt_left"><div data-qmd="*Pinus strobus*"><div class="gt_from_md"><p><em>Pinus strobus</em></p>
-</div></div></td>
-<td headers="Species ID" class="gt_row gt_left">183385PINSTR</td>
-<td headers="Number of
- plots" class="gt_row gt_right">3165</td>
-<td headers="Number of
- individual" class="gt_row gt_right">15638</td>
-<td headers="Number of
- observation" class="gt_row gt_right">38470</td></tr>
-    <tr><td headers="Species" class="gt_row gt_left"><div data-qmd="*Fraxinus americana*"><div class="gt_from_md"><p><em>Fraxinus americana</em></p>
-</div></div></td>
-<td headers="Species ID" class="gt_row gt_left">32931FRAAME</td>
-<td headers="Number of
- plots" class="gt_row gt_right">2885</td>
-<td headers="Number of
- individual" class="gt_row gt_right">8942</td>
-<td headers="Number of
- observation" class="gt_row gt_right">21501</td></tr>
-    <tr><td headers="Species" class="gt_row gt_left"><div data-qmd="*Quercus velutina*"><div class="gt_from_md"><p><em>Quercus velutina</em></p>
-</div></div></td>
-<td headers="Species ID" class="gt_row gt_left">19447QUEVEL</td>
-<td headers="Number of
- plots" class="gt_row gt_right">2722</td>
-<td headers="Number of
- individual" class="gt_row gt_right">10068</td>
-<td headers="Number of
- observation" class="gt_row gt_right">23298</td></tr>
-    <tr><td headers="Species" class="gt_row gt_left"><div data-qmd="*Tsuga canadensis*"><div class="gt_from_md"><p><em>Tsuga canadensis</em></p>
-</div></div></td>
-<td headers="Species ID" class="gt_row gt_left">183397TSUCAN</td>
-<td headers="Number of
- plots" class="gt_row gt_right">2604</td>
-<td headers="Number of
- individual" class="gt_row gt_right">17914</td>
-<td headers="Number of
- observation" class="gt_row gt_right">45198</td></tr>
-    <tr><td headers="Species" class="gt_row gt_left"><div data-qmd="*Nyssa sylvatica*"><div class="gt_from_md"><p><em>Nyssa sylvatica</em></p>
-</div></div></td>
-<td headers="Species ID" class="gt_row gt_left">27821NYSSYL</td>
-<td headers="Number of
- plots" class="gt_row gt_right">2436</td>
-<td headers="Number of
- individual" class="gt_row gt_right">6275</td>
-<td headers="Number of
- observation" class="gt_row gt_right">15785</td></tr>
-    <tr><td headers="Species" class="gt_row gt_left"><div data-qmd="*Quercus stellata*"><div class="gt_from_md"><p><em>Quercus stellata</em></p>
-</div></div></td>
-<td headers="Species ID" class="gt_row gt_left">19422QUESTE</td>
-<td headers="Number of
- plots" class="gt_row gt_right">2279</td>
-<td headers="Number of
- individual" class="gt_row gt_right">14707</td>
-<td headers="Number of
- observation" class="gt_row gt_right">32102</td></tr>
-    <tr><td headers="Species" class="gt_row gt_left"><div data-qmd="*Picea rubens*"><div class="gt_from_md"><p><em>Picea rubens</em></p>
-</div></div></td>
-<td headers="Species ID" class="gt_row gt_left">18034PICRUB</td>
-<td headers="Number of
- plots" class="gt_row gt_right">2190</td>
-<td headers="Number of
- individual" class="gt_row gt_right">16580</td>
-<td headers="Number of
- observation" class="gt_row gt_right">41674</td></tr>
-    <tr><td headers="Species" class="gt_row gt_left"><div data-qmd="*Liquidambar styraciflua*"><div class="gt_from_md"><p><em>Liquidambar styraciflua</em></p>
-</div></div></td>
-<td headers="Species ID" class="gt_row gt_left">19027LIQSTY</td>
-<td headers="Number of
- plots" class="gt_row gt_right">2154</td>
-<td headers="Number of
- individual" class="gt_row gt_right">11655</td>
-<td headers="Number of
- observation" class="gt_row gt_right">29671</td></tr>
-    <tr><td headers="Species" class="gt_row gt_left"><div data-qmd="*Fraxinus pennsylvanica*"><div class="gt_from_md"><p><em>Fraxinus pennsylvanica</em></p>
-</div></div></td>
-<td headers="Species ID" class="gt_row gt_left">32929FRAPEN</td>
-<td headers="Number of
- plots" class="gt_row gt_right">2149</td>
-<td headers="Number of
- individual" class="gt_row gt_right">9048</td>
-<td headers="Number of
- observation" class="gt_row gt_right">20588</td></tr>
-    <tr><td headers="Species" class="gt_row gt_left"><div data-qmd="*Tilia americana*"><div class="gt_from_md"><p><em>Tilia americana</em></p>
-</div></div></td>
-<td headers="Species ID" class="gt_row gt_left">21536TILAME</td>
-<td headers="Number of
- plots" class="gt_row gt_right">2059</td>
-<td headers="Number of
- individual" class="gt_row gt_right">8415</td>
-<td headers="Number of
- observation" class="gt_row gt_right">21412</td></tr>
-    <tr><td headers="Species" class="gt_row gt_left"><div data-qmd="*Pinus banksiana*"><div class="gt_from_md"><p><em>Pinus banksiana</em></p>
-</div></div></td>
-<td headers="Species ID" class="gt_row gt_left">183319PINBAN</td>
-<td headers="Number of
- plots" class="gt_row gt_right">2057</td>
-<td headers="Number of
- individual" class="gt_row gt_right">34122</td>
-<td headers="Number of
- observation" class="gt_row gt_right">75372</td></tr>
-    <tr><td headers="Species" class="gt_row gt_left"><div data-qmd="*Populus grandidentata*"><div class="gt_from_md"><p><em>Populus grandidentata</em></p>
-</div></div></td>
-<td headers="Species ID" class="gt_row gt_left">22463POPGRA</td>
-<td headers="Number of
- plots" class="gt_row gt_right">2015</td>
-<td headers="Number of
- individual" class="gt_row gt_right">13759</td>
-<td headers="Number of
- observation" class="gt_row gt_right">29358</td></tr>
-    <tr><td headers="Species" class="gt_row gt_left"><div data-qmd="*Fraxinus nigra*"><div class="gt_from_md"><p><em>Fraxinus nigra</em></p>
-</div></div></td>
-<td headers="Species ID" class="gt_row gt_left">32945FRANIG</td>
-<td headers="Number of
- plots" class="gt_row gt_right">1951</td>
-<td headers="Number of
- individual" class="gt_row gt_right">12633</td>
-<td headers="Number of
- observation" class="gt_row gt_right">31156</td></tr>
-    <tr><td headers="Species" class="gt_row gt_left"><div data-qmd="*Liriodendron tulipifera*"><div class="gt_from_md"><p><em>Liriodendron tulipifera</em></p>
-</div></div></td>
-<td headers="Species ID" class="gt_row gt_left">18086LIRTUL</td>
-<td headers="Number of
- plots" class="gt_row gt_right">1912</td>
-<td headers="Number of
- individual" class="gt_row gt_right">8580</td>
-<td headers="Number of
- observation" class="gt_row gt_right">21071</td></tr>
-    <tr><td headers="Species" class="gt_row gt_left"><div data-qmd="*Carya tomentosa*"><div class="gt_from_md"><p><em>Carya tomentosa</em></p>
-</div></div></td>
-<td headers="Species ID" class="gt_row gt_left">NACARALB</td>
-<td headers="Number of
- plots" class="gt_row gt_right">1636</td>
-<td headers="Number of
- individual" class="gt_row gt_right">3897</td>
-<td headers="Number of
- observation" class="gt_row gt_right">10590</td></tr>
-    <tr><td headers="Species" class="gt_row gt_left"><div data-qmd="*Carya glabra*"><div class="gt_from_md"><p><em>Carya glabra</em></p>
-</div></div></td>
-<td headers="Species ID" class="gt_row gt_left">19231CARGLA</td>
-<td headers="Number of
- plots" class="gt_row gt_right">1622</td>
-<td headers="Number of
- individual" class="gt_row gt_right">4002</td>
-<td headers="Number of
- observation" class="gt_row gt_right">9916</td></tr>
-    <tr><td headers="Species" class="gt_row gt_left"><div data-qmd="*Quercus prinus*"><div class="gt_from_md"><p><em>Quercus prinus</em></p>
-</div></div></td>
-<td headers="Species ID" class="gt_row gt_left">NAQUEPRI</td>
-<td headers="Number of
- plots" class="gt_row gt_right">1590</td>
-<td headers="Number of
- individual" class="gt_row gt_right">11000</td>
-<td headers="Number of
- observation" class="gt_row gt_right">27554</td></tr>
-    <tr><td headers="Species" class="gt_row gt_left"><div data-qmd="*Juniperus virginiana*"><div class="gt_from_md"><p><em>Juniperus virginiana</em></p>
-</div></div></td>
-<td headers="Species ID" class="gt_row gt_left">18048JUNVIR</td>
-<td headers="Number of
- plots" class="gt_row gt_right">1571</td>
-<td headers="Number of
- individual" class="gt_row gt_right">9474</td>
-<td headers="Number of
- observation" class="gt_row gt_right">21400</td></tr>
-  </tbody>
-  
-  
+
+<table class="gt_table do-not-create-environment cell caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="gt_col_headings header">
+<th id="Species" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" style="font-weight: bold" scope="col">Species</th>
+<th id="Species ID" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" style="font-weight: bold" scope="col">Species ID</th>
+<th id="Number of
+ plots" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" style="font-weight: bold" scope="col">Number of plots</th>
+<th id="Number of
+ individual" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" style="font-weight: bold" scope="col">Number of individual</th>
+<th id="Number of
+ observation" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" style="font-weight: bold" scope="col">Number of observation</th>
+</tr>
+</thead>
+<tbody class="gt_table_body">
+<tr class="odd">
+<td class="gt_row gt_left" headers="Species"><p><em>Acer rubrum</em></p></td>
+<td class="gt_row gt_left" headers="Species ID">28728ACERUB</td>
+<td class="gt_row gt_right" headers="Number of
+ plots">13149</td>
+<td class="gt_row gt_right" headers="Number of
+ individual">96739</td>
+<td class="gt_row gt_right" headers="Number of
+ observation">235408</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="Species"><p><em>Abies balsamea</em></p></td>
+<td class="gt_row gt_left" headers="Species ID">18032ABIBAL</td>
+<td class="gt_row gt_right" headers="Number of
+ plots">11932</td>
+<td class="gt_row gt_right" headers="Number of
+ individual">247737</td>
+<td class="gt_row gt_right" headers="Number of
+ observation">521565</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="Species"><p><em>Betula papyrifera</em></p></td>
+<td class="gt_row gt_left" headers="Species ID">19489BETPAP</td>
+<td class="gt_row gt_right" headers="Number of
+ plots">9508</td>
+<td class="gt_row gt_right" headers="Number of
+ individual">78049</td>
+<td class="gt_row gt_right" headers="Number of
+ observation">203500</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="Species"><p><em>Picea mariana</em></p></td>
+<td class="gt_row gt_left" headers="Species ID">183302PICMAR</td>
+<td class="gt_row gt_right" headers="Number of
+ plots">7869</td>
+<td class="gt_row gt_right" headers="Number of
+ individual">186491</td>
+<td class="gt_row gt_right" headers="Number of
+ observation">454246</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="Species"><p><em>Acer saccharum</em></p></td>
+<td class="gt_row gt_left" headers="Species ID">28731ACESAC</td>
+<td class="gt_row gt_right" headers="Number of
+ plots">7403</td>
+<td class="gt_row gt_right" headers="Number of
+ individual">71961</td>
+<td class="gt_row gt_right" headers="Number of
+ observation">184641</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="Species"><p><em>Picea glauca</em></p></td>
+<td class="gt_row gt_left" headers="Species ID">183295PICGLA</td>
+<td class="gt_row gt_right" headers="Number of
+ plots">5889</td>
+<td class="gt_row gt_right" headers="Number of
+ individual">27641</td>
+<td class="gt_row gt_right" headers="Number of
+ observation">65626</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="Species"><p><em>Populus tremuloides</em></p></td>
+<td class="gt_row gt_left" headers="Species ID">195773POPTRE</td>
+<td class="gt_row gt_right" headers="Number of
+ plots">5876</td>
+<td class="gt_row gt_right" headers="Number of
+ individual">56010</td>
+<td class="gt_row gt_right" headers="Number of
+ observation">127115</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="Species"><p><em>Betula alleghaniensis</em></p></td>
+<td class="gt_row gt_left" headers="Species ID">19481BETALL</td>
+<td class="gt_row gt_right" headers="Number of
+ plots">5624</td>
+<td class="gt_row gt_right" headers="Number of
+ individual">28872</td>
+<td class="gt_row gt_right" headers="Number of
+ observation">73116</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="Species"><p><em>Quercus rubra</em></p></td>
+<td class="gt_row gt_left" headers="Species ID">19408QUERUB</td>
+<td class="gt_row gt_right" headers="Number of
+ plots">4549</td>
+<td class="gt_row gt_right" headers="Number of
+ individual">18272</td>
+<td class="gt_row gt_right" headers="Number of
+ observation">46341</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="Species"><p><em>Quercus alba</em></p></td>
+<td class="gt_row gt_left" headers="Species ID">19290QUEALB</td>
+<td class="gt_row gt_right" headers="Number of
+ plots">4200</td>
+<td class="gt_row gt_right" headers="Number of
+ individual">20376</td>
+<td class="gt_row gt_right" headers="Number of
+ observation">51466</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="Species"><p><em>Fagus grandifolia</em></p></td>
+<td class="gt_row gt_left" headers="Species ID">19462FAGGRA</td>
+<td class="gt_row gt_right" headers="Number of
+ plots">3819</td>
+<td class="gt_row gt_right" headers="Number of
+ individual">21784</td>
+<td class="gt_row gt_right" headers="Number of
+ observation">51764</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="Species"><p><em>Prunus serotina</em></p></td>
+<td class="gt_row gt_left" headers="Species ID">24764PRUSER</td>
+<td class="gt_row gt_right" headers="Number of
+ plots">3730</td>
+<td class="gt_row gt_right" headers="Number of
+ individual">12178</td>
+<td class="gt_row gt_right" headers="Number of
+ observation">26464</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="Species"><p><em>Thuja occidentalis</em></p></td>
+<td class="gt_row gt_left" headers="Species ID">505490THUOCC</td>
+<td class="gt_row gt_right" headers="Number of
+ plots">3230</td>
+<td class="gt_row gt_right" headers="Number of
+ individual">51312</td>
+<td class="gt_row gt_right" headers="Number of
+ observation">125811</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="Species"><p><em>Pinus strobus</em></p></td>
+<td class="gt_row gt_left" headers="Species ID">183385PINSTR</td>
+<td class="gt_row gt_right" headers="Number of
+ plots">3165</td>
+<td class="gt_row gt_right" headers="Number of
+ individual">15638</td>
+<td class="gt_row gt_right" headers="Number of
+ observation">38470</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="Species"><p><em>Fraxinus americana</em></p></td>
+<td class="gt_row gt_left" headers="Species ID">32931FRAAME</td>
+<td class="gt_row gt_right" headers="Number of
+ plots">2885</td>
+<td class="gt_row gt_right" headers="Number of
+ individual">8942</td>
+<td class="gt_row gt_right" headers="Number of
+ observation">21501</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="Species"><p><em>Quercus velutina</em></p></td>
+<td class="gt_row gt_left" headers="Species ID">19447QUEVEL</td>
+<td class="gt_row gt_right" headers="Number of
+ plots">2722</td>
+<td class="gt_row gt_right" headers="Number of
+ individual">10068</td>
+<td class="gt_row gt_right" headers="Number of
+ observation">23298</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="Species"><p><em>Tsuga canadensis</em></p></td>
+<td class="gt_row gt_left" headers="Species ID">183397TSUCAN</td>
+<td class="gt_row gt_right" headers="Number of
+ plots">2604</td>
+<td class="gt_row gt_right" headers="Number of
+ individual">17914</td>
+<td class="gt_row gt_right" headers="Number of
+ observation">45198</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="Species"><p><em>Nyssa sylvatica</em></p></td>
+<td class="gt_row gt_left" headers="Species ID">27821NYSSYL</td>
+<td class="gt_row gt_right" headers="Number of
+ plots">2436</td>
+<td class="gt_row gt_right" headers="Number of
+ individual">6275</td>
+<td class="gt_row gt_right" headers="Number of
+ observation">15785</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="Species"><p><em>Quercus stellata</em></p></td>
+<td class="gt_row gt_left" headers="Species ID">19422QUESTE</td>
+<td class="gt_row gt_right" headers="Number of
+ plots">2279</td>
+<td class="gt_row gt_right" headers="Number of
+ individual">14707</td>
+<td class="gt_row gt_right" headers="Number of
+ observation">32102</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="Species"><p><em>Picea rubens</em></p></td>
+<td class="gt_row gt_left" headers="Species ID">18034PICRUB</td>
+<td class="gt_row gt_right" headers="Number of
+ plots">2190</td>
+<td class="gt_row gt_right" headers="Number of
+ individual">16580</td>
+<td class="gt_row gt_right" headers="Number of
+ observation">41674</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="Species"><p><em>Liquidambar styraciflua</em></p></td>
+<td class="gt_row gt_left" headers="Species ID">19027LIQSTY</td>
+<td class="gt_row gt_right" headers="Number of
+ plots">2154</td>
+<td class="gt_row gt_right" headers="Number of
+ individual">11655</td>
+<td class="gt_row gt_right" headers="Number of
+ observation">29671</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="Species"><p><em>Fraxinus pennsylvanica</em></p></td>
+<td class="gt_row gt_left" headers="Species ID">32929FRAPEN</td>
+<td class="gt_row gt_right" headers="Number of
+ plots">2149</td>
+<td class="gt_row gt_right" headers="Number of
+ individual">9048</td>
+<td class="gt_row gt_right" headers="Number of
+ observation">20588</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="Species"><p><em>Tilia americana</em></p></td>
+<td class="gt_row gt_left" headers="Species ID">21536TILAME</td>
+<td class="gt_row gt_right" headers="Number of
+ plots">2059</td>
+<td class="gt_row gt_right" headers="Number of
+ individual">8415</td>
+<td class="gt_row gt_right" headers="Number of
+ observation">21412</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="Species"><p><em>Pinus banksiana</em></p></td>
+<td class="gt_row gt_left" headers="Species ID">183319PINBAN</td>
+<td class="gt_row gt_right" headers="Number of
+ plots">2057</td>
+<td class="gt_row gt_right" headers="Number of
+ individual">34122</td>
+<td class="gt_row gt_right" headers="Number of
+ observation">75372</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="Species"><p><em>Populus grandidentata</em></p></td>
+<td class="gt_row gt_left" headers="Species ID">22463POPGRA</td>
+<td class="gt_row gt_right" headers="Number of
+ plots">2015</td>
+<td class="gt_row gt_right" headers="Number of
+ individual">13759</td>
+<td class="gt_row gt_right" headers="Number of
+ observation">29358</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="Species"><p><em>Fraxinus nigra</em></p></td>
+<td class="gt_row gt_left" headers="Species ID">32945FRANIG</td>
+<td class="gt_row gt_right" headers="Number of
+ plots">1951</td>
+<td class="gt_row gt_right" headers="Number of
+ individual">12633</td>
+<td class="gt_row gt_right" headers="Number of
+ observation">31156</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="Species"><p><em>Liriodendron tulipifera</em></p></td>
+<td class="gt_row gt_left" headers="Species ID">18086LIRTUL</td>
+<td class="gt_row gt_right" headers="Number of
+ plots">1912</td>
+<td class="gt_row gt_right" headers="Number of
+ individual">8580</td>
+<td class="gt_row gt_right" headers="Number of
+ observation">21071</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="Species"><p><em>Carya tomentosa</em></p></td>
+<td class="gt_row gt_left" headers="Species ID">NACARALB</td>
+<td class="gt_row gt_right" headers="Number of
+ plots">1636</td>
+<td class="gt_row gt_right" headers="Number of
+ individual">3897</td>
+<td class="gt_row gt_right" headers="Number of
+ observation">10590</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="Species"><p><em>Carya glabra</em></p></td>
+<td class="gt_row gt_left" headers="Species ID">19231CARGLA</td>
+<td class="gt_row gt_right" headers="Number of
+ plots">1622</td>
+<td class="gt_row gt_right" headers="Number of
+ individual">4002</td>
+<td class="gt_row gt_right" headers="Number of
+ observation">9916</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="Species"><p><em>Quercus prinus</em></p></td>
+<td class="gt_row gt_left" headers="Species ID">NAQUEPRI</td>
+<td class="gt_row gt_right" headers="Number of
+ plots">1590</td>
+<td class="gt_row gt_right" headers="Number of
+ individual">11000</td>
+<td class="gt_row gt_right" headers="Number of
+ observation">27554</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="Species"><p><em>Juniperus virginiana</em></p></td>
+<td class="gt_row gt_left" headers="Species ID">18048JUNVIR</td>
+<td class="gt_row gt_right" headers="Number of
+ plots">1571</td>
+<td class="gt_row gt_right" headers="Number of
+ individual">9474</td>
+<td class="gt_row gt_right" headers="Number of
+ observation">21400</td>
+</tr>
+</tbody>
 </table>
+
 </div>
 </div>
+</div>
+</figure>
 </div>
 </div>
 <section id="covariates" class="level2">
@@ -1081,7 +1236,7 @@ div.csl-indent {
 </section>
 <section id="r-objects" class="level2">
 <h2 class="anchored" data-anchor-id="r-objects">R objects</h2>
-<p>All the scripts for dataset preparation are available at <a href="https://github.com/willvieira/TreesDemography">https://github.com/willvieira/TreesDemography</a> within the <code>R</code> folder. These scripts detail the complete process of downloading, cleaning, and merging the data, resulting in the final datasets used in our study. Metadata associated with each script is described in Table <a href="#tbl-tabMetadata">Table&nbsp;<span>2.2</span></a>.</p>
+<p>All the scripts for dataset preparation are available at <a href="https://github.com/willvieira/TreesDemography">https://github.com/willvieira/TreesDemography</a> within the <code>R</code> folder. These scripts detail the complete process of downloading, cleaning, and merging the data, resulting in the final datasets used in our study. Metadata associated with each script is described in Table <a href="#tbl-tabMetadata" class="quarto-xref">Table&nbsp;<span>2.2</span></a>.</p>
 <ul>
 <li><code>treeData.RDS</code>: This file contains the complete dataset in a tidy format, with one observation per row.</li>
 </ul>
@@ -1098,27 +1253,31 @@ div.csl-indent {
 <li><code>db_metadata.csv</code> contains the csv description used in the table below.</li>
 <li><code>species_id.csv</code> contains species descriptions and additional traits used in the analysis.</li>
 </ul>
-<div class="cell" data-hash="db_cache/html/tbl-tabMetadata_16335b65fd704a2c2ad63e29344f2b2f">
+<div class="cell">
+<div id="tbl-tabMetadata" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-tabMetadata-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;2.2: Description of metadata for each variable linked to its corresponding dataset object (R object). Note that replicated variables shared among the R objects have been excluded. Consequently, there is no detailed description for the <code>sizeIngrowth_dt</code> dataset.
+</figcaption>
+<div aria-describedby="tbl-tabMetadata-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell-output-display">
-<div id="tbl-tabMetadata" class="anchored">
-
-<div id="htrpmbcutm" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#htrpmbcutm table {
+<div id="lecheznavg" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#lecheznavg table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#htrpmbcutm thead, #htrpmbcutm tbody, #htrpmbcutm tfoot, #htrpmbcutm tr, #htrpmbcutm td, #htrpmbcutm th {
+#lecheznavg thead, #lecheznavg tbody, #lecheznavg tfoot, #lecheznavg tr, #lecheznavg td, #lecheznavg th {
   border-style: none;
 }
 
-#htrpmbcutm p {
+#lecheznavg p {
   margin: 0;
   padding: 0;
 }
 
-#htrpmbcutm .gt_table {
+#lecheznavg .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -1144,12 +1303,12 @@ div.csl-indent {
   border-left-color: #D3D3D3;
 }
 
-#htrpmbcutm .gt_caption {
+#lecheznavg .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#htrpmbcutm .gt_title {
+#lecheznavg .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -1161,7 +1320,7 @@ div.csl-indent {
   border-bottom-width: 0;
 }
 
-#htrpmbcutm .gt_subtitle {
+#lecheznavg .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -1173,7 +1332,7 @@ div.csl-indent {
   border-top-width: 0;
 }
 
-#htrpmbcutm .gt_heading {
+#lecheznavg .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -1185,13 +1344,13 @@ div.csl-indent {
   border-right-color: #D3D3D3;
 }
 
-#htrpmbcutm .gt_bottom_border {
+#lecheznavg .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#htrpmbcutm .gt_col_headings {
+#lecheznavg .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1206,7 +1365,7 @@ div.csl-indent {
   border-right-color: #D3D3D3;
 }
 
-#htrpmbcutm .gt_col_heading {
+#lecheznavg .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1226,7 +1385,7 @@ div.csl-indent {
   overflow-x: hidden;
 }
 
-#htrpmbcutm .gt_column_spanner_outer {
+#lecheznavg .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1238,15 +1397,15 @@ div.csl-indent {
   padding-right: 4px;
 }
 
-#htrpmbcutm .gt_column_spanner_outer:first-child {
+#lecheznavg .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#htrpmbcutm .gt_column_spanner_outer:last-child {
+#lecheznavg .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#htrpmbcutm .gt_column_spanner {
+#lecheznavg .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -1258,11 +1417,11 @@ div.csl-indent {
   width: 100%;
 }
 
-#htrpmbcutm .gt_spanner_row {
+#lecheznavg .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#htrpmbcutm .gt_group_heading {
+#lecheznavg .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1288,7 +1447,7 @@ div.csl-indent {
   text-align: left;
 }
 
-#htrpmbcutm .gt_empty_group_heading {
+#lecheznavg .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1303,15 +1462,15 @@ div.csl-indent {
   vertical-align: middle;
 }
 
-#htrpmbcutm .gt_from_md > :first-child {
+#lecheznavg .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#htrpmbcutm .gt_from_md > :last-child {
+#lecheznavg .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#htrpmbcutm .gt_row {
+#lecheznavg .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1330,7 +1489,7 @@ div.csl-indent {
   overflow-x: hidden;
 }
 
-#htrpmbcutm .gt_stub {
+#lecheznavg .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1343,7 +1502,7 @@ div.csl-indent {
   padding-right: 5px;
 }
 
-#htrpmbcutm .gt_stub_row_group {
+#lecheznavg .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1357,15 +1516,15 @@ div.csl-indent {
   vertical-align: top;
 }
 
-#htrpmbcutm .gt_row_group_first td {
+#lecheznavg .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#htrpmbcutm .gt_row_group_first th {
+#lecheznavg .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#htrpmbcutm .gt_summary_row {
+#lecheznavg .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1375,16 +1534,16 @@ div.csl-indent {
   padding-right: 5px;
 }
 
-#htrpmbcutm .gt_first_summary_row {
+#lecheznavg .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#htrpmbcutm .gt_first_summary_row.thick {
+#lecheznavg .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#htrpmbcutm .gt_last_summary_row {
+#lecheznavg .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1394,7 +1553,7 @@ div.csl-indent {
   border-bottom-color: #D3D3D3;
 }
 
-#htrpmbcutm .gt_grand_summary_row {
+#lecheznavg .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1404,7 +1563,7 @@ div.csl-indent {
   padding-right: 5px;
 }
 
-#htrpmbcutm .gt_first_grand_summary_row {
+#lecheznavg .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1414,7 +1573,7 @@ div.csl-indent {
   border-top-color: #D3D3D3;
 }
 
-#htrpmbcutm .gt_last_grand_summary_row_top {
+#lecheznavg .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1424,11 +1583,11 @@ div.csl-indent {
   border-bottom-color: #D3D3D3;
 }
 
-#htrpmbcutm .gt_striped {
+#lecheznavg .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#htrpmbcutm .gt_table_body {
+#lecheznavg .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1437,7 +1596,7 @@ div.csl-indent {
   border-bottom-color: #D3D3D3;
 }
 
-#htrpmbcutm .gt_footnotes {
+#lecheznavg .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1451,7 +1610,7 @@ div.csl-indent {
   border-right-color: #D3D3D3;
 }
 
-#htrpmbcutm .gt_footnote {
+#lecheznavg .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -1460,7 +1619,7 @@ div.csl-indent {
   padding-right: 5px;
 }
 
-#htrpmbcutm .gt_sourcenotes {
+#lecheznavg .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1474,7 +1633,7 @@ div.csl-indent {
   border-right-color: #D3D3D3;
 }
 
-#htrpmbcutm .gt_sourcenote {
+#lecheznavg .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -1482,232 +1641,323 @@ div.csl-indent {
   padding-right: 5px;
 }
 
-#htrpmbcutm .gt_left {
+#lecheznavg .gt_left {
   text-align: left;
 }
 
-#htrpmbcutm .gt_center {
+#lecheznavg .gt_center {
   text-align: center;
 }
 
-#htrpmbcutm .gt_right {
+#lecheznavg .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#htrpmbcutm .gt_font_normal {
+#lecheznavg .gt_font_normal {
   font-weight: normal;
 }
 
-#htrpmbcutm .gt_font_bold {
+#lecheznavg .gt_font_bold {
   font-weight: bold;
 }
 
-#htrpmbcutm .gt_font_italic {
+#lecheznavg .gt_font_italic {
   font-style: italic;
 }
 
-#htrpmbcutm .gt_super {
+#lecheznavg .gt_super {
   font-size: 65%;
 }
 
-#htrpmbcutm .gt_footnote_marks {
+#lecheznavg .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#htrpmbcutm .gt_asterisk {
+#lecheznavg .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#htrpmbcutm .gt_indent_1 {
+#lecheznavg .gt_indent_1 {
   text-indent: 5px;
 }
 
-#htrpmbcutm .gt_indent_2 {
+#lecheznavg .gt_indent_2 {
   text-indent: 10px;
 }
 
-#htrpmbcutm .gt_indent_3 {
+#lecheznavg .gt_indent_3 {
   text-indent: 15px;
 }
 
-#htrpmbcutm .gt_indent_4 {
+#lecheznavg .gt_indent_4 {
   text-indent: 20px;
 }
 
-#htrpmbcutm .gt_indent_5 {
+#lecheznavg .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
-<table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false"><caption>Table&nbsp;2.2:  Description of metadata for each variable linked to its corresponding dataset object (R object). Note that replicated variables shared among the R objects have been excluded. Consequently, there is no detailed description for the sizeIngrowth_dt dataset. </caption>
-  <thead>
-    
-    <tr class="gt_col_headings">
-      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="font-weight: bold;" scope="col" id="R object">R object</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="font-weight: bold;" scope="col" id="Variable">Variable</th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" style="font-weight: bold;" scope="col" id="Description">Description</th>
-    </tr>
-  </thead>
-  <tbody class="gt_table_body">
-    <tr><td headers="R object" class="gt_row gt_left">treeData</td>
-<td headers="Variable" class="gt_row gt_left">plot_id</td>
-<td headers="Description" class="gt_row gt_left">plot ID</td></tr>
-    <tr><td headers="R object" class="gt_row gt_left">treeData</td>
-<td headers="Variable" class="gt_row gt_left">longitude</td>
-<td headers="Description" class="gt_row gt_left">longitude crs(4326)</td></tr>
-    <tr><td headers="R object" class="gt_row gt_left">treeData</td>
-<td headers="Variable" class="gt_row gt_left">latitude</td>
-<td headers="Description" class="gt_row gt_left">latitude crs(4326)</td></tr>
-    <tr><td headers="R object" class="gt_row gt_left">treeData</td>
-<td headers="Variable" class="gt_row gt_left">plot_size</td>
-<td headers="Description" class="gt_row gt_left">size of plot in m2</td></tr>
-    <tr><td headers="R object" class="gt_row gt_left">treeData</td>
-<td headers="Variable" class="gt_row gt_left">BA_plot</td>
-<td headers="Description" class="gt_row gt_left">total plot basal area of alive individuals (m2/ha)</td></tr>
-    <tr><td headers="R object" class="gt_row gt_left">treeData</td>
-<td headers="Variable" class="gt_row gt_left">BA_comp</td>
-<td headers="Description" class="gt_row gt_left">plot basal area of larger individuals (m2/ha)</td></tr>
-    <tr><td headers="R object" class="gt_row gt_left">treeData</td>
-<td headers="Variable" class="gt_row gt_left">relativeBA_comp</td>
-<td headers="Description" class="gt_row gt_left">deprecated</td></tr>
-    <tr><td headers="R object" class="gt_row gt_left">treeData</td>
-<td headers="Variable" class="gt_row gt_left">s_star</td>
-<td headers="Description" class="gt_row gt_left">the height in which the canopy closes (meters)</td></tr>
-    <tr><td headers="R object" class="gt_row gt_left">treeData</td>
-<td headers="Variable" class="gt_row gt_left">db_origin</td>
-<td headers="Description" class="gt_row gt_left">if FIA or Quebec</td></tr>
-    <tr><td headers="R object" class="gt_row gt_left">treeData</td>
-<td headers="Variable" class="gt_row gt_left">bio_01_mean</td>
-<td headers="Description" class="gt_row gt_left">mean of mean annual temperature for the years within the time interval</td></tr>
-    <tr><td headers="R object" class="gt_row gt_left">treeData</td>
-<td headers="Variable" class="gt_row gt_left">bio_12_mean</td>
-<td headers="Description" class="gt_row gt_left">standard deviation of mean annual temperature for the years within the time interval</td></tr>
-    <tr><td headers="R object" class="gt_row gt_left">treeData</td>
-<td headers="Variable" class="gt_row gt_left">bio_01_sd</td>
-<td headers="Description" class="gt_row gt_left">same as bi_01_mean, but for mean annual precipitation climate variable</td></tr>
-    <tr><td headers="R object" class="gt_row gt_left">treeData</td>
-<td headers="Variable" class="gt_row gt_left">bio_12_sd</td>
-<td headers="Description" class="gt_row gt_left">same as bio_01_sd, but for mean annual precipitation climate variable</td></tr>
-    <tr><td headers="R object" class="gt_row gt_left">treeData</td>
-<td headers="Variable" class="gt_row gt_left">climate_cellID</td>
-<td headers="Description" class="gt_row gt_left">the climate cell ID in which the plot climate variables were extracted (similar between MAT and MAP</td></tr>
-    <tr><td headers="R object" class="gt_row gt_left">treeData</td>
-<td headers="Variable" class="gt_row gt_left">tree_id</td>
-<td headers="Description" class="gt_row gt_left">the unique ID for an individuala tree</td></tr>
-    <tr><td headers="R object" class="gt_row gt_left">treeData</td>
-<td headers="Variable" class="gt_row gt_left">species_id</td>
-<td headers="Description" class="gt_row gt_left">species unique ID following the`species_id.csv` metadata file</td></tr>
-    <tr><td headers="R object" class="gt_row gt_left">treeData</td>
-<td headers="Variable" class="gt_row gt_left">status</td>
-<td headers="Description" class="gt_row gt_left">0 = dead; 1 = alive</td></tr>
-    <tr><td headers="R object" class="gt_row gt_left">treeData</td>
-<td headers="Variable" class="gt_row gt_left">year_measured</td>
-<td headers="Description" class="gt_row gt_left">year of field measurement</td></tr>
-    <tr><td headers="R object" class="gt_row gt_left">treeData</td>
-<td headers="Variable" class="gt_row gt_left">dbh</td>
-<td headers="Description" class="gt_row gt_left">diameter at breast height of the individual tree (milimiters)</td></tr>
-    <tr><td headers="R object" class="gt_row gt_left">treeData</td>
-<td headers="Variable" class="gt_row gt_left">height</td>
-<td headers="Description" class="gt_row gt_left">height of the individiual tree (meters)</td></tr>
-    <tr><td headers="R object" class="gt_row gt_left">treeData</td>
-<td headers="Variable" class="gt_row gt_left">canopyDistance</td>
-<td headers="Description" class="gt_row gt_left">difference between `height` and `s_star` meaning how far the individual is from the canopy close</td></tr>
-    <tr><td headers="R object" class="gt_row gt_left">treeData</td>
-<td headers="Variable" class="gt_row gt_left">BA_sp</td>
-<td headers="Description" class="gt_row gt_left">total plot basal area of conspecific individuals (m2/ha)</td></tr>
-    <tr><td headers="R object" class="gt_row gt_left">treeData</td>
-<td headers="Variable" class="gt_row gt_left">BA_inter</td>
-<td headers="Description" class="gt_row gt_left">total plot basal area of heterospecific individuals (m2/ha)</td></tr>
-    <tr><td headers="R object" class="gt_row gt_left">treeData</td>
-<td headers="Variable" class="gt_row gt_left">BA_comp_sp</td>
-<td headers="Description" class="gt_row gt_left">total plot basal area of larger conspecific individuals (m2/ha)</td></tr>
-    <tr><td headers="R object" class="gt_row gt_left">treeData</td>
-<td headers="Variable" class="gt_row gt_left">BA_comp_inter</td>
-<td headers="Description" class="gt_row gt_left">total plot basal area of larger heterospecific individuals (m2/ha)</td></tr>
-    <tr><td headers="R object" class="gt_row gt_left">treeData</td>
-<td headers="Variable" class="gt_row gt_left">relativeBA_sp</td>
-<td headers="Description" class="gt_row gt_left">deprecated</td></tr>
-    <tr><td headers="R object" class="gt_row gt_left">treeData</td>
-<td headers="Variable" class="gt_row gt_left">bio_01_mean_scl</td>
-<td headers="Description" class="gt_row gt_left">mean annual temperature normalized between 0 and 1</td></tr>
-    <tr><td headers="R object" class="gt_row gt_left">treeData</td>
-<td headers="Variable" class="gt_row gt_left">bio_12_mean_scl</td>
-<td headers="Description" class="gt_row gt_left">mean annual precipitation normalized between 0 and 1</td></tr>
-    <tr><td headers="R object" class="gt_row gt_left">growth_dt</td>
-<td headers="Variable" class="gt_row gt_left">year0</td>
-<td headers="Description" class="gt_row gt_left">initial year of reference for the time interval</td></tr>
-    <tr><td headers="R object" class="gt_row gt_left">growth_dt</td>
-<td headers="Variable" class="gt_row gt_left">year1</td>
-<td headers="Description" class="gt_row gt_left">final year of reference for the time interval</td></tr>
-    <tr><td headers="R object" class="gt_row gt_left">growth_dt</td>
-<td headers="Variable" class="gt_row gt_left">deltaYear</td>
-<td headers="Description" class="gt_row gt_left">year1 - year0</td></tr>
-    <tr><td headers="R object" class="gt_row gt_left">growth_dt</td>
-<td headers="Variable" class="gt_row gt_left">dbh0</td>
-<td headers="Description" class="gt_row gt_left">diameter at breast height (mm) at year0</td></tr>
-    <tr><td headers="R object" class="gt_row gt_left">growth_dt</td>
-<td headers="Variable" class="gt_row gt_left">dbh1</td>
-<td headers="Description" class="gt_row gt_left">diameter at breast height (mm) at year1</td></tr>
-    <tr><td headers="R object" class="gt_row gt_left">growth_dt</td>
-<td headers="Variable" class="gt_row gt_left">deltaDbh</td>
-<td headers="Description" class="gt_row gt_left">dbh1 - dbh0</td></tr>
-    <tr><td headers="R object" class="gt_row gt_left">growth_dt</td>
-<td headers="Variable" class="gt_row gt_left">growth</td>
-<td headers="Description" class="gt_row gt_left">annual growth rate (mm/year) [(dbh1 - dbh0)/deltaYear]</td></tr>
-    <tr><td headers="R object" class="gt_row gt_left">mort_dt</td>
-<td headers="Variable" class="gt_row gt_left">mort</td>
-<td headers="Description" class="gt_row gt_left">alive (0) or dead (1) event between year0 and year1</td></tr>
-    <tr><td headers="R object" class="gt_row gt_left">fec_dt</td>
-<td headers="Variable" class="gt_row gt_left">nbRecruit</td>
-<td headers="Description" class="gt_row gt_left">number of ingrowth (127 mm) betweem year0 and year1</td></tr>
-    <tr><td headers="R object" class="gt_row gt_left">fec_dt</td>
-<td headers="Variable" class="gt_row gt_left">nbSapling</td>
-<td headers="Description" class="gt_row gt_left">sampling counts (note difference in protocols between FIA and Quebec)</td></tr>
-    <tr><td headers="R object" class="gt_row gt_left">fec_dt</td>
-<td headers="Variable" class="gt_row gt_left">nbSeedling</td>
-<td headers="Description" class="gt_row gt_left">seedling counts (note difference in protocols between FIA and Quebec)</td></tr>
-    <tr><td headers="R object" class="gt_row gt_left">fec_dt</td>
-<td headers="Variable" class="gt_row gt_left">deltaYear_plot</td>
-<td headers="Description" class="gt_row gt_left">year1 - year0</td></tr>
-    <tr><td headers="R object" class="gt_row gt_left">fec_dt</td>
-<td headers="Variable" class="gt_row gt_left">plotSize_seedling</td>
-<td headers="Description" class="gt_row gt_left">size of plot (m2) for seedling count</td></tr>
-    <tr><td headers="R object" class="gt_row gt_left">fec_dt</td>
-<td headers="Variable" class="gt_row gt_left">plotSize_sapling</td>
-<td headers="Description" class="gt_row gt_left">size of plot (m2) for sapling count</td></tr>
-    <tr><td headers="R object" class="gt_row gt_left">fec_dt</td>
-<td headers="Variable" class="gt_row gt_left">BA_adult</td>
-<td headers="Description" class="gt_row gt_left">similar to BA_plot</td></tr>
-    <tr><td headers="R object" class="gt_row gt_left">fec_dt</td>
-<td headers="Variable" class="gt_row gt_left">BA_adult_sp</td>
-<td headers="Description" class="gt_row gt_left">similar to BA_sp</td></tr>
-    <tr><td headers="R object" class="gt_row gt_left">fec_dt</td>
-<td headers="Variable" class="gt_row gt_left">relativeBA_adult_sp</td>
-<td headers="Description" class="gt_row gt_left">deprecated</td></tr>
-  </tbody>
-  
-  
+
+<table class="gt_table do-not-create-environment cell caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+<thead>
+<tr class="gt_col_headings header">
+<th id="R object" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" style="font-weight: bold" scope="col">R object</th>
+<th id="Variable" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" style="font-weight: bold" scope="col">Variable</th>
+<th id="Description" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" style="font-weight: bold" scope="col">Description</th>
+</tr>
+</thead>
+<tbody class="gt_table_body">
+<tr class="odd">
+<td class="gt_row gt_left" headers="R object">treeData</td>
+<td class="gt_row gt_left" headers="Variable">plot_id</td>
+<td class="gt_row gt_left" headers="Description">plot ID</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="R object">treeData</td>
+<td class="gt_row gt_left" headers="Variable">longitude</td>
+<td class="gt_row gt_left" headers="Description">longitude crs(4326)</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="R object">treeData</td>
+<td class="gt_row gt_left" headers="Variable">latitude</td>
+<td class="gt_row gt_left" headers="Description">latitude crs(4326)</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="R object">treeData</td>
+<td class="gt_row gt_left" headers="Variable">plot_size</td>
+<td class="gt_row gt_left" headers="Description">size of plot in m2</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="R object">treeData</td>
+<td class="gt_row gt_left" headers="Variable">BA_plot</td>
+<td class="gt_row gt_left" headers="Description">total plot basal area of alive individuals (m2/ha)</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="R object">treeData</td>
+<td class="gt_row gt_left" headers="Variable">BA_comp</td>
+<td class="gt_row gt_left" headers="Description">plot basal area of larger individuals (m2/ha)</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="R object">treeData</td>
+<td class="gt_row gt_left" headers="Variable">relativeBA_comp</td>
+<td class="gt_row gt_left" headers="Description">deprecated</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="R object">treeData</td>
+<td class="gt_row gt_left" headers="Variable">s_star</td>
+<td class="gt_row gt_left" headers="Description">the height in which the canopy closes (meters)</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="R object">treeData</td>
+<td class="gt_row gt_left" headers="Variable">db_origin</td>
+<td class="gt_row gt_left" headers="Description">if FIA or Quebec</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="R object">treeData</td>
+<td class="gt_row gt_left" headers="Variable">bio_01_mean</td>
+<td class="gt_row gt_left" headers="Description">mean of mean annual temperature for the years within the time interval</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="R object">treeData</td>
+<td class="gt_row gt_left" headers="Variable">bio_12_mean</td>
+<td class="gt_row gt_left" headers="Description">standard deviation of mean annual temperature for the years within the time interval</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="R object">treeData</td>
+<td class="gt_row gt_left" headers="Variable">bio_01_sd</td>
+<td class="gt_row gt_left" headers="Description">same as bi_01_mean, but for mean annual precipitation climate variable</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="R object">treeData</td>
+<td class="gt_row gt_left" headers="Variable">bio_12_sd</td>
+<td class="gt_row gt_left" headers="Description">same as bio_01_sd, but for mean annual precipitation climate variable</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="R object">treeData</td>
+<td class="gt_row gt_left" headers="Variable">climate_cellID</td>
+<td class="gt_row gt_left" headers="Description">the climate cell ID in which the plot climate variables were extracted (similar between MAT and MAP</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="R object">treeData</td>
+<td class="gt_row gt_left" headers="Variable">tree_id</td>
+<td class="gt_row gt_left" headers="Description">the unique ID for an individuala tree</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="R object">treeData</td>
+<td class="gt_row gt_left" headers="Variable">species_id</td>
+<td class="gt_row gt_left" headers="Description">species unique ID following the`species_id.csv` metadata file</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="R object">treeData</td>
+<td class="gt_row gt_left" headers="Variable">status</td>
+<td class="gt_row gt_left" headers="Description">0 = dead; 1 = alive</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="R object">treeData</td>
+<td class="gt_row gt_left" headers="Variable">year_measured</td>
+<td class="gt_row gt_left" headers="Description">year of field measurement</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="R object">treeData</td>
+<td class="gt_row gt_left" headers="Variable">dbh</td>
+<td class="gt_row gt_left" headers="Description">diameter at breast height of the individual tree (milimiters)</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="R object">treeData</td>
+<td class="gt_row gt_left" headers="Variable">height</td>
+<td class="gt_row gt_left" headers="Description">height of the individiual tree (meters)</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="R object">treeData</td>
+<td class="gt_row gt_left" headers="Variable">canopyDistance</td>
+<td class="gt_row gt_left" headers="Description">difference between `height` and `s_star` meaning how far the individual is from the canopy close</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="R object">treeData</td>
+<td class="gt_row gt_left" headers="Variable">BA_sp</td>
+<td class="gt_row gt_left" headers="Description">total plot basal area of conspecific individuals (m2/ha)</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="R object">treeData</td>
+<td class="gt_row gt_left" headers="Variable">BA_inter</td>
+<td class="gt_row gt_left" headers="Description">total plot basal area of heterospecific individuals (m2/ha)</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="R object">treeData</td>
+<td class="gt_row gt_left" headers="Variable">BA_comp_sp</td>
+<td class="gt_row gt_left" headers="Description">total plot basal area of larger conspecific individuals (m2/ha)</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="R object">treeData</td>
+<td class="gt_row gt_left" headers="Variable">BA_comp_inter</td>
+<td class="gt_row gt_left" headers="Description">total plot basal area of larger heterospecific individuals (m2/ha)</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="R object">treeData</td>
+<td class="gt_row gt_left" headers="Variable">relativeBA_sp</td>
+<td class="gt_row gt_left" headers="Description">deprecated</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="R object">treeData</td>
+<td class="gt_row gt_left" headers="Variable">bio_01_mean_scl</td>
+<td class="gt_row gt_left" headers="Description">mean annual temperature normalized between 0 and 1</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="R object">treeData</td>
+<td class="gt_row gt_left" headers="Variable">bio_12_mean_scl</td>
+<td class="gt_row gt_left" headers="Description">mean annual precipitation normalized between 0 and 1</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="R object">growth_dt</td>
+<td class="gt_row gt_left" headers="Variable">year0</td>
+<td class="gt_row gt_left" headers="Description">initial year of reference for the time interval</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="R object">growth_dt</td>
+<td class="gt_row gt_left" headers="Variable">year1</td>
+<td class="gt_row gt_left" headers="Description">final year of reference for the time interval</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="R object">growth_dt</td>
+<td class="gt_row gt_left" headers="Variable">deltaYear</td>
+<td class="gt_row gt_left" headers="Description">year1 - year0</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="R object">growth_dt</td>
+<td class="gt_row gt_left" headers="Variable">dbh0</td>
+<td class="gt_row gt_left" headers="Description">diameter at breast height (mm) at year0</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="R object">growth_dt</td>
+<td class="gt_row gt_left" headers="Variable">dbh1</td>
+<td class="gt_row gt_left" headers="Description">diameter at breast height (mm) at year1</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="R object">growth_dt</td>
+<td class="gt_row gt_left" headers="Variable">deltaDbh</td>
+<td class="gt_row gt_left" headers="Description">dbh1 - dbh0</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="R object">growth_dt</td>
+<td class="gt_row gt_left" headers="Variable">growth</td>
+<td class="gt_row gt_left" headers="Description">annual growth rate (mm/year) [(dbh1 - dbh0)/deltaYear]</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="R object">mort_dt</td>
+<td class="gt_row gt_left" headers="Variable">mort</td>
+<td class="gt_row gt_left" headers="Description">alive (0) or dead (1) event between year0 and year1</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="R object">fec_dt</td>
+<td class="gt_row gt_left" headers="Variable">nbRecruit</td>
+<td class="gt_row gt_left" headers="Description">number of ingrowth (127 mm) betweem year0 and year1</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="R object">fec_dt</td>
+<td class="gt_row gt_left" headers="Variable">nbSapling</td>
+<td class="gt_row gt_left" headers="Description">sampling counts (note difference in protocols between FIA and Quebec)</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="R object">fec_dt</td>
+<td class="gt_row gt_left" headers="Variable">nbSeedling</td>
+<td class="gt_row gt_left" headers="Description">seedling counts (note difference in protocols between FIA and Quebec)</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="R object">fec_dt</td>
+<td class="gt_row gt_left" headers="Variable">deltaYear_plot</td>
+<td class="gt_row gt_left" headers="Description">year1 - year0</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="R object">fec_dt</td>
+<td class="gt_row gt_left" headers="Variable">plotSize_seedling</td>
+<td class="gt_row gt_left" headers="Description">size of plot (m2) for seedling count</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="R object">fec_dt</td>
+<td class="gt_row gt_left" headers="Variable">plotSize_sapling</td>
+<td class="gt_row gt_left" headers="Description">size of plot (m2) for sapling count</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="R object">fec_dt</td>
+<td class="gt_row gt_left" headers="Variable">BA_adult</td>
+<td class="gt_row gt_left" headers="Description">similar to BA_plot</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left" headers="R object">fec_dt</td>
+<td class="gt_row gt_left" headers="Variable">BA_adult_sp</td>
+<td class="gt_row gt_left" headers="Description">similar to BA_sp</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left" headers="R object">fec_dt</td>
+<td class="gt_row gt_left" headers="Variable">relativeBA_adult_sp</td>
+<td class="gt_row gt_left" headers="Description">deprecated</td>
+</tr>
+</tbody>
 </table>
+
 </div>
 </div>
+</div>
+</figure>
 </div>
 </div>
 
 
-<div id="refs" class="references csl-bib-body hanging-indent" role="doc-bibliography" style="display: none">
-<div id="ref-burns1990silvics" class="csl-entry" role="doc-biblioentry">
+<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list" style="display: none">
+<div id="ref-burns1990silvics" class="csl-entry" role="listitem">
 Burns, Russell M, Barbara H Honkala, et al. 1990. <span>“Silvics of North America: 1. Conifers; 2. Hardwoods Agriculture Handbook 654.”</span> <em>US Department of Agriculture, Forest Service, Washington, DC</em>.
 </div>
-<div id="ref-mckenney2011" class="csl-entry" role="doc-biblioentry">
+<div id="ref-mckenney2011" class="csl-entry" role="listitem">
 McKenney, Daniel W, Michael F Hutchinson, Pia Papadopol, Kevin Lawrence, John Pedlar, Kathy Campbell, Ewa Milewska, Ron F Hopkinson, David Price, and Tim Owen. 2011. <span>“Customized Spatial Climate Models for North America.”</span> <em>Bulletin of the American Meteorological Society</em> 92 (12): 1611–22.
 </div>
-<div id="ref-Naturelles2016" class="csl-entry" role="doc-biblioentry">
+<div id="ref-Naturelles2016" class="csl-entry" role="listitem">
 Ministere des Ressources Naturelles. 2016. <span>“<span class="nocase">Norme d’inventaire ecoforestier: placettes-echantillons temporaires</span>.”</span> Direction des inventaires forestier, Minist<span>è</span>re des Ressources naturelles,Qu<span>é</span>bec.
 </div>
-<div id="ref-OConnell2007" class="csl-entry" role="doc-biblioentry">
+<div id="ref-OConnell2007" class="csl-entry" role="listitem">
 O’Connell, M B, E B LaPoint, J A Turner, T Ridley, D Boyer, A Wilson, K L Waddell, and B L Conkling. 2007. <span>“<span class="nocase">The forest inventory and analysis database: Database description and users forest inventory and analysis program</span>.”</span> US Department of Agriculture, Forest Service.
 </div>
 </div>
@@ -1715,146 +1965,412 @@ O’Connell, M B, E B LaPoint, J A Turner, T Ridley, D Boyer, A Wilson, K L Wadd
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
-window.document.addEventListener("DOMContentLoaded", function (event) {
-  const toggleBodyColorMode = (bsSheetEl) => {
-    const mode = bsSheetEl.getAttribute("data-mode");
-    const bodyEl = window.document.querySelector("body");
-    if (mode === "dark") {
-      bodyEl.classList.add("quarto-dark");
-      bodyEl.classList.remove("quarto-light");
-    } else {
-      bodyEl.classList.add("quarto-light");
-      bodyEl.classList.remove("quarto-dark");
-    }
-  }
-  const toggleBodyColorPrimary = () => {
-    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
-    if (bsSheetEl) {
-      toggleBodyColorMode(bsSheetEl);
-    }
-  }
-  toggleBodyColorPrimary();  
-  const icon = "";
-  const anchorJS = new window.AnchorJS();
-  anchorJS.options = {
-    placement: 'right',
-    icon: icon
-  };
-  anchorJS.add('.anchored');
-  const clipboard = new window.ClipboardJS('.code-copy-button', {
-    target: function(trigger) {
-      return trigger.previousElementSibling;
-    }
-  });
-  clipboard.on('success', function(e) {
-    // button target
-    const button = e.trigger;
-    // don't keep focus
-    button.blur();
-    // flash "checked"
-    button.classList.add('code-copy-button-checked');
-    var currentTitle = button.getAttribute("title");
-    button.setAttribute("title", "Copied!");
-    let tooltip;
-    if (window.bootstrap) {
-      button.setAttribute("data-bs-toggle", "tooltip");
-      button.setAttribute("data-bs-placement", "left");
-      button.setAttribute("data-bs-title", "Copied!");
-      tooltip = new bootstrap.Tooltip(button, 
-        { trigger: "manual", 
-          customClass: "code-copy-button-tooltip",
-          offset: [0, -8]});
-      tooltip.show();    
-    }
-    setTimeout(function() {
-      if (tooltip) {
-        tooltip.hide();
-        button.removeAttribute("data-bs-title");
-        button.removeAttribute("data-bs-toggle");
-        button.removeAttribute("data-bs-placement");
-      }
-      button.setAttribute("title", currentTitle);
-      button.classList.remove('code-copy-button-checked');
-    }, 1000);
-    // clear code selection
-    e.clearSelection();
-  });
-  function tippyHover(el, contentFn) {
-    const config = {
-      allowHTML: true,
-      content: contentFn,
-      maxWidth: 500,
-      delay: 100,
-      arrow: false,
-      appendTo: function(el) {
-          return el.parentElement;
-      },
-      interactive: true,
-      interactiveBorder: 10,
-      theme: 'quarto',
-      placement: 'bottom-start'
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
     };
-    window.tippy(el, config); 
-  }
-  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
-  for (var i=0; i<noterefs.length; i++) {
-    const ref = noterefs[i];
-    tippyHover(ref, function() {
-      // use id or data attribute instead here
-      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
-      try { href = new URL(href).hash; } catch {}
-      const id = href.replace(/^#\/?/, "");
-      const note = window.document.getElementById(id);
-      return note.innerHTML;
-    });
-  }
-  const findCites = (el) => {
-    const parentEl = el.parentElement;
-    if (parentEl) {
-      const cites = parentEl.dataset.cites;
-      if (cites) {
-        return {
-          el,
-          cites: cites.split(' ')
-        };
-      } else {
-        return findCites(el.parentElement)
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
       }
-    } else {
-      return undefined;
+      return false;
     }
-  };
-  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
-  for (var i=0; i<bibliorefs.length; i++) {
-    const ref = bibliorefs[i];
-    const citeInfo = findCites(ref);
-    if (citeInfo) {
-      tippyHover(citeInfo.el, function() {
-        var popup = window.document.createElement('div');
-        citeInfo.cites.forEach(function(cite) {
-          var citeDiv = window.document.createElement('div');
-          citeDiv.classList.add('hanging-indent');
-          citeDiv.classList.add('csl-entry');
-          var biblioDiv = window.document.getElementById('ref-' + cite);
-          if (biblioDiv) {
-            citeDiv.innerHTML = biblioDiv.innerHTML;
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
           }
-          popup.appendChild(citeDiv);
-        });
-        return popup.innerHTML;
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
       });
     }
-  }
-});
-</script>
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./introduction.html" class="pagination-link">
+      <a href="./introduction.html" class="pagination-link" aria-label="Introduction">
         <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction</span></span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./model_description.html" class="pagination-link">
+      <a href="./model_description.html" class="pagination-link" aria-label="Model description">
         <span class="nav-page-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Model description</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
@@ -1863,4 +2379,5 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 
 
 
-</body></html>
+
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/willvieira/book_forest-demography-IPM/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>

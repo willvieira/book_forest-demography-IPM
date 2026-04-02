@@ -2,12 +2,12 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.2.335">
+<meta name="generator" content="quarto-1.7.32">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Lab notebook - 19&nbsp; Suitable probability</title>
+<title>21&nbsp; Suitable probability – Lab notebook</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -17,14 +17,16 @@ div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
 ul.task-list{list-style: none;}
 ul.task-list li input[type="checkbox"] {
   width: 0.8em;
-  margin: 0 0.8em 0.2em -1.6em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for citations */
 div.csl-bib-body { }
 div.csl-entry {
   clear: both;
+  margin-bottom: 0em;
 }
-.hanging div.csl-entry {
+.hanging-indent div.csl-entry {
   margin-left:2em;
   text-indent:-2em;
 }
@@ -38,8 +40,7 @@ div.csl-right-inline {
 }
 div.csl-indent {
   margin-left: 2em;
-}
-</style>
+}</style>
 
 
 <script src="site_libs/quarto-nav/quarto-nav.js"></script>
@@ -49,24 +50,31 @@ div.csl-indent {
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<link href="./references.html" rel="next">
+<link href="./lean_proofs.html" rel="next">
 <link href="./marginal_lambda.html" rel="prev">
-<script src="site_libs/quarto-html/quarto.js"></script>
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="site_libs/quarto-html/anchor.min.js"></script>
 <link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-f7a797495825df6112bcacb9190231e3.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
   "collapse-after": 3,
   "panel-placement": "start",
   "type": "textbox",
-  "limit": 20,
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
   "language": {
     "search-no-results-text": "No results",
     "search-matching-documents-text": "matching documents",
@@ -75,26 +83,65 @@ div.csl-indent {
     "search-more-match-text": "more match in this document",
     "search-more-matches-text": "more matches in this document",
     "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
     "search-detached-cancel-button-title": "Cancel",
-    "search-submit-button-title": "Submit"
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
   }
 }</script>
 <script async="" src="https://hypothes.is/embed.js"></script>
+<script>
+  window.document.addEventListener("DOMContentLoaded", function (_event) {
+    document.body.classList.add('hypothesis-enabled');
+  });
+</script>
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 </head>
 
-<body class="nav-sidebar floating">
-
+<body class="nav-sidebar floating quarto-light">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
-  <nav class="quarto-secondary-nav" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
-    <div class="container-fluid d-flex justify-content-between">
-      <h1 class="quarto-secondary-nav-title"><span class="chapter-number">19</span>&nbsp; <span class="chapter-title">Suitable probability</span></h1>
-      <button type="button" class="quarto-btn-toggle btn" aria-label="Show secondary navigation">
-        <i class="bi bi-chevron-right"></i>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./sens_analysis.html">Using the IPM</a></li><li class="breadcrumb-item"><a href="./extinction_risk.html"><span class="chapter-number">21</span>&nbsp; <span class="chapter-title">Suitable probability</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
       </button>
     </div>
   </nav>
@@ -102,160 +149,225 @@ div.csl-indent {
 <!-- content -->
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
 <!-- sidebar -->
-  <nav id="quarto-sidebar" class="sidebar collapse sidebar-navigation floating overflow-auto">
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
     <div class="pt-lg-2 mt-2 text-left sidebar-header">
     <div class="sidebar-title mb-0 py-0">
       <a href="./">Lab notebook</a> 
         <div class="sidebar-tools-main">
-    <a href="https://github.com/willvieira/book_forest-demography-IPM/" title="Source Code" class="sidebar-tool px-1"><i class="bi bi-github"></i></a>
+    <a href="https://github.com/willvieira/book_forest-demography-IPM/" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
 </div>
     </div>
       </div>
-      <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="mt-2 flex-shrink-0 align-items-center">
         <div class="sidebar-search">
         <div id="quarto-search" class="" title="Search"></div>
         </div>
-      </div>
+        </div>
     <div class="sidebar-menu-container"> 
     <ul class="list-unstyled mt-1">
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./index.html" class="sidebar-item-text sidebar-link">Preface</a>
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Preface</span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./introduction.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction</span></a>
+  <a href="./introduction.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./db.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Dataset</span></a>
+  <a href="./db.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Dataset</span></span></a>
   </div>
 </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">Demographic models</a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Demographic model development</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
       <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./model_description.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Model description</span></a>
+  <a href="./model_description.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Model description</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./covariates_description.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Mixed covariates</span></a>
+  <a href="./covariates_description.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Mixed covariates</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./model_fit.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Model fit</span></a>
+  <a href="./model_fit.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Model fit</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./model_comparison.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Model comparison</span></a>
+  <a href="./model_comparison.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Model comparison</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./parameters_descr.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Parameters</span></a>
+  <a href="./parameters_descr.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Parameters</span></span></a>
   </div>
 </li>
       </ul>
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">Demographic model evaluation</a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Demographic model evaluation</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
       <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./pars_intercept.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Intercept</span></a>
+  <a href="./pars_intercept.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Intercept</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./pars_randomEffect.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Random effects</span></a>
+  <a href="./pars_randomEffect.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Random effects</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./pars_competition.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Competition effect</span></a>
+  <a href="./pars_competition.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Competition effect</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./pars_climate.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Climate effect</span></a>
+  <a href="./pars_climate.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Climate effect</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./pars_effectSize.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Conditional effect of covariates</span></a>
+  <a href="./pars_effectSize.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Conditional effect of covariates</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./pars_condEffect.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Average Marginal Effect</span></a>
+  <a href="./pars_condEffect.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Average Marginal Effect</span></span></a>
   </div>
 </li>
       </ul>
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="true">Using demographic models to infer population level performance</a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">From demographic rates to population dynamics</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
       <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./ipm_description.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">Integral Projection Model</span></a>
+  <a href="./ipm_description.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">Integral Projection Model</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./guide_IPM.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">A guide to use the forest-IPM code</span></a>
+  <a href="./guide_IPM.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Using the forestIPM package</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./sens_analysis.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">Sensitivity analysis</span></a>
+  <a href="./midpoint_vs_gl.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">Midpoint Rule vs.&nbsp;Gauss-Legendre Quadrature</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./conditional_lambda.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Conditional effect of covariates</span></a>
+  <a href="./gaussLegendre_convergence.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Gauss-Legendre Quadrature Convergence</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Using the IPM</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./sens_analysis.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">Sensitivity analysis</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./marginal_lambda.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">Marginal effect of covariates</span></a>
+  <a href="./conditional_lambda.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">19</span>&nbsp; <span class="chapter-title">Conditional effect of covariates</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./extinction_risk.html" class="sidebar-item-text sidebar-link active"><span class="chapter-number">19</span>&nbsp; <span class="chapter-title">Suitable probability</span></a>
+  <a href="./marginal_lambda.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">20</span>&nbsp; <span class="chapter-title">Marginal effect of covariates</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./extinction_risk.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">21</span>&nbsp; <span class="chapter-title">Suitable probability</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Appendices</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./lean_proofs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">22</span>&nbsp; <span class="chapter-title">Mathematical Verification (Lean 4)</span></span></a>
   </div>
 </li>
       </ul>
   </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./references.html" class="sidebar-item-text sidebar-link">References</a>
+  <a href="./references.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">References</span></a>
   </div>
 </li>
     </ul>
     </div>
 </nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
         <nav id="TOC" role="doc-toc" class="toc-active">
@@ -278,14 +390,14 @@ div.csl-indent {
   </ul></li>
   <li><a href="#appendices" id="toc-appendices" class="nav-link" data-scroll-target="#appendices">Appendices</a></li>
   </ul>
-<div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/willvieira/book_forest-demography-IPM/issues/new" class="toc-action">Report an issue</a></p></div></div></nav>
+<div class="toc-actions"><ul><li><a href="https://github.com/willvieira/book_forest-demography-IPM/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default">
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./sens_analysis.html">Using the IPM</a></li><li class="breadcrumb-item"><a href="./extinction_risk.html"><span class="chapter-number">21</span>&nbsp; <span class="chapter-title">Suitable probability</span></a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title"><span id="sec-suitableProbability" class="quarto-section-identifier d-none d-lg-block"><span class="chapter-number">19</span>&nbsp; <span class="chapter-title">Suitable probability</span></span></h1>
+<h1 class="title"><span id="sec-suitableProbability" class="quarto-section-identifier"><span class="chapter-number">21</span>&nbsp; <span class="chapter-title">Suitable probability</span></span></h1>
 </div>
 
 
@@ -298,15 +410,21 @@ div.csl-indent {
   </div>
   
 
+
 </header>
 
-<p>In this section, we discuss the concept and application of suitable probability derived from the stochastic population growth rate in the IPM. The variability in the population growth rate (<span class="math inline">\(\lambda\)</span>) arises from both environmental stochasticity and parametric uncertainty. The former combines spatial and temporal variation in the climate (mean annual temperature and precipitation) and variation in the strength of competition for light. The latter combines model uncertainty at the individual level for the growth, survival, and recruitment models, along with the spatial heterogeneity determined by the variance of these demographic models among local populations (plot level variability). The inherent demographic uncertainty and environmental stochasticity introduce variance into <span class="math inline">\(\lambda\)</span>, and the strength of this variance directly influences the suitable probability, especially for populations with lower performance or density <span class="citation" data-cites="Holt2005">(<a href="references.html#ref-Holt2005" role="doc-biblioref">Holt et al. 2005</a>)</span>. To illustrate the concept, consider two populations with equal mean growth rates (<span class="math inline">\(\overline{\lambda}\)</span>) but varying standard deviations (<span class="math inline">\(\sigma_\lambda\)</span>). We define suitable probability as the area under the distribution for <span class="math inline">\(\lambda \geq 1\)</span> <a href="#fig-lambda_sigma">Figure&nbsp;<span>19.1</span></a>.</p>
-<div class="cell" data-hash="extinction_risk_cache/html/fig-lambda_sigma_a7ce3838f0d1d3e0031e00f531dd85ca">
+
+<p>In this section, we discuss the concept and application of suitable probability derived from the stochastic population growth rate in the IPM. The variability in the population growth rate (<span class="math inline">\(\lambda\)</span>) arises from both environmental stochasticity and parametric uncertainty. The former combines spatial and temporal variation in the climate (mean annual temperature and precipitation) and variation in the strength of competition for light. The latter combines model uncertainty at the individual level for the growth, survival, and recruitment models, along with the spatial heterogeneity determined by the variance of these demographic models among local populations (plot level variability). The inherent demographic uncertainty and environmental stochasticity introduce variance into <span class="math inline">\(\lambda\)</span>, and the strength of this variance directly influences the suitable probability, especially for populations with lower performance or density <span class="citation" data-cites="Holt2005">(<a href="references.html#ref-Holt2005" role="doc-biblioref">Holt et al. 2005</a>)</span>. To illustrate the concept, consider two populations with equal mean growth rates (<span class="math inline">\(\overline{\lambda}\)</span>) but varying standard deviations (<span class="math inline">\(\sigma_\lambda\)</span>). We define suitable probability as the area under the distribution for <span class="math inline">\(\lambda \geq 1\)</span> <a href="#fig-lambda_sigma" class="quarto-xref">Figure&nbsp;<span>21.1</span></a>.</p>
+<div class="cell">
 <div class="cell-output-display">
-<div id="fig-lambda_sigma" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><img src="extinction_risk_files/figure-html/fig-lambda_sigma-1.png" class="img-fluid figure-img" width="576"></p>
-<p></p><figcaption class="figure-caption">Figure&nbsp;19.1: Distribution of 2000 draws of population growth rate <span class="math inline">\(\lambda\)</span> with a mean of 1.05 and low (green) and high (yellow) standard deviations. The vertical dashed line represents the threshold between viable and non-viable populations.</figcaption><p></p>
+<div id="fig-lambda_sigma" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-lambda_sigma-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="extinction_risk_files/figure-html/fig-lambda_sigma-1.png" class="img-fluid figure-img" width="576">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-lambda_sigma-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;21.1: Distribution of 2000 draws of population growth rate <span class="math inline">\(\lambda\)</span> with a mean of 1.05 and low (green) and high (yellow) standard deviations. The vertical dashed line represents the threshold between viable and non-viable populations.
+</figcaption>
 </figure>
 </div>
 </div>
@@ -314,74 +432,88 @@ div.csl-indent {
 <p>To estimate suitable probability, we first determine the cumulative distribution function, <span class="math inline">\(F(x)\)</span>, from the generic probability density function, <span class="math inline">\(log(\lambda) = f(t)\)</span>, as follows:</p>
 <p><span id="eq-cdf"><span class="math display">\[
 F_{\lambda}(x) = P(\lambda \le x) = \int_{-\infty}^{0} f(t)dt
-\tag{19.1}\]</span></span></p>
+\tag{21.1}\]</span></span></p>
 <p>This function represents the cumulative distribution from <span class="math inline">\(-\infty\)</span> to <span class="math inline">\(x\)</span>. Subsequently, we define the suitable probability (<span class="math inline">\(\Lambda\)</span>) as the inverse of the cumulative distribution function for <span class="math inline">\(x = 1\)</span>:</p>
 <p><span id="eq-sp"><span class="math display">\[
   \Lambda = 1 - F_{\lambda}(1)
-\tag{19.2}\]</span></span></p>
-<p><a href="#fig-lambda_sigma2">Figure&nbsp;<span>19.2</span></a> illustrates the relationship between <span class="math inline">\(\lambda\)</span> variability and <span class="math inline">\(\Lambda\)</span>. The higher the variability around <span class="math inline">\(\lambda\)</span>, the more blurred the mean difference between two populations will become. Increasing variance tends to reduce suitable probability when the population growth rate is below 1.</p>
-<div class="cell" data-hash="extinction_risk_cache/html/fig-lambda_sigma2_61a21b7f988b429dbc1cafcc5b2241f1">
+\tag{21.2}\]</span></span></p>
+<p><a href="#fig-lambda_sigma2" class="quarto-xref">Figure&nbsp;<span>21.2</span></a> illustrates the relationship between <span class="math inline">\(\lambda\)</span> variability and <span class="math inline">\(\Lambda\)</span>. The higher the variability around <span class="math inline">\(\lambda\)</span>, the more blurred the mean difference between two populations will become. Increasing variance tends to reduce suitable probability when the population growth rate is below 1.</p>
+<div class="cell">
 <div class="cell-output-display">
-<div id="fig-lambda_sigma2" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><img src="extinction_risk_files/figure-html/fig-lambda_sigma2-1.png" class="img-fluid figure-img" width="576"></p>
-<p></p><figcaption class="figure-caption">Figure&nbsp;19.2: Cumulative density function <span class="math inline">\(F(\lambda)\)</span> defines suitable probability as a function of <span class="math inline">\(\lambda\)</span> variability for different population growth rates. The smooth lines represent 2000 replications for varying mean (<span class="math inline">\(\lambda\)</span>) and standard deviation (<span class="math inline">\(\sigma\)</span>).</figcaption><p></p>
+<div id="fig-lambda_sigma2" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-lambda_sigma2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="extinction_risk_files/figure-html/fig-lambda_sigma2-1.png" class="img-fluid figure-img" width="576">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-lambda_sigma2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;21.2: Cumulative density function <span class="math inline">\(F(\lambda)\)</span> defines suitable probability as a function of <span class="math inline">\(\lambda\)</span> variability for different population growth rates. The smooth lines represent 2000 replications for varying mean (<span class="math inline">\(\lambda\)</span>) and standard deviation (<span class="math inline">\(\sigma\)</span>).
+</figcaption>
 </figure>
 </div>
 </div>
 </div>
 <section id="simulating-the-effect-of-demographic-uncertainty-and-environmental-stochasticity" class="level2">
 <h2 class="anchored" data-anchor-id="simulating-the-effect-of-demographic-uncertainty-and-environmental-stochasticity">Simulating the effect of demographic uncertainty and environmental stochasticity</h2>
-<div class="cell" data-hash="extinction_risk_cache/html/loadSim_3c49d4a6bef2cfdde95217358270cd43">
-
-</div>
-<p>In this section, we investigate how increasing the uncertainty of parameters and the variability of covariates affects the suitable probability. We selected two species, <em>Quercus prinus</em> and <em>Quercus rubra</em>, with an average <span class="math inline">\(\lambda\)</span> close to 1, and were sensitive to competition and climate covariates. We set these species to conditions with population growth rates closest to 1 but with different average values (lower for <em>Q. rubra</em> and higher for <em>Q. prinus</em>) for comparison <a href="#fig-lambdaDistsp">Figure&nbsp;<span>19.3</span></a>.</p>
-<div class="cell" data-hash="extinction_risk_cache/html/fig-lambdaDistsp_7572e05370f7a8ec595e318e86f03c92">
+<p>In this section, we investigate how increasing the uncertainty of parameters and the variability of covariates affects the suitable probability. We selected two species, <em>Quercus prinus</em> and <em>Quercus rubra</em>, with an average <span class="math inline">\(\lambda\)</span> close to 1, and were sensitive to competition and climate covariates. We set these species to conditions with population growth rates closest to 1 but with different average values (lower for <em>Q. rubra</em> and higher for <em>Q. prinus</em>) for comparison <a href="#fig-lambdaDistsp" class="quarto-xref">Figure&nbsp;<span>21.3</span></a>.</p>
+<div class="cell">
 <div class="cell-output-display">
-<div id="fig-lambdaDistsp" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><img src="extinction_risk_files/figure-html/fig-lambdaDistsp-1.png" class="img-fluid figure-img" width="576"></p>
-<p></p><figcaption class="figure-caption">Figure&nbsp;19.3: Population growth rate under demographic uncertainty from the 500 posterior distributions.</figcaption><p></p>
+<div id="fig-lambdaDistsp" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-lambdaDistsp-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="extinction_risk_files/figure-html/fig-lambdaDistsp-1.png" class="img-fluid figure-img" width="576">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-lambdaDistsp-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;21.3: Population growth rate under demographic uncertainty from the 500 posterior distributions.
+</figcaption>
 </figure>
 </div>
 </div>
 </div>
-<p>We used the same 500 parameter draws from the posterior distribution defined in the sensitivity analysis section (<a href="sens_analysis.html"><span>Chapter&nbsp;16</span></a>). We conducted four simulations to understand the cumulative impact of demographic uncertainty, environmental, and environmentally induced competition stochasticity. First, we quantified suitable probability under demographic uncertainty using the posterior parameter distribution while keeping the covariates at their mean conditions, effectively simulating zero noise from the covariates. Subsequently, we introduced environmental stochasticity and demographic uncertainty by adding noise to the mean temperature conditions. Similarly, we introduced noise to the mean basal area of heterospecific individuals while keeping temperature constant at the mean. Finally, we added all sources of variability together, encompassing demographic, environmental, and environmentally induced competition variability. We increased the standard deviation (SD) for temperature from 0.1 to 1.5, and for basal area, SD increased from 1 to 8.</p>
-<p><a href="#fig-lambdaVsNoise">Figure&nbsp;<span>19.4</span></a> shows the changes in <span class="math inline">\(\lambda\)</span> variability with increased variability of the covariates. The panels illustrate the effect of climate stochasticity, competition stochasticity, and both combined factors.</p>
-<div class="cell" data-hash="extinction_risk_cache/html/fig-lambdaVsNoise_3560694aa5c99fd83636e4a7c7055a72">
+<p>We used the same 500 parameter draws from the posterior distribution defined in the sensitivity analysis section (<a href="sens_analysis.html" class="quarto-xref"><span>Chapter 18</span></a>). We conducted four simulations to understand the cumulative impact of demographic uncertainty, environmental, and environmentally induced competition stochasticity. First, we quantified suitable probability under demographic uncertainty using the posterior parameter distribution while keeping the covariates at their mean conditions, effectively simulating zero noise from the covariates. Subsequently, we introduced environmental stochasticity and demographic uncertainty by adding noise to the mean temperature conditions. Similarly, we introduced noise to the mean basal area of heterospecific individuals while keeping temperature constant at the mean. Finally, we added all sources of variability together, encompassing demographic, environmental, and environmentally induced competition variability. We increased the standard deviation (SD) for temperature from 0.1 to 1.5, and for basal area, SD increased from 1 to 8.</p>
+<p><a href="#fig-lambdaVsNoise" class="quarto-xref">Figure&nbsp;<span>21.4</span></a> shows the changes in <span class="math inline">\(\lambda\)</span> variability with increased variability of the covariates. The panels illustrate the effect of climate stochasticity, competition stochasticity, and both combined factors.</p>
+<div class="cell">
 <div class="cell-output-display">
-<div id="fig-lambdaVsNoise" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><img src="extinction_risk_files/figure-html/fig-lambdaVsNoise-1.png" class="img-fluid figure-img" width="768"></p>
-<p></p><figcaption class="figure-caption">Figure&nbsp;19.4: Distribution of population growth rate for different noise intensities applied to the temperature and basal area abundance covariates. We have omitted the values of <span class="math inline">\(\sigma\)</span> as they differ between the covariates. However, the noise increases from left to right.</figcaption><p></p>
+<div id="fig-lambdaVsNoise" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-lambdaVsNoise-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="extinction_risk_files/figure-html/fig-lambdaVsNoise-1.png" class="img-fluid figure-img" width="768">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-lambdaVsNoise-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;21.4: Distribution of population growth rate for different noise intensities applied to the temperature and basal area abundance covariates. We have omitted the values of <span class="math inline">\(\sigma\)</span> as they differ between the covariates. However, the noise increases from left to right.
+</figcaption>
 </figure>
 </div>
 </div>
 </div>
-<p><a href="#fig-lambdaVsNoise">Figure&nbsp;<span>19.4</span></a> and <a href="#fig-sdVsNoise">Figure&nbsp;<span>19.5</span></a> highlight that increased noise around the average covariate conditions leads to higher variability in <span class="math inline">\(\lambda\)</span>. It is important to note that the y-scale on the panels in <a href="#fig-sdVsNoise">Figure&nbsp;<span>19.5</span></a> is standardized, showing a higher <span class="math inline">\(\lambda\)</span> variability for <em>Q. rubra</em> compared to <em>Q. prinus</em>. This suggests that climate and competition are more significant predictors for all vital rates of <em>Q. rubra</em> compared to <em>Q. prinus</em>. In summary, higher variability in covariates will likely increase the variability in <span class="math inline">\(\lambda\)</span>, proportional to the covariate sensitivity.</p>
-<div class="cell" data-hash="extinction_risk_cache/html/fig-sdVsNoise_f8d5eb900860bba2a06496177c40e057">
+<p><a href="#fig-lambdaVsNoise" class="quarto-xref">Figure&nbsp;<span>21.4</span></a> and <a href="#fig-sdVsNoise" class="quarto-xref">Figure&nbsp;<span>21.5</span></a> highlight that increased noise around the average covariate conditions leads to higher variability in <span class="math inline">\(\lambda\)</span>. It is important to note that the y-scale on the panels in <a href="#fig-sdVsNoise" class="quarto-xref">Figure&nbsp;<span>21.5</span></a> is standardized, showing a higher <span class="math inline">\(\lambda\)</span> variability for <em>Q. rubra</em> compared to <em>Q. prinus</em>. This suggests that climate and competition are more significant predictors for all vital rates of <em>Q. rubra</em> compared to <em>Q. prinus</em>. In summary, higher variability in covariates will likely increase the variability in <span class="math inline">\(\lambda\)</span>, proportional to the covariate sensitivity.</p>
+<div class="cell">
 <div class="cell-output-display">
-<div id="fig-sdVsNoise" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><img src="extinction_risk_files/figure-html/fig-sdVsNoise-1.png" class="img-fluid figure-img" width="768"></p>
-<p></p><figcaption class="figure-caption">Figure&nbsp;19.5: Correlation between <span class="math inline">\(\lambda\)</span> standard deviation and variability intensity. The axis values of <span class="math inline">\(\sigma\)</span> have been omitted as they differ between the covariates. However, the noise increases from left to right. The line represents a smoothed approximation from the point data.</figcaption><p></p>
+<div id="fig-sdVsNoise" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-sdVsNoise-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="extinction_risk_files/figure-html/fig-sdVsNoise-1.png" class="img-fluid figure-img" width="768">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-sdVsNoise-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;21.5: Correlation between <span class="math inline">\(\lambda\)</span> standard deviation and variability intensity. The axis values of <span class="math inline">\(\sigma\)</span> have been omitted as they differ between the covariates. However, the noise increases from left to right. The line represents a smoothed approximation from the point data.
+</figcaption>
 </figure>
 </div>
 </div>
 </div>
-<p>Once we determine the uncertainty in <span class="math inline">\(\lambda\)</span>, we can calculate population-level suitable probability using the cumulative distribution function <span class="math inline">\(F(\lambda)\)</span>. <a href="#fig-noiseVsExt">Figure&nbsp;<span>19.6</span></a> illustrates how suitable probability increases for <em>Q. prinus</em> and decreases for <em>Q. rubra</em> with increased variability of covariates.</p>
-<div class="cell" data-hash="extinction_risk_cache/html/fig-noiseVsExt_3678a8c1fe6330861787b939a43f2738">
+<p>Once we determine the uncertainty in <span class="math inline">\(\lambda\)</span>, we can calculate population-level suitable probability using the cumulative distribution function <span class="math inline">\(F(\lambda)\)</span>. <a href="#fig-noiseVsExt" class="quarto-xref">Figure&nbsp;<span>21.6</span></a> illustrates how suitable probability increases for <em>Q. prinus</em> and decreases for <em>Q. rubra</em> with increased variability of covariates.</p>
+<div class="cell">
 <div class="cell-output-display">
-<div id="fig-noiseVsExt" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><img src="extinction_risk_files/figure-html/fig-noiseVsExt-1.png" class="img-fluid figure-img" width="768"></p>
-<p></p><figcaption class="figure-caption">Figure&nbsp;19.6: Correlation between suitable probability and variability intensity. The axis values of <span class="math inline">\(\sigma\)</span> have been omitted as they differ between the covariates. However, the noise increases from left to right. The line represents a smoothed approximation from the point data.</figcaption><p></p>
+<div id="fig-noiseVsExt" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-noiseVsExt-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="extinction_risk_files/figure-html/fig-noiseVsExt-1.png" class="img-fluid figure-img" width="768">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-noiseVsExt-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;21.6: Correlation between suitable probability and variability intensity. The axis values of <span class="math inline">\(\sigma\)</span> have been omitted as they differ between the covariates. However, the noise increases from left to right. The line represents a smoothed approximation from the point data.
+</figcaption>
 </figure>
 </div>
 </div>
-</div>
-<div class="cell" data-hash="extinction_risk_cache/html/fig-sigmaVsExt_fda142baf8d85436c427213b39c4c0a6">
-
 </div>
 </section>
 <section id="objective" class="level2">
@@ -407,18 +539,19 @@ F_{\lambda}(x) = P(\lambda \le x) = \int_{-\infty}^{0} f(t)dt
 &amp;\xi = \beta_{1, \xi} \times MAT + \beta_{0, \xi} \\[2pt]
 &amp;\omega = e^{\beta_{1, \omega} \times MAT + \beta_{0, \omega}}
 \end{split}
-\tag{19.3}\]</span></span></p>
+\tag{21.3}\]</span></span></p>
 <p>Here, <span class="math inline">\(\xi\)</span> is the location parameter or the <span class="math inline">\(\lambda\)</span> average, and <span class="math inline">\(\omega\)</span> is the scale representing the variance around the mean.</p>
-<p>In <a href="#fig-metamodel_example">Figure&nbsp;<span>19.7</span></a>, we show some examples of the model’s flexibility. At each panel, two sets of parameter combinations illustrate the different behavior of the model. Each panel illustrates an element of the model attributed to accommodate the data variability. In panel 1, the most straightforward case shows how suitable probability changes linearly with MAT and constant variance. Panel 2 shows two cases with larger and smaller variances derived from the spatiotemporal variability of the conditions and model uncertainty. Panel 3 demonstrates how this variability can change across the range distribution. Finally, panel 4 shows how the asymmetry of the variability can bias the variance towards lower (yellow) or higher (green) values. Note that in panel 4, the illustration does not fully represent the asymmetry in the model, as the tool to create the curves does not allow asymmetric variance. Therefore, while the figure illustrates a shift in the average and variance, we should instead see a shift only in the variance.</p>
+<p>In <a href="#fig-metamodel_example" class="quarto-xref">Figure&nbsp;<span>21.7</span></a>, we show some examples of the model’s flexibility. At each panel, two sets of parameter combinations illustrate the different behavior of the model. Each panel illustrates an element of the model attributed to accommodate the data variability. In panel 1, the most straightforward case shows how suitable probability changes linearly with MAT and constant variance. Panel 2 shows two cases with larger and smaller variances derived from the spatiotemporal variability of the conditions and model uncertainty. Panel 3 demonstrates how this variability can change across the range distribution. Finally, panel 4 shows how the asymmetry of the variability can bias the variance towards lower (yellow) or higher (green) values. Note that in panel 4, the illustration does not fully represent the asymmetry in the model, as the tool to create the curves does not allow asymmetric variance. Therefore, while the figure illustrates a shift in the average and variance, we should instead see a shift only in the variance.</p>
 <div class="cell">
-
-</div>
-<div class="cell" data-hash="extinction_risk_cache/html/fig-metamodel_example_4a7f15710526421e2d5b043e67b64585">
 <div class="cell-output-display">
-<div id="fig-metamodel_example" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><img src="extinction_risk_files/figure-html/fig-metamodel_example-1.png" class="img-fluid figure-img" width="768"></p>
-<p></p><figcaption class="figure-caption">Figure&nbsp;19.7: The linear model from the correlation between <span class="math inline">\(\lambda\)</span> and Mean annual temperature allows us to assess how suitable probability changes across the climate range. At each panel, two sets of parameter combination illustrate the different behaviour of the model. Each panel illustrates an element of the model attributed to accomodate the data variability.</figcaption><p></p>
+<div id="fig-metamodel_example" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-metamodel_example-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="extinction_risk_files/figure-html/fig-metamodel_example-1.png" class="img-fluid figure-img" width="768">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-metamodel_example-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;21.7: The linear model from the correlation between <span class="math inline">\(\lambda\)</span> and Mean annual temperature allows us to assess how suitable probability changes across the climate range. At each panel, two sets of parameter combination illustrate the different behaviour of the model. Each panel illustrates an element of the model attributed to accomodate the data variability.
+</figcaption>
 </figure>
 </div>
 </div>
@@ -430,36 +563,38 @@ F_{\lambda}(x) = P(\lambda \le x) = \int_{-\infty}^{0} f(t)dt
 <p>For each species-plot-year-replication combination, we calculated <span class="math inline">\(\lambda\)</span> under two simulated conditions. The first condition assumed no competition, with heterospecific competition defined at zero and conspecific competition at a minimal proportion (total population size (<span class="math inline">\(N\)</span>) = 0.1). This condition simulated the population growth rate under the fundamental niche. The second condition simulated the invasion growth rate, representing the population growth rate when the focal species is rare (<span class="math inline">\(N = 0.1\)</span>) and heterospecific competition set to the observed abundance of the competitive species. This condition simulated the population growth rate under the realized niche. The code for these computations on High-performance computing is available on GitHub: <a href="https://github.com/willvieira/forest-IPM/tree/master/simulations/lambda_plot">https://github.com/willvieira/forest-IPM/tree/master/simulations/lambda_plot</a>.</p>
 <p>After calculating <span class="math inline">\(\lambda\)</span> for each species-plot-year-replication combination, we used these estimates to fit the linear model describing how <span class="math inline">\(\lambda\)</span> and its variability change across the mean annual temperature gradient. We fitted the species-specific linear model for the hot and cold ranges using the Hamiltonian Monte Carlo (HMC) algorithm via the Stan software <span class="citation" data-cites="stan2022stan">(version 2.30.1 <a href="references.html#ref-stan2022stan" role="doc-biblioref">Team et al. 2022</a>)</span> and the <code>cmdstandr</code> R package <span class="citation" data-cites="cmdstanr">(version 0.5.3 <a href="references.html#ref-cmdstanr" role="doc-biblioref">Gabry, Češnovar, and Johnson 2023</a>)</span>. To reduce the sampling time, we used a sample of 5000 plots for each species to fit the model. This sample was necessary only for 6 out of the 31 species. The R and Stan scripts for these computations on High-performance computing are accessible on GitHub: <a href="https://github.com/willvieira/forest-IPM/tree/master/simulations/model_lambdaPlot/">https://github.com/willvieira/forest-IPM/tree/master/simulations/model_lambdaPlot/</a>.</p>
 <p>With the fitted models, we leveraged the posterior distribution to estimate the suitable probability of a species for any value of MAT under fundamental or realized niche for the cold and hot ranges. Specifically, we estimated suitable probability under four different MAT conditions encountered by the species: at the border and the center of each cold and hot range. We defined the border of the cold range as the minimum observed MAT for the focal species in the dataset, while the hot range was defined as the maximum observed MAT. The center location is defined as the centroid of MAT for the focal species. Although the center location has the same MAT for the cold and hot ranges, both are retained because the model is fitted separately for the cold and hot ranges. Finally, we estimated suitable probability for each location under no competition (fundamental niche) and heterospecific competition (realized niche) conditions, using the empirical cumulative distribution function over 1000 predictive draws.</p>
-<div class="cell">
-
-</div>
 </section>
 </section>
 <section id="results" class="level2">
 <h2 class="anchored" data-anchor-id="results">Results</h2>
-<div class="cell" data-hash="extinction_risk_cache/html/download_processed_data_80c1fe245c2072d89d0a80a047d5a52a">
-
-</div>
 <section id="example-using-abies-balsemea" class="level3">
 <h3 class="anchored" data-anchor-id="example-using-abies-balsemea">Example using <em>Abies balsemea</em></h3>
-<p>We used a linear model to summarize the evolution of the population growth rate (<span class="math inline">\(\lambda\)</span>) and its variability across the cold and warm ranges (<a href="#eq-metamodel">Equation&nbsp;<span>19.3</span></a>). The <a href="#fig-res_example">Figure&nbsp;<span>19.8</span></a> shows the observed <span class="math inline">\(\lambda\)</span> distribution and the fit of the underlying model on the mean annual temperature gradient for the species <em>Abies balsamea</em>. Each point represents a plot-year-replication encompassing the complete spatio-temporal sources of variability arising from the stochastic environment and parameter uncertainty. The black line represents the average fitted model (how <span class="math inline">\(\lambda\)</span> changes with MAT), and the shaded area is the 90th quantile of model uncertainty (how the variability of <span class="math inline">\(\lambda\)</span> changes with MAT). From this uncertainty, we can deduce the suitable probability. In this example, in the cold range, the mean and variance of <span class="math inline">\(\lambda\)</span> decrease towards the cold boundary. By comparing the model under heterospecific competition with that without competition, we can observe a slight decrease in the average at the cold border but a larger decrease in uncertainty (<a href="#fig-res_example">Figure&nbsp;<span>19.8</span></a> at the bottom left).</p>
-<div class="cell" data-hash="extinction_risk_cache/html/fig-res_example_7385375c268b1ed930f54aaa09583cac">
+<p>We used a linear model to summarize the evolution of the population growth rate (<span class="math inline">\(\lambda\)</span>) and its variability across the cold and warm ranges (<a href="#eq-metamodel" class="quarto-xref">Equation&nbsp;<span>21.3</span></a>). The <a href="#fig-res_example" class="quarto-xref">Figure&nbsp;<span>21.8</span></a> shows the observed <span class="math inline">\(\lambda\)</span> distribution and the fit of the underlying model on the mean annual temperature gradient for the species <em>Abies balsamea</em>. Each point represents a plot-year-replication encompassing the complete spatio-temporal sources of variability arising from the stochastic environment and parameter uncertainty. The black line represents the average fitted model (how <span class="math inline">\(\lambda\)</span> changes with MAT), and the shaded area is the 90th quantile of model uncertainty (how the variability of <span class="math inline">\(\lambda\)</span> changes with MAT). From this uncertainty, we can deduce the suitable probability. In this example, in the cold range, the mean and variance of <span class="math inline">\(\lambda\)</span> decrease towards the cold boundary. By comparing the model under heterospecific competition with that without competition, we can observe a slight decrease in the average at the cold border but a larger decrease in uncertainty (<a href="#fig-res_example" class="quarto-xref">Figure&nbsp;<span>21.8</span></a> at the bottom left).</p>
+<div class="cell">
 <div class="cell-output-display">
-<div id="fig-res_example" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><img src="extinction_risk_files/figure-html/fig-res_example-1.png" class="img-fluid figure-img" width="768"></p>
-<p></p><figcaption class="figure-caption">Figure&nbsp;19.8: Distribution of stochastic population growth rate (<span class="math inline">\(\lambda\)</span>) for <em>Abies balsamea</em> over the mean annual temperature gradient for cold (left panels) and warm (right panels) ranges under no competition (fundamental niche) and heterospecific competition (realized niche). The dots represent <span class="math inline">\(\lambda\)</span> over the plot-year-replication combinations. The model’s average line and 90% prediction intervals are estimated using 500 draws from the posterior distribution.</figcaption><p></p>
+<div id="fig-res_example" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-res_example-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="extinction_risk_files/figure-html/fig-res_example-1.png" class="img-fluid figure-img" width="768">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-res_example-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;21.8: Distribution of stochastic population growth rate (<span class="math inline">\(\lambda\)</span>) for <em>Abies balsamea</em> over the mean annual temperature gradient for cold (left panels) and warm (right panels) ranges under no competition (fundamental niche) and heterospecific competition (realized niche). The dots represent <span class="math inline">\(\lambda\)</span> over the plot-year-replication combinations. The model’s average line and 90% prediction intervals are estimated using 500 draws from the posterior distribution.
+</figcaption>
 </figure>
 </div>
 </div>
 </div>
-<p>We can estimate the suitable probability using the empirical cumulative distribution approach (<a href="#eq-sp">Equation&nbsp;<span>19.2</span></a>) from the linear model predictions. The <a href="#fig-sp-example">Figure&nbsp;<span>19.9</span></a> shows the suitable probability expected over the mean annual temperature of the same species. As expected, the suitable probability was reduced toward the cold border and was lower under heterospecific competition (yellow curve). We can also observe that the decrease in suitable probability toward the border is nonlinear, becoming more substantial for heterospecific competition than for the no-competition condition.</p>
-<div class="cell" data-hash="extinction_risk_cache/html/fig-sp-example_2cb884e6182dd0f79241a641adf9cfb4">
+<p>We can estimate the suitable probability using the empirical cumulative distribution approach (<a href="#eq-sp" class="quarto-xref">Equation&nbsp;<span>21.2</span></a>) from the linear model predictions. The <a href="#fig-sp-example" class="quarto-xref">Figure&nbsp;<span>21.9</span></a> shows the suitable probability expected over the mean annual temperature of the same species. As expected, the suitable probability was reduced toward the cold border and was lower under heterospecific competition (yellow curve). We can also observe that the decrease in suitable probability toward the border is nonlinear, becoming more substantial for heterospecific competition than for the no-competition condition.</p>
+<div class="cell">
 <div class="cell-output-display">
-<div id="fig-sp-example" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><img src="extinction_risk_files/figure-html/fig-sp-example-1.png" class="img-fluid figure-img" width="768"></p>
-<p></p><figcaption class="figure-caption">Figure&nbsp;19.9: Suitable probability of <em>Abies balsamea</em> over the mean annual temperature gradient for cold and warm ranges under no competition (green) and heterospecific (yellow). The vertical dotted line represents the range limits of the MAT observed in the dataset.</figcaption><p></p>
+<div id="fig-sp-example" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-sp-example-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="extinction_risk_files/figure-html/fig-sp-example-1.png" class="img-fluid figure-img" width="768">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-sp-example-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;21.9: Suitable probability of <em>Abies balsamea</em> over the mean annual temperature gradient for cold and warm ranges under no competition (green) and heterospecific (yellow). The vertical dotted line represents the range limits of the MAT observed in the dataset.
+</figcaption>
 </figure>
 </div>
 </div>
@@ -467,60 +602,77 @@ F_{\lambda}(x) = P(\lambda \le x) = \int_{-\infty}^{0} f(t)dt
 </section>
 <section id="effect-of-climate-and-competition-on-suitable-probability" class="level3">
 <h3 class="anchored" data-anchor-id="effect-of-climate-and-competition-on-suitable-probability">Effect of climate and competition on suitable probability</h3>
-<p>In the final step, we analyze the effect of competition on the suitable probability at the border and center of the temperature range distribution for all species. The <a href="#fig-sp_comp_vs_nocomp2">Figure&nbsp;<span>19.10</span></a> compares the suitable probability under no competition to those under heterospecific competition for four locations from the mean annual temperature gradient. Overall, suitable probability was high among the species, with an average of 0.78. Among the four locations, species presented a lower suitable probability at the border of the hot range, with an average of 0.67. Almost all species, in all conditions, are distributed below the identity line (1:1), meaning that heterospecific competition reduces the suitable probability. In the cold range, temperature decrease toward the border had little effect on the suitable probability for both competitive conditions. However, at the hot range, however, we can observe a significant shift in suitable probability from the center to the border. Across the temperature range, there is a monotonic decrease in suitable probability from the cold border toward the hot border.</p>
-<div class="cell" data-hash="extinction_risk_cache/html/fig-sp_comp_vs_nocomp_d16094c587343e1e05cb99780e95ace4">
-
-</div>
-<div class="cell" data-hash="extinction_risk_cache/html/fig-sp_comp_vs_nocomp2_c4296f989c89f3fb685a21f50d3ecd26">
+<p>In the final step, we analyze the effect of competition on the suitable probability at the border and center of the temperature range distribution for all species. The <a href="#fig-sp_comp_vs_nocomp2" class="quarto-xref">Figure&nbsp;<span>21.10</span></a> compares the suitable probability under no competition to those under heterospecific competition for four locations from the mean annual temperature gradient. Overall, suitable probability was high among the species, with an average of 0.78. Among the four locations, species presented a lower suitable probability at the border of the hot range, with an average of 0.67. Almost all species, in all conditions, are distributed below the identity line (1:1), meaning that heterospecific competition reduces the suitable probability. In the cold range, temperature decrease toward the border had little effect on the suitable probability for both competitive conditions. However, at the hot range, however, we can observe a significant shift in suitable probability from the center to the border. Across the temperature range, there is a monotonic decrease in suitable probability from the cold border toward the hot border.</p>
+<div class="cell">
 <div class="cell-output-display">
-<div id="fig-sp_comp_vs_nocomp2" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><img src="extinction_risk_files/figure-html/fig-sp_comp_vs_nocomp2-1.png" class="img-fluid figure-img" width="768"></p>
-<p></p><figcaption class="figure-caption">Figure&nbsp;19.10: Suitable probability for the 31 forest species in their distribution from the cold to the hot border of the mean annual temperature gradient. Note that we omitted the parameter uncertainty of each species in this figure to avoid overlap and increase clarity.</figcaption><p></p>
+<div id="fig-sp_comp_vs_nocomp2" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-sp_comp_vs_nocomp2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="extinction_risk_files/figure-html/fig-sp_comp_vs_nocomp2-1.png" class="img-fluid figure-img" width="768">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-sp_comp_vs_nocomp2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;21.10: Suitable probability for the 31 forest species in their distribution from the cold to the hot border of the mean annual temperature gradient. Note that we omitted the parameter uncertainty of each species in this figure to avoid overlap and increase clarity.
+</figcaption>
 </figure>
 </div>
 </div>
 </div>
-<p>While the negative effect of climate on suitable probability is evident in the above figure, distinguishing the individual effects of competition remains challenging. Hence, in <a href="#fig-effect_of_comp">Figure&nbsp;<span>19.11</span></a>, we assessed the impact of competition on reducing suitable probability by subtracting the suitable probability under heterospecific competition from the suitable probability with no competition. Even when isolating the effect of climate, the negative impact of heterospecific competition on suitable probability increases toward the border of the hot range.</p>
-<div class="cell" data-hash="extinction_risk_cache/html/fig-effect_of_comp_39f1c6c04332864e2a069dd473ca2508">
+<p>While the negative effect of climate on suitable probability is evident in the above figure, distinguishing the individual effects of competition remains challenging. Hence, in <a href="#fig-effect_of_comp" class="quarto-xref">Figure&nbsp;<span>21.11</span></a>, we assessed the impact of competition on reducing suitable probability by subtracting the suitable probability under heterospecific competition from the suitable probability with no competition. Even when isolating the effect of climate, the negative impact of heterospecific competition on suitable probability increases toward the border of the hot range.</p>
+<div class="cell">
 <div class="cell-output-display">
-<div id="fig-effect_of_comp" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><img src="extinction_risk_files/figure-html/fig-effect_of_comp-1.png" class="img-fluid figure-img" width="672"></p>
-<p></p><figcaption class="figure-caption">Figure&nbsp;19.11: The effect of competition on suitable probability across the four range positions. Each species point is color-coded based on its shade tolerance following <span class="citation" data-cites="burns1990silvics">Burns, Honkala, et al. (<a href="references.html#ref-burns1990silvics" role="doc-biblioref">1990</a>)</span>.</figcaption><p></p>
+<div id="fig-effect_of_comp" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-effect_of_comp-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="extinction_risk_files/figure-html/fig-effect_of_comp-1.png" class="img-fluid figure-img" width="672">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-effect_of_comp-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;21.11: The effect of competition on suitable probability across the four range positions. Each species point is color-coded based on its shade tolerance following <span class="citation" data-cites="burns1990silvics">Burns, Honkala, et al. (<a href="references.html#ref-burns1990silvics" role="doc-biblioref">1990</a>)</span>.
+</figcaption>
 </figure>
 </div>
 </div>
 </div>
-<p>For each species, we estimated the difference in suitable probability between the border and center (for climate) and between heterospecific and non-competition. In <a href="#fig-diff_sp_raw">Figure&nbsp;<span>19.12</span></a>, we compare the suitable probability for each species under the climate or competition conditions, where each line and their respective color determines the amount of change in suitable probability.</p>
-<div class="cell" data-hash="extinction_risk_cache/html/fig-diff_sp_raw_3e04038a60401c460d17962b0d951612">
+<p>For each species, we estimated the difference in suitable probability between the border and center (for climate) and between heterospecific and non-competition. In <a href="#fig-diff_sp_raw" class="quarto-xref">Figure&nbsp;<span>21.12</span></a>, we compare the suitable probability for each species under the climate or competition conditions, where each line and their respective color determines the amount of change in suitable probability.</p>
+<div class="cell">
 <div class="cell-output-display">
-<div id="fig-diff_sp_raw" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><img src="extinction_risk_files/figure-html/fig-diff_sp_raw-1.png" class="img-fluid figure-img" width="768"></p>
-<p></p><figcaption class="figure-caption">Figure&nbsp;19.12: Difference in suitable probability between the center and border of the distribution (left panels) and no competition and heterospecific competition (right) for the cold (top) and hot (bottom) ranges. The color of the line connecting each species’ conditions represents the intensity of change in suitable probability—the more intense the color, the greater the shift between conditions.</figcaption><p></p>
+<div id="fig-diff_sp_raw" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-diff_sp_raw-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="extinction_risk_files/figure-html/fig-diff_sp_raw-1.png" class="img-fluid figure-img" width="768">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-diff_sp_raw-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;21.12: Difference in suitable probability between the center and border of the distribution (left panels) and no competition and heterospecific competition (right) for the cold (top) and hot (bottom) ranges. The color of the line connecting each species’ conditions represents the intensity of change in suitable probability—the more intense the color, the greater the shift between conditions.
+</figcaption>
 </figure>
 </div>
 </div>
 </div>
-<p>We further estimated the relative effect of climate and competition on changing suitable probability from the center to the border of the species distribution (<a href="#fig-diff_sp_hist">Figure&nbsp;<span>19.13</span></a>). Specifically, we quantified the distinct contributions of temperature and competition to changes in suitable probability. Positive values of the relative difference signify an increase in suitable probability from the center towards the border, negative values indicate a decrease, and zero implies no net change. In the hot range, most species exhibited negative values of the relative difference in suitable probability, indicating a decline in suitability due to higher temperature and intensified competition toward the hot border of the species distribution. At the cold range, most species showed positive values for the competition effect, meaning a reduction in the effect of competition toward the cold border. However, the climate effect at the cold range showed a less clear pattern, with some species experiencing an increase and others a decrease in suitable probability as temperature decreased toward the cold range. Overall, the relative difference in suitable probability from the center toward the border was more influenced by climate rather than competition.</p>
-<div class="cell" data-hash="extinction_risk_cache/html/fig-diff_sp_hist_8ff3fd8344d0f5f5ab516b85b3a45d19">
+<p>We further estimated the relative effect of climate and competition on changing suitable probability from the center to the border of the species distribution (<a href="#fig-diff_sp_hist" class="quarto-xref">Figure&nbsp;<span>21.13</span></a>). Specifically, we quantified the distinct contributions of temperature and competition to changes in suitable probability. Positive values of the relative difference signify an increase in suitable probability from the center towards the border, negative values indicate a decrease, and zero implies no net change. In the hot range, most species exhibited negative values of the relative difference in suitable probability, indicating a decline in suitability due to higher temperature and intensified competition toward the hot border of the species distribution. At the cold range, most species showed positive values for the competition effect, meaning a reduction in the effect of competition toward the cold border. However, the climate effect at the cold range showed a less clear pattern, with some species experiencing an increase and others a decrease in suitable probability as temperature decreased toward the cold range. Overall, the relative difference in suitable probability from the center toward the border was more influenced by climate rather than competition.</p>
+<div class="cell">
 <div class="cell-output-display">
-<div id="fig-diff_sp_hist" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><img src="extinction_risk_files/figure-html/fig-diff_sp_hist-1.png" class="img-fluid figure-img" width="768"></p>
-<p></p><figcaption class="figure-caption">Figure&nbsp;19.13: Difference in suitable probability for climate and competition effects over the cold and hot ranges. Negative values denote a decrease in species suitable probability from the center towards the distribution border, while positive values indicate an increase. Specifically, a negative value for climate at the hot (or cold) range signifies a reduction in suitable probability as temperature rises (or falls) towards the border.</figcaption><p></p>
+<div id="fig-diff_sp_hist" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-diff_sp_hist-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="extinction_risk_files/figure-html/fig-diff_sp_hist-1.png" class="img-fluid figure-img" width="768">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-diff_sp_hist-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;21.13: Difference in suitable probability for climate and competition effects over the cold and hot ranges. Negative values denote a decrease in species suitable probability from the center towards the distribution border, while positive values indicate an increase. Specifically, a negative value for climate at the hot (or cold) range signifies a reduction in suitable probability as temperature rises (or falls) towards the border.
+</figcaption>
 </figure>
 </div>
 </div>
 </div>
-<p>In our investigation of whether suitable probability decreases simultaneously at both borders (indicating a unimodal shape) or exhibits a linear pattern from one border to the other (<a href="#fig-diff_sp_hot_vs_cold">Figure&nbsp;<span>19.14</span></a>), we found distinct patterns under the climate and competition effects. For the climate effect, the majority of species demonstrated a decrease in suitable probability at one border while the other remained unchanged. Additionally, a few species displayed a clear linear pattern of decreasing suitable probability from the cold to the hot border, with only one species (<em>Betula papyrifera</em>) showing a pronounced unimodal shape. Conversely, under the competition effect, most species exhibited a decrease in suitable probability at the hot border and an increase at the cold border, indicating a linear rise in the impact of competition from the cold to the hot border of the distribution.</p>
-<div class="cell" data-hash="extinction_risk_cache/html/fig-diff_sp_hot_vs_cold_cba7b7fcb38f30b6ac3a09f320f6fd77">
+<p>In our investigation of whether suitable probability decreases simultaneously at both borders (indicating a unimodal shape) or exhibits a linear pattern from one border to the other (<a href="#fig-diff_sp_hot_vs_cold" class="quarto-xref">Figure&nbsp;<span>21.14</span></a>), we found distinct patterns under the climate and competition effects. For the climate effect, the majority of species demonstrated a decrease in suitable probability at one border while the other remained unchanged. Additionally, a few species displayed a clear linear pattern of decreasing suitable probability from the cold to the hot border, with only one species (<em>Betula papyrifera</em>) showing a pronounced unimodal shape. Conversely, under the competition effect, most species exhibited a decrease in suitable probability at the hot border and an increase at the cold border, indicating a linear rise in the impact of competition from the cold to the hot border of the distribution.</p>
+<div class="cell">
 <div class="cell-output-display">
-<div id="fig-diff_sp_hot_vs_cold" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><img src="extinction_risk_files/figure-html/fig-diff_sp_hot_vs_cold-1.png" class="img-fluid figure-img" width="768"></p>
-<p></p><figcaption class="figure-caption">Figure&nbsp;19.14: The relationship in the difference in suitable probability from the center to the border (<span class="math inline">\(\Delta\Lambda\)</span>) between the cold and hot borders. A species at the bottom-left area (both <span class="math inline">\(\Delta\Lambda\)</span> are negative) indicates an unimodal decrease in suitable probability at the borders. Conversely, species at the top-right square exhibit an inverse unimodal shape. In the top-left or bottom-right areas, suitable probability linearly decreases or increases from the cold toward the hot border, respectively. For the climate effect (left panel), species are colored following the centroid mean annual temperature among all observed plots. In the climate effect (left panel), species are color-coded based on the centroid of mean annual temperature among all observed plots. In the competition effect (right panel), species are classified by shade tolerance following <span class="citation" data-cites="burns1990silvics">Burns, Honkala, et al. (<a href="references.html#ref-burns1990silvics" role="doc-biblioref">1990</a>)</span>.</figcaption><p></p>
+<div id="fig-diff_sp_hot_vs_cold" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-diff_sp_hot_vs_cold-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="extinction_risk_files/figure-html/fig-diff_sp_hot_vs_cold-1.png" class="img-fluid figure-img" width="768">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-diff_sp_hot_vs_cold-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;21.14: The relationship in the difference in suitable probability from the center to the border (<span class="math inline">\(\Delta\Lambda\)</span>) between the cold and hot borders. A species at the bottom-left area (both <span class="math inline">\(\Delta\Lambda\)</span> are negative) indicates an unimodal decrease in suitable probability at the borders. Conversely, species at the top-right square exhibit an inverse unimodal shape. In the top-left or bottom-right areas, suitable probability linearly decreases or increases from the cold toward the hot border, respectively. For the climate effect (left panel), species are colored following the centroid mean annual temperature among all observed plots. In the climate effect (left panel), species are color-coded based on the centroid of mean annual temperature among all observed plots. In the competition effect (right panel), species are classified by shade tolerance following <span class="citation" data-cites="burns1990silvics">Burns, Honkala, et al. (<a href="references.html#ref-burns1990silvics" role="doc-biblioref">1990</a>)</span>.
+</figcaption>
 </figure>
 </div>
 </div>
@@ -530,135 +682,257 @@ F_{\lambda}(x) = P(\lambda \le x) = \int_{-\infty}^{0} f(t)dt
 <h3 class="anchored" data-anchor-id="suitable-probability-across-the-mean-annual-temperature-gradient">Suitable probability across the mean annual temperature gradient</h3>
 <p>We further investigated the potential dependency of climate and competition effects on the geographical location of the species. Specifically, we hypothesized that the impact of climate might be more pronounced for species distributed in hotter temperatures than those in colder temperatures. <!-- The @fig-sp_over_MAT1 shows the suitable probability distribution at the border for the cold and hot ranges over the MAT gradient.
 We can observe that heterospecific competition decreases the suitable probability almost similarly for all species across the temperature gradient.
-The only exception is for the cold range species located toward higher temperatures, which showed a relatively higher effect of competition than species located in cold temperatures (@fig-sp_over_MAT1 left panel). --> In <a href="#fig-sp_diff_over_MAT">Figure&nbsp;<span>19.15</span></a>, we evaluated the difference in suitable probability for climate and competition effects along the mean annual temperature gradient. Notably, the only condition showing a significant trend was the climate effect in the cold range (blue group at the top panel). Not surprisingly, suitable probability decreased as temperature declined toward the cold range, but this pattern was observed only for species located in colder conditions. Conversely, the suitable probability increased when species were situated in hotter conditions as temperature decreased toward the cold range.</p>
-<div class="cell" data-hash="extinction_risk_cache/html/fig-sp_over_MAT1_266a66e29e6a60c0eb88ad06ca7af021">
-
-</div>
-<div class="cell" data-hash="extinction_risk_cache/html/fig-sp_diff_over_MAT_b80d4bd2972ba979a07bfead124fcc45">
+The only exception is for the cold range species located toward higher temperatures, which showed a relatively higher effect of competition than species located in cold temperatures (@fig-sp_over_MAT1 left panel). --> In <a href="#fig-sp_diff_over_MAT" class="quarto-xref">Figure&nbsp;<span>21.15</span></a>, we evaluated the difference in suitable probability for climate and competition effects along the mean annual temperature gradient. Notably, the only condition showing a significant trend was the climate effect in the cold range (blue group at the top panel). Not surprisingly, suitable probability decreased as temperature declined toward the cold range, but this pattern was observed only for species located in colder conditions. Conversely, the suitable probability increased when species were situated in hotter conditions as temperature decreased toward the cold range.</p>
+<div class="cell">
 <div class="cell-output-display">
-<div id="fig-sp_diff_over_MAT" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure">
-<p><img src="extinction_risk_files/figure-html/fig-sp_diff_over_MAT-1.png" class="img-fluid figure-img" width="768"></p>
-<p></p><figcaption class="figure-caption">Figure&nbsp;19.15: Relative difference in suitable probability between the center and border for climate and competition for 31 species located over the mean annual temperature gradient. The difference in suitable probability for the climate effect is marginalized under the no-competition condition. Species points are grouped by a Multivariate Normal Density function with 75% probability.</figcaption><p></p>
+<div id="fig-sp_diff_over_MAT" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-sp_diff_over_MAT-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="extinction_risk_files/figure-html/fig-sp_diff_over_MAT-1.png" class="img-fluid figure-img" width="768">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-sp_diff_over_MAT-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;21.15: Relative difference in suitable probability between the center and border for climate and competition for 31 species located over the mean annual temperature gradient. The difference in suitable probability for the climate effect is marginalized under the no-competition condition. Species points are grouped by a Multivariate Normal Density function with 75% probability.
+</figcaption>
 </figure>
 </div>
 </div>
-</div>
-<div class="cell" data-hash="extinction_risk_cache/html/sp_diff_over_rangeSize_9a5e30019c10d0a076327e0d67341efe">
-
 </div>
 </section>
 </section>
 <section id="appendices" class="level2">
 <h2 class="anchored" data-anchor-id="appendices">Appendices</h2>
-<div class="cell" data-hash="extinction_risk_cache/html/appen_e1f984adcacba2d762c0e7462795609b">
+<div class="cell">
 <div class="cell-output-display">
-<p><img src="extinction_risk_files/figure-html/appen-1.png" class="img-fluid" width="768"></p>
+<div>
+<figure class="figure">
+<p><img src="extinction_risk_files/figure-html/appen-1.png" class="img-fluid figure-img" width="768"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output-display">
-<p><img src="extinction_risk_files/figure-html/appen-2.png" class="img-fluid" width="768"></p>
+<div>
+<figure class="figure">
+<p><img src="extinction_risk_files/figure-html/appen-2.png" class="img-fluid figure-img" width="768"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output-display">
-<p><img src="extinction_risk_files/figure-html/appen-3.png" class="img-fluid" width="768"></p>
+<div>
+<figure class="figure">
+<p><img src="extinction_risk_files/figure-html/appen-3.png" class="img-fluid figure-img" width="768"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output-display">
-<p><img src="extinction_risk_files/figure-html/appen-4.png" class="img-fluid" width="768"></p>
+<div>
+<figure class="figure">
+<p><img src="extinction_risk_files/figure-html/appen-4.png" class="img-fluid figure-img" width="768"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output-display">
-<p><img src="extinction_risk_files/figure-html/appen-5.png" class="img-fluid" width="768"></p>
+<div>
+<figure class="figure">
+<p><img src="extinction_risk_files/figure-html/appen-5.png" class="img-fluid figure-img" width="768"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output-display">
-<p><img src="extinction_risk_files/figure-html/appen-6.png" class="img-fluid" width="768"></p>
+<div>
+<figure class="figure">
+<p><img src="extinction_risk_files/figure-html/appen-6.png" class="img-fluid figure-img" width="768"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output-display">
-<p><img src="extinction_risk_files/figure-html/appen-7.png" class="img-fluid" width="768"></p>
+<div>
+<figure class="figure">
+<p><img src="extinction_risk_files/figure-html/appen-7.png" class="img-fluid figure-img" width="768"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output-display">
-<p><img src="extinction_risk_files/figure-html/appen-8.png" class="img-fluid" width="768"></p>
+<div>
+<figure class="figure">
+<p><img src="extinction_risk_files/figure-html/appen-8.png" class="img-fluid figure-img" width="768"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output-display">
-<p><img src="extinction_risk_files/figure-html/appen-9.png" class="img-fluid" width="768"></p>
+<div>
+<figure class="figure">
+<p><img src="extinction_risk_files/figure-html/appen-9.png" class="img-fluid figure-img" width="768"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output-display">
-<p><img src="extinction_risk_files/figure-html/appen-10.png" class="img-fluid" width="768"></p>
+<div>
+<figure class="figure">
+<p><img src="extinction_risk_files/figure-html/appen-10.png" class="img-fluid figure-img" width="768"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output-display">
-<p><img src="extinction_risk_files/figure-html/appen-11.png" class="img-fluid" width="768"></p>
+<div>
+<figure class="figure">
+<p><img src="extinction_risk_files/figure-html/appen-11.png" class="img-fluid figure-img" width="768"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output-display">
-<p><img src="extinction_risk_files/figure-html/appen-12.png" class="img-fluid" width="768"></p>
+<div>
+<figure class="figure">
+<p><img src="extinction_risk_files/figure-html/appen-12.png" class="img-fluid figure-img" width="768"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output-display">
-<p><img src="extinction_risk_files/figure-html/appen-13.png" class="img-fluid" width="768"></p>
+<div>
+<figure class="figure">
+<p><img src="extinction_risk_files/figure-html/appen-13.png" class="img-fluid figure-img" width="768"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output-display">
-<p><img src="extinction_risk_files/figure-html/appen-14.png" class="img-fluid" width="768"></p>
+<div>
+<figure class="figure">
+<p><img src="extinction_risk_files/figure-html/appen-14.png" class="img-fluid figure-img" width="768"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output-display">
-<p><img src="extinction_risk_files/figure-html/appen-15.png" class="img-fluid" width="768"></p>
+<div>
+<figure class="figure">
+<p><img src="extinction_risk_files/figure-html/appen-15.png" class="img-fluid figure-img" width="768"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output-display">
-<p><img src="extinction_risk_files/figure-html/appen-16.png" class="img-fluid" width="768"></p>
+<div>
+<figure class="figure">
+<p><img src="extinction_risk_files/figure-html/appen-16.png" class="img-fluid figure-img" width="768"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output-display">
-<p><img src="extinction_risk_files/figure-html/appen-17.png" class="img-fluid" width="768"></p>
+<div>
+<figure class="figure">
+<p><img src="extinction_risk_files/figure-html/appen-17.png" class="img-fluid figure-img" width="768"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output-display">
-<p><img src="extinction_risk_files/figure-html/appen-18.png" class="img-fluid" width="768"></p>
+<div>
+<figure class="figure">
+<p><img src="extinction_risk_files/figure-html/appen-18.png" class="img-fluid figure-img" width="768"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output-display">
-<p><img src="extinction_risk_files/figure-html/appen-19.png" class="img-fluid" width="768"></p>
+<div>
+<figure class="figure">
+<p><img src="extinction_risk_files/figure-html/appen-19.png" class="img-fluid figure-img" width="768"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output-display">
-<p><img src="extinction_risk_files/figure-html/appen-20.png" class="img-fluid" width="768"></p>
+<div>
+<figure class="figure">
+<p><img src="extinction_risk_files/figure-html/appen-20.png" class="img-fluid figure-img" width="768"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output-display">
-<p><img src="extinction_risk_files/figure-html/appen-21.png" class="img-fluid" width="768"></p>
+<div>
+<figure class="figure">
+<p><img src="extinction_risk_files/figure-html/appen-21.png" class="img-fluid figure-img" width="768"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output-display">
-<p><img src="extinction_risk_files/figure-html/appen-22.png" class="img-fluid" width="768"></p>
+<div>
+<figure class="figure">
+<p><img src="extinction_risk_files/figure-html/appen-22.png" class="img-fluid figure-img" width="768"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output-display">
-<p><img src="extinction_risk_files/figure-html/appen-23.png" class="img-fluid" width="768"></p>
+<div>
+<figure class="figure">
+<p><img src="extinction_risk_files/figure-html/appen-23.png" class="img-fluid figure-img" width="768"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output-display">
-<p><img src="extinction_risk_files/figure-html/appen-24.png" class="img-fluid" width="768"></p>
+<div>
+<figure class="figure">
+<p><img src="extinction_risk_files/figure-html/appen-24.png" class="img-fluid figure-img" width="768"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output-display">
-<p><img src="extinction_risk_files/figure-html/appen-25.png" class="img-fluid" width="768"></p>
+<div>
+<figure class="figure">
+<p><img src="extinction_risk_files/figure-html/appen-25.png" class="img-fluid figure-img" width="768"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output-display">
-<p><img src="extinction_risk_files/figure-html/appen-26.png" class="img-fluid" width="768"></p>
+<div>
+<figure class="figure">
+<p><img src="extinction_risk_files/figure-html/appen-26.png" class="img-fluid figure-img" width="768"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output-display">
-<p><img src="extinction_risk_files/figure-html/appen-27.png" class="img-fluid" width="768"></p>
+<div>
+<figure class="figure">
+<p><img src="extinction_risk_files/figure-html/appen-27.png" class="img-fluid figure-img" width="768"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output-display">
-<p><img src="extinction_risk_files/figure-html/appen-28.png" class="img-fluid" width="768"></p>
+<div>
+<figure class="figure">
+<p><img src="extinction_risk_files/figure-html/appen-28.png" class="img-fluid figure-img" width="768"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output-display">
-<p><img src="extinction_risk_files/figure-html/appen-29.png" class="img-fluid" width="768"></p>
+<div>
+<figure class="figure">
+<p><img src="extinction_risk_files/figure-html/appen-29.png" class="img-fluid figure-img" width="768"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output-display">
-<p><img src="extinction_risk_files/figure-html/appen-30.png" class="img-fluid" width="768"></p>
+<div>
+<figure class="figure">
+<p><img src="extinction_risk_files/figure-html/appen-30.png" class="img-fluid figure-img" width="768"></p>
+</figure>
+</div>
 </div>
 <div class="cell-output-display">
-<p><img src="extinction_risk_files/figure-html/appen-31.png" class="img-fluid" width="768"></p>
+<div>
+<figure class="figure">
+<p><img src="extinction_risk_files/figure-html/appen-31.png" class="img-fluid figure-img" width="768"></p>
+</figure>
+</div>
 </div>
 </div>
 
 
-<div id="refs" class="references csl-bib-body hanging-indent" role="doc-bibliography" style="display: none">
-<div id="ref-burns1990silvics" class="csl-entry" role="doc-biblioentry">
+<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list" style="display: none">
+<div id="ref-burns1990silvics" class="csl-entry" role="listitem">
 Burns, Russell M, Barbara H Honkala, et al. 1990. <span>“Silvics of North America: 1. Conifers; 2. Hardwoods Agriculture Handbook 654.”</span> <em>US Department of Agriculture, Forest Service, Washington, DC</em>.
 </div>
-<div id="ref-cmdstanr" class="csl-entry" role="doc-biblioentry">
+<div id="ref-cmdstanr" class="csl-entry" role="listitem">
 Gabry, Jonah, Rok Češnovar, and Andrew Johnson. 2023. <em>Cmdstanr: R Interface to ’CmdStan’</em>.
 </div>
-<div id="ref-Holt2005" class="csl-entry" role="doc-biblioentry">
+<div id="ref-Holt2005" class="csl-entry" role="listitem">
 Holt, Robert D, Timothy H Keitt, Mark a Lewis, Brian a Maurer, and Mark L Taper. 2005. <span>“<span class="nocase">Theoretical models of species’ borders: single species approaches</span>.”</span> <em>Oikos</em> 108 (1): 18–27. <a href="https://doi.org/10.1111/j.0030-1299.2005.13147.x">https://doi.org/10.1111/j.0030-1299.2005.13147.x</a>.
 </div>
-<div id="ref-stan2022stan" class="csl-entry" role="doc-biblioentry">
+<div id="ref-stan2022stan" class="csl-entry" role="listitem">
 Team, Stan Development et al. 2022. <span>“Stan Modeling Language Users Guide and Reference Manual, Version 2.30.1.”</span> Stan Development Team.
 </div>
 </div>
@@ -666,147 +940,413 @@ Team, Stan Development et al. 2022. <span>“Stan Modeling Language Users Guide 
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
-window.document.addEventListener("DOMContentLoaded", function (event) {
-  const toggleBodyColorMode = (bsSheetEl) => {
-    const mode = bsSheetEl.getAttribute("data-mode");
-    const bodyEl = window.document.querySelector("body");
-    if (mode === "dark") {
-      bodyEl.classList.add("quarto-dark");
-      bodyEl.classList.remove("quarto-light");
-    } else {
-      bodyEl.classList.add("quarto-light");
-      bodyEl.classList.remove("quarto-dark");
-    }
-  }
-  const toggleBodyColorPrimary = () => {
-    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
-    if (bsSheetEl) {
-      toggleBodyColorMode(bsSheetEl);
-    }
-  }
-  toggleBodyColorPrimary();  
-  const icon = "";
-  const anchorJS = new window.AnchorJS();
-  anchorJS.options = {
-    placement: 'right',
-    icon: icon
-  };
-  anchorJS.add('.anchored');
-  const clipboard = new window.ClipboardJS('.code-copy-button', {
-    target: function(trigger) {
-      return trigger.previousElementSibling;
-    }
-  });
-  clipboard.on('success', function(e) {
-    // button target
-    const button = e.trigger;
-    // don't keep focus
-    button.blur();
-    // flash "checked"
-    button.classList.add('code-copy-button-checked');
-    var currentTitle = button.getAttribute("title");
-    button.setAttribute("title", "Copied!");
-    let tooltip;
-    if (window.bootstrap) {
-      button.setAttribute("data-bs-toggle", "tooltip");
-      button.setAttribute("data-bs-placement", "left");
-      button.setAttribute("data-bs-title", "Copied!");
-      tooltip = new bootstrap.Tooltip(button, 
-        { trigger: "manual", 
-          customClass: "code-copy-button-tooltip",
-          offset: [0, -8]});
-      tooltip.show();    
-    }
-    setTimeout(function() {
-      if (tooltip) {
-        tooltip.hide();
-        button.removeAttribute("data-bs-title");
-        button.removeAttribute("data-bs-toggle");
-        button.removeAttribute("data-bs-placement");
-      }
-      button.setAttribute("title", currentTitle);
-      button.classList.remove('code-copy-button-checked');
-    }, 1000);
-    // clear code selection
-    e.clearSelection();
-  });
-  function tippyHover(el, contentFn) {
-    const config = {
-      allowHTML: true,
-      content: contentFn,
-      maxWidth: 500,
-      delay: 100,
-      arrow: false,
-      appendTo: function(el) {
-          return el.parentElement;
-      },
-      interactive: true,
-      interactiveBorder: 10,
-      theme: 'quarto',
-      placement: 'bottom-start'
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
     };
-    window.tippy(el, config); 
-  }
-  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
-  for (var i=0; i<noterefs.length; i++) {
-    const ref = noterefs[i];
-    tippyHover(ref, function() {
-      // use id or data attribute instead here
-      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
-      try { href = new URL(href).hash; } catch {}
-      const id = href.replace(/^#\/?/, "");
-      const note = window.document.getElementById(id);
-      return note.innerHTML;
-    });
-  }
-  const findCites = (el) => {
-    const parentEl = el.parentElement;
-    if (parentEl) {
-      const cites = parentEl.dataset.cites;
-      if (cites) {
-        return {
-          el,
-          cites: cites.split(' ')
-        };
-      } else {
-        return findCites(el.parentElement)
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
       }
-    } else {
-      return undefined;
+      return false;
     }
-  };
-  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
-  for (var i=0; i<bibliorefs.length; i++) {
-    const ref = bibliorefs[i];
-    const citeInfo = findCites(ref);
-    if (citeInfo) {
-      tippyHover(citeInfo.el, function() {
-        var popup = window.document.createElement('div');
-        citeInfo.cites.forEach(function(cite) {
-          var citeDiv = window.document.createElement('div');
-          citeDiv.classList.add('hanging-indent');
-          citeDiv.classList.add('csl-entry');
-          var biblioDiv = window.document.getElementById('ref-' + cite);
-          if (biblioDiv) {
-            citeDiv.innerHTML = biblioDiv.innerHTML;
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
           }
-          popup.appendChild(citeDiv);
-        });
-        return popup.innerHTML;
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
       });
     }
-  }
-});
-</script>
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./marginal_lambda.html" class="pagination-link">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">Marginal effect of covariates</span></span>
+      <a href="./marginal_lambda.html" class="pagination-link" aria-label="Marginal effect of covariates">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">20</span>&nbsp; <span class="chapter-title">Marginal effect of covariates</span></span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./references.html" class="pagination-link">
-        <span class="nav-page-text">References</span> <i class="bi bi-arrow-right-short"></i>
+      <a href="./lean_proofs.html" class="pagination-link" aria-label="Mathematical Verification (Lean 4)">
+        <span class="nav-page-text"><span class="chapter-number">22</span>&nbsp; <span class="chapter-title">Mathematical Verification (Lean 4)</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>
@@ -814,4 +1354,5 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 
 
 
-</body></html>
+
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/willvieira/book_forest-demography-IPM/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>
