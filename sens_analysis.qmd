@@ -10,7 +10,7 @@ library(tidyverse)
 library(ggdist)
 library(ggtext)
 library(ggrepel)
-# library(ggtern)
+library(ggtern)
 library(ggdensity)
 ```
 
@@ -223,7 +223,7 @@ This splits the total importance among the four demographic functions of the IPM
 The recruited size model had an insignificant contribution to $\lambda$, with nearly all random forest models showing a contribution below 1%.
 Thus, we omitted this model and concentrated on the growth, survival, and recruitment models, which collectively explain over 99% of the variation in $\lambda$ [@fig-ternaryLambda].
 
-```{r,echo=Echo,eval=FALSE,cache=Cache,warning=Warng,message=Msg}
+```{r,echo=Echo,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-ternaryLambda
 #| fig-width: 8
 #| fig-height: 6
