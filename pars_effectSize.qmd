@@ -111,7 +111,7 @@ treeData <- readRDS(file.path(data_path, 'treeData.RDS')) |>
 
 #### Growth
 
-```{r effSz_growth,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+```{r,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-efszGrowth
 #| fig-width: 8.5
 #| fig-height: 6
@@ -221,7 +221,7 @@ growht_borderEffect |>
     )
 ```
 
-```{r effSz_growth,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+```{r,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-efszGrowthSumm
 #| fig-width: 7
 #| fig-height: 4
@@ -264,7 +264,7 @@ growht_borderEffect |>
 
 #### Survival
 
-```{r effSz_growthSumm,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+```{r,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-efszSurvSumm
 #| fig-width: 7
 #| fig-height: 4
@@ -327,7 +327,7 @@ survival_borderEffect |>
 
 #### Recruitment
 
-```{r effSz_recSumm,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+```{r,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-efszRecSumm
 #| fig-width: 7
 #| fig-height: 4
@@ -393,7 +393,7 @@ rec_borderEffect |>
 
 Harsh condition is defined here as the extreme observed covariate with the largest conditional effect size between the 1% and 99% quantile distribution of the covariate.
 
-```{r effSz_harshCond,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+```{r,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-efszHarshCond
 #| fig-width: 7.5
 #| fig-height: 4
@@ -663,7 +663,7 @@ all_effect
 
 #### Growth
 
-```{r effSz_harshCondRangeFigG,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+```{r,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-efszHarshCondRangeGrowth
 #| fig-width: 7
 #| fig-height: 4.5
@@ -701,7 +701,7 @@ all_effect |>
 
 #### Survival
 
-```{r effSz_harshCondRangeFigS,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+```{r,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-efszHarshCondRangeSurv
 #| fig-width: 7
 #| fig-height: 4.5
@@ -739,7 +739,7 @@ all_effect |>
 
 #### Recruitment
 
-```{r effSz_harshCondRangeFigS,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+```{r,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-efszHarshCondRangeRec
 #| fig-width: 7
 #| fig-height: 4.5

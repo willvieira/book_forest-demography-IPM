@@ -618,7 +618,7 @@ saveRDS(AME_rec, file.path('data', 'AME_rec.RDS'))
 
 ### AME per species
 
-```{r plot_AME_gmr,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+```{r,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-AMEall
 #| fig-width: 9
 #| fig-height: 8
@@ -710,8 +710,7 @@ AME_growth |>
 
 ### Summary of AME across species
 
-```{r plot_AME_summ,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
-#| label: fig-AMEsumm
+```{r,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}#| label: fig-AMEsumm
 #| fig-width: 9
 #| fig-height: 5
 #| fig-cap: "Average Marginal effect of each covariate grouped by species and their respective uncertainty. The larger the values, the stronger the marginal effect of the covariate across all observations for the species."
@@ -821,7 +820,7 @@ ggarrange(
 
 ### AME of competition covariates grouped by shade tolerance
 
-```{r plot_AME_compShade,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+```{r,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-AMEsummComp
 #| fig-width: 8.5
 #| fig-height: 5
@@ -891,7 +890,7 @@ AME_growth |>
 
 ### AME of temperature given the median latitude distribution of the species
 
-```{r plot_AME_growthVsLatitude,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+```{r,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-AMEsummTemp
 #| fig-width: 9
 #| fig-height: 5
@@ -976,7 +975,7 @@ AME_growth |>
   )
 ```
 
-```{r sim_int_effect,eval=FALSE,echo=FALSE}
+```{r,eval=FALSE,echo=FALSE}
 # code to test the AME when slope is the same but the intercept is different
 md <- function(x, beta, int)
   return( exp(log(int) + beta * x) )

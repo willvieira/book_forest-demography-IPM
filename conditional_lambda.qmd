@@ -79,7 +79,7 @@ unscaleClim <- function(
 
 ## Competition effect
 
-```{r lambdaComp,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+```{r,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-lambdaComp
 #| fig-width: 8
 #| fig-height: 4.5
@@ -177,7 +177,7 @@ clim_dt
 
 ### Mean annual temperature
 
-```{r lambdaTempplot,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+```{r,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-lambdaTempplot
 #| fig-width: 8
 #| fig-height: 4.5
@@ -219,7 +219,7 @@ girafe(
 
 ### Mean annual precipitation
 
-```{r lambdaPrec,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+```{r,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-lambdaPrec
 #| fig-width: 8
 #| fig-height: 4.5

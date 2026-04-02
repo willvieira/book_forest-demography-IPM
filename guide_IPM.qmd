@@ -123,7 +123,7 @@ env <- env_condition(MAT = 8, MAP = 1200)
 env
 ```
 
-Further than accepting a numeric scalar (static climate), both arguments also accept a `function(t)` returning a value for year `t` (time-varying climate; see @sec-time-varying).
+Further than accepting a numeric scalar (static climate), both arguments also accept a `function(t)` returning a value for year `t` (discussed bellow).
 
 ::: {.callout-note}
 If your MAT or MAP values fall outside the range observed during model fitting for any species in the stand, the engines will emit a warning.
@@ -225,7 +225,7 @@ Use `type` to select a specific panel:
 
 ### Lambda trajectory {#sec-lambda}
 
-```{r plot_lambda,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+```{r,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-guideLambda
 #| fig-cap: "Population growth rate ($\\lambda$) over time. Values above 1 indicate growth; below 1 indicate decline."
 plot(proj, type = "lambda")
@@ -236,7 +236,7 @@ $\lambda$ starts above 1 when the stand is sparse (low intraspecific competition
 
 ### Population size trajectory
 
-```{r plot_popsize,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+```{r,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-guidePopSize
 #| fig-cap: "Total population size (N, number of individuals) over time."
 plot(proj, type = "pop_size")
@@ -244,7 +244,7 @@ plot(proj, type = "pop_size")
 
 ### Size distribution over time {#sec-sizedist}
 
-```{r plot_sizedist_last,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+```{r,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-guideSizeDist
 #| fig-cap: "Size distribution of *Abies balsamea* and *Acer saccharum* at the last time step."
 plot(proj, type = "size_dist")           # default: last stored timestep
@@ -252,7 +252,7 @@ plot(proj, type = "size_dist")           # default: last stored timestep
 
 Use `timestep` to inspect an earlier snapshot:
 
-```{r plot_sizedist_t10,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+```{r,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-guideSizeDist10
 #| fig-cap: "Size distribution at year 10."
 plot(proj, type = "size_dist", timestep = 10)
@@ -260,7 +260,7 @@ plot(proj, type = "size_dist", timestep = 10)
 
 ### Lambda vs population size {#sec-lambdavsn}
 
-```{r plot_lambdavsn,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+```{r,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-lambdaVsN
 #| fig-cap: "Phase portrait of $\\lambda$ against total population size. Colour gradient indicates time."
 plot(proj, type = "lambda_vs_n")

@@ -104,7 +104,7 @@ The code used for this analysis can be found in the [`forest-IPM`](https://githu
 The final simulation involved a total of `r nrow(lambdas)` draws across species and different conditions.
 The @fig-lambdaDist illustrates the distribution of $\lambda$ computed using 500 random draws from the posterior distribution of parameters across different climate and competition conditions.
 
-```{r lambdaDist,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+```{r,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-lambdaDist
 #| fig-width: 9
 #| fig-height: 8
@@ -143,7 +143,7 @@ lambdas |>
 
 The @fig-lambdaSumm presents the distribution of the average and standard deviation of $\lambda$ across the 500 draws for each species.
 
-```{r lambdaSumm,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+```{r,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-lambdaSumm
 #| fig-width: 8
 #| fig-height: 4
@@ -186,7 +186,7 @@ Figure @fig-rfr2 shows the distribution of $R^2$ from 20 random forest replicati
 These values range from 0.2 to 0.9, with an average value of 0.63 across species and conditions.
 This variation possibly reflects the uncertainty in the parameters across species.
 
-```{r rfr2,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+```{r,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-rfr2
 #| fig-width: 6
 #| fig-height: 5
@@ -223,7 +223,7 @@ This splits the total importance among the four demographic functions of the IPM
 The recruited size model had an insignificant contribution to $\lambda$, with nearly all random forest models showing a contribution below 1%.
 Thus, we omitted this model and concentrated on the growth, survival, and recruitment models, which collectively explain over 99% of the variation in $\lambda$ [@fig-ternaryLambda].
 
-```{r ternaryLambda,echo=Echo,eval=FALSE,cache=Cache,warning=Warng,message=Msg}
+```{r,echo=Echo,eval=FALSE,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-ternaryLambda
 #| fig-width: 8
 #| fig-height: 6
@@ -277,7 +277,7 @@ The key message is that variance in $\lambda$ is primarily explained by the recr
 Furthermore, certain conditions appear to shift the importance from recruitment to the survival model.
 In @fig-recVsMort, we explore the correlation between the importance of recruitment and survival under different covariate conditions.
 
-```{r recVsMort,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+```{r,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-recVsMort
 #| fig-width: 8
 #| fig-height: 4
@@ -345,7 +345,7 @@ Similar to assessing parameter importance, we also used the random forest approa
 For simplicity, we used the same output of the simulations as previously explained, shifting the explanatory variables from parameters to covariates.^[This analysis could be expanded to include more marginal conditions beyond just cold, center, and hot temperatures and low and high competition. However, this would exponentially increase the number of simulations.]
 The @fig-climVsComp shows the distribution of relative importance between climate and competition covariates for each species.
 
-```{r climVsComp,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+```{r,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-climVsComp
 #| fig-width: 8
 #| fig-height: 4

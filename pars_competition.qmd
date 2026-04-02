@@ -99,7 +99,7 @@ treeData <- readRDS(file.path(data_path, 'treeData.RDS')) |>
 
 #### Growth
 
-```{r comp_compGrowth,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+```{r,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-compGrowth
 #| fig-width: 8.5
 #| fig-height: 6
@@ -175,7 +175,7 @@ ggarrange(p1, p2, ncol = 2)
 
 #### Survival
 
-```{r comp_compSurv,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+```{r,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-compSurvival
 #| fig-width: 8.5
 #| fig-height: 6
@@ -300,7 +300,7 @@ ggsave('../talk_PhDdefence/images/competition_vs_shade.png', p, width = 5.5, hei
 
 #### Growth vs survival
 
-```{r comp_compGrowthVsSurv,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+```{r,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-compGrowthVsSurv
 #| fig-width: 8.5
 #| fig-height: 5
@@ -365,7 +365,7 @@ pars_growth |>
 
 ## Total basal area effect on recruitment survival
 
-```{r comp_compGrowthVsSurv,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+```{r,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-compRec
 #| fig-width: 8.5
 #| fig-height: 6
@@ -426,13 +426,13 @@ ggarrange(p1, p2, ncol = 2)
 ## How does CNDD relate to species latitude and abundance patterns?
 
 This is mostly inspired by @hulsmann2024, where they test many hypotheses around conspecific density dependence (CNDD) around the world.
-Their main finding is that CNDD is stronger in the tropics compared to temperature species, but only for low or intermediate abundant species.
+Their main finding is that CNDD is stronger in the tropics compared to temperate species, but only for low or intermediate abundant species.
 
-```{r CNDDvsLat,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+```{r,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-CNDDvsLat
 #| fig-width: 8.5
 #| fig-height: 5
-#| fig-cap: "Posterior distribution of the density dependence parameter affecting the annual survival rate of recruitment individuals."
+#| fig-cap: "Parameter controling density depense across the growth, survival, and recruitment model for 31 tree species. Each species is distributed across the latitude gradient using their median latitude across all plot observations."
 
 pars_growth |>
   mutate(
@@ -504,7 +504,7 @@ pars_growth |>
 ```
 
 
-```{r CNDDvsAbund,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
+```{r,echo=Echo,eval=Eval,cache=Cache,warning=Warng,message=Msg}
 #| label: fig-CNDDvsAbund
 #| fig-width: 8.5
 #| fig-height: 5
