@@ -4,7 +4,7 @@
     "Repositories": [
       {
         "Name": "CRAN",
-        "URL": "https://packagemanager.posit.co/cran/__linux__/focal/2023-06-01"
+        "URL": "https://cloud.r-project.org"
       }
     ]
   },
@@ -942,7 +942,7 @@
         "plyr",
         "png",
         "purrr",
-        "rgooglemaps",
+        "RgoogleMaps",
         "rlang",
         "scales",
         "stringr",
@@ -1402,13 +1402,6 @@
       "Hash": "b64cdbb2b340437c4ee047a1f4c4377b",
       "Requirements": []
     },
-    "lazyeval": {
-      "Package": "lazyeval",
-      "Version": "0.2.2",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": []
-    },
     "leaflet": {
       "Package": "leaflet",
       "Version": "2.1.2",
@@ -1846,7 +1839,7 @@
     },
     "promises": {
       "Package": "promises",
-      "Version": "1.2.0.1",
+      "Version": "1.5.0",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
@@ -2049,9 +2042,9 @@
         "sp"
       ]
     },
-    "rgooglemaps": {
-      "Package": "rgooglemaps",
-      "Version": "1.4.5.1",
+    "RgoogleMaps": {
+      "Package": "RgoogleMaps",
+      "Version": "1.4.5",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
@@ -2060,7 +2053,7 @@
     },
     "rlang": {
       "Package": "rlang",
-      "Version": "1.1.0",
+      "Version": "1.1.4",
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "dc079ccd156cde8647360f473c1fa718",
