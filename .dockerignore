@@ -1,0 +1,6 @@
+_book/
+_freeze/
+.git/
+renv/library/
+*.html
+*.pdf
